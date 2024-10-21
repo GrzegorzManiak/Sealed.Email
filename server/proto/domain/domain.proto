@@ -18,4 +18,5 @@ message QueueDNSVerificationRequest {
 message QueueDNSVerificationResponse {
   bool acknowledged = 1;
   string message = 2;
+  string verificationId = 3;
 }

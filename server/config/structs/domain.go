@@ -1,11 +1,11 @@
 package structs
 
 type DomainServiceConfig struct {
-	RetryMax      int `yaml:"retryMax"`
-	RetryEvery    int `yaml:"retryEvery"`
-	MaxConcurrent int `yaml:"maxConcurrent"`
-	BatchSize     int `yaml:"batchSize"`
-	BatchTimeout  int `yaml:"batchTimeout"`
+	RetryMax      int64 `yaml:"retryMax"`
+	RetryInterval int64 `yaml:"retryInterval"`
+	MaxConcurrent int   `yaml:"maxConcurrent"`
+	BatchSize     int   `yaml:"batchSize"`
+	BatchTimeout  int   `yaml:"batchTimeout"`
 }
 
 type DomainConfig struct {

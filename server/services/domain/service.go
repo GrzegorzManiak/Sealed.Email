@@ -4,9 +4,10 @@ import (
 	"context"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	DomainDatabase "github.com/GrzegorzManiak/NoiseBackend/database/domain"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/services"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/domain"
-	"github.com/GrzegorzManiak/NoiseBackend/services/domain/handlers"
+	"github.com/GrzegorzManiak/NoiseBackend/services/domain/service"
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
@@ -15,10 +16,22 @@ import (
 func Start() {
 	log.Printf("------------------ Starting Domain Service ------------------")
 
-	DomainDatabase.InitiateConnection()
+	queueDatabaseConnection := DomainDatabase.InitiateConnection()
+	//primaryDatabaseConnection := DomainDatabase.InitiateConnection()
+	queueContext := context.Background()
+
+	go queue.Dispatcher(
+		queueContext,
+		queueDatabaseConnection,
+		service.QueueName,
+		config.Domain.Service.BatchTimeout,
+		config.Domain.Service.MaxConcurrent,
+		func(entry *queue.Entry) int8 {
+			return service.Worker(entry, queueDatabaseConnection)
+		})
 
 	listener, grpcServer, ServiceID := services.CreateGRPCService(config.Certificates.Domain)
-	domain.RegisterDomainServiceServer(grpcServer, &handlers.Service{})
+	domain.RegisterDomainServiceServer(grpcServer, &service.Server{QueueDatabaseConnection: queueDatabaseConnection})
 	reflection.Register(grpcServer)
 
 	service := services.ServiceAnnouncement{

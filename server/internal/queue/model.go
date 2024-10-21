@@ -1,8 +1,10 @@
 package queue
 
 import (
-	uuid "github.com/google/uuid"
+	"fmt"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
@@ -16,14 +18,14 @@ type Entry struct {
 	PermittedAttempts int64
 	Status            int8
 	Queue             string
+	Data              string
 }
 
-type EntryInterface interface {
-	BeforeSave(tx *gorm.DB) (err error)
-	LogAttempt(status int8)
+type EntryData interface {
+	Marshal() (string, error)
 }
 
-// 0 - Pending, 1 - Verified, 2 - Failed, 3 - Expired
+// BeforeSave 0 - Pending, 1 - Verified, 2 - Failed, 3 - Expired
 func (entry *Entry) BeforeSave(tx *gorm.DB) (err error) {
 	if entry.Status > 3 || entry.Status < 0 {
 		entry.Status = 2
@@ -36,6 +38,8 @@ func (entry *Entry) BeforeSave(tx *gorm.DB) (err error) {
 		}
 		entry.Uuid = entryUuid.String()
 	}
+
+	entry.Queue = strings.ToLower(entry.Queue)
 	return
 }
 
@@ -48,15 +52,42 @@ func (entry *Entry) IsExpired() bool {
 	return entry.TotalAttempts >= entry.PermittedAttempts
 }
 
-func (entry *Entry) LogAttempt(status int8) {
+func (entry *Entry) LogAttempt() {
+	timeNow := time.Now().Unix()
+	entry.LastExecution = timeNow
+	entry.NextExecution = timeNow + entry.RetryInterval
+	entry.TotalAttempts++
+
+	if entry.TotalAttempts >= entry.PermittedAttempts {
+		entry.Status = 2
+	}
+}
+
+func (entry *Entry) LogResult(status int8) {
 	if status > 3 || status < 0 {
 		entry.Status = 2
 	} else {
 		entry.Status = status
 	}
+}
 
+func (entry *Entry) String() string {
+	return fmt.Sprintf("Entry{Uuid: %s, LastExecution: %d, NextExecution: %d, RetryInterval: %d, TotalAttempts: %d, PermittedAttempts: %d, Status: %d, Queue: %s}", entry.Uuid, entry.LastExecution, entry.NextExecution, entry.RetryInterval, entry.TotalAttempts, entry.PermittedAttempts, entry.Status, entry.Queue)
+}
+
+func Initiate(maxAttempts int64, retryInterval int64, queue string, data EntryData) (*Entry, error) {
+	entry := Entry{}
+	dataString, err := data.Marshal()
+	if err != nil {
+		return nil, err
+	}
+
+	entry.PermittedAttempts = maxAttempts
+	entry.RetryInterval = retryInterval
+	entry.Queue = queue
 	timeNow := time.Now().Unix()
-	entry.LastExecution = timeNow
-	entry.NextExecution = timeNow + entry.RetryInterval
-	entry.TotalAttempts++
+	entry.NextExecution = timeNow
+	entry.Data = dataString
+
+	return &entry, err
 }

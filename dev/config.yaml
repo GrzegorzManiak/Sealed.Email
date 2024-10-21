@@ -27,15 +27,15 @@ domain:
 
   service:
     # DNS Resolver Configuration
-    retryEvery: 600
+    retryInterval: 600
     retryMax: 100
 
     # How many goroutines to use for DNS resolution
-    maxConcurrent: 500
+    maxConcurrent: 30
 
     # To lower the number of Database writes, we will batch the writes
     batchSize: 5
-    batchTimeout: 120
+    batchTimeout: 30
 
 etcd:
     endpoints:

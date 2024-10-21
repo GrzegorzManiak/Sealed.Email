@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitiateConnection() (*gorm.DB, gorm.Dialector) {
+func InitiateConnection() *gorm.DB {
 	driver := sqlite.Open("./dev/domain.db")
 	databaseConnection, err := gorm.Open(driver, &gorm.Config{})
 	if err != nil {
@@ -14,9 +14,8 @@ func InitiateConnection() (*gorm.DB, gorm.Dialector) {
 	}
 
 	AutoMigrateTables(databaseConnection)
-	return databaseConnection, driver
+	return databaseConnection
 }
-
 func AutoMigrateTables(databaseConnection *gorm.DB) {
-	databaseConnection.AutoMigrate(&models.QueueEntry{})
+	databaseConnection.AutoMigrate(&models.VerificationQueue{})
 }
