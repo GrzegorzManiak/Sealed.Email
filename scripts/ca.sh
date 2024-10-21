@@ -6,7 +6,7 @@ echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "!!! WARNING: DO NOT RUN WITH GOLAND / INTELIJ, IT WONT WORK !!!"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-CA_DIR="../.certs/ca"
+CA_DIR="../dev/.certs/ca"
 mkdir -p "$CA_DIR"
 CA_KEY="$CA_DIR/key.pem"
 CA_CERT="$CA_DIR/ca.pem"

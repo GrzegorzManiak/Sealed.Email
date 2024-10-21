@@ -7,7 +7,7 @@ echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 SERVICES=("notification" "domain" "api" "smtp")
 
-CERTS_DIR="../.certs"
+CERTS_DIR="../dev/.certs"
 CA_DIR="$CERTS_DIR/ca"
 CA_KEY="$CA_DIR/key.pem"
 CA_CERT="$CA_DIR/ca.pem"
