@@ -1,0 +1,15 @@
+package domainDelete
+
+import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
+
+type Input struct {
+}
+
+type Output struct {
+}
+
+var SessionFilter = &session.GroupFilter{
+	Allow:           []string{"default"},
+	Block:           []string{},
+	SessionRequired: false,
+}
