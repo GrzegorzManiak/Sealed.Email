@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	err := config.LoadConfig("devConfig.yaml")
+	err := config.LoadConfig("./dev/config.yaml")
 	if err != nil {
 		panic(err)
 	}

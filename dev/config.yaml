@@ -72,20 +72,20 @@ etcd:
 certificates:
     # -- For development, we turn off authentication
     requireMTLS: false
-    caCert: './.certs/ca/ca.pem'
+    caCert: './dev/.certs/ca/ca.pem'
 
     domain:
-        crt: './.certs/domain/domain.crt'
-        key: './.certs/domain/domain.key'
+        crt: './dev/.certs/domain/domain.crt'
+        key: './dev/.certs/domain/domain.key'
 
     notification:
-        crt: './.certs/notification/notification.crt'
-        key: './.certs/notification/notification.key'
+        crt: './dev/.certs/notification/notification.crt'
+        key: './dev/.certs/notification/notification.key'
 
     smtp:
-        crt: './.certs/smtp/smtp.crt'
-        key: './.certs/smtp/smtp.key'
+        crt: './dev/.certs/smtp/smtp.crt'
+        key: './dev/.certs/smtp/smtp.key'
 
     api:
-        crt: './.certs/api/api.crt'
-        key: './.certs/api/api.key'
+        crt: './dev/.certs/api/api.crt'
+        key: './dev/.certs/api/api.key'
