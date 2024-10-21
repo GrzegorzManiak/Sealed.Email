@@ -4,27 +4,28 @@ import (
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"log"
 )
 
-func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnection *gorm.DB) (*Output, internal.AppError) {
+func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
 
 	proof := crypto.B64DecodeBytes(data.Proof)
-	publicKey, err := internal.ByteArrToECDSAPublicKey(config.CURVE, crypto.B64DecodeBytes(data.PublicKey))
+	publicKey, err := cryptography.ByteArrToECDSAPublicKey(config.CURVE, crypto.B64DecodeBytes(data.PublicKey))
 	if err != nil {
 
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: err.Error(),
 			ErrCode: 400,
 		}
 	}
 
-	if !internal.VerifyMessage(publicKey, data.User, proof) {
-		return nil, internal.GenericError{
+	if !cryptography.VerifyMessage(publicKey, data.User, proof) {
+		return nil, helpers.GenericError{
 			Message: "Invalid proof",
 			ErrCode: 400,
 		}
@@ -37,7 +38,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 	})
 
 	if err != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: err.Error(),
 			ErrCode: 400,
 		}
@@ -51,7 +52,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 
 	_, err = session.IssueAndSetSessionToken(ctx, *newUser, databaseConnection)
 	if err != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: err.Error(),
 			ErrCode: 400,
 		}

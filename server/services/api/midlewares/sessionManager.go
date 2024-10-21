@@ -2,14 +2,14 @@ package midlewares
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-func SessionManagerMiddleware(ctx *gin.Context, filter *session.GroupFilter, databaseConnection *gorm.DB) (*session.Claims, internal.AppError) {
-	logger := internal.GetLogger()
+func SessionManagerMiddleware(ctx *gin.Context, filter *session.GroupFilter, databaseConnection *gorm.DB) (*session.Claims, helpers.AppError) {
+	logger := helpers.GetLogger()
 
 	if filter.Allow == nil {
 		filter.Allow = []string{}
@@ -26,7 +26,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.GroupFilter, dat
 		}
 
 		logger.Printf("SessionManagerMiddleware Cookie: %v", err)
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "you are not allowed to access this resource",
 			ErrCode: 401,
 		}
@@ -35,7 +35,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.GroupFilter, dat
 	sessionClaims, err := session.ParseSessionToken(cookie)
 	if err != nil {
 		logger.Printf("SessionManagerMiddleware ParseSessionToken: %v", err)
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "you are not allowed to access this resource",
 			ErrCode: 401,
 		}
@@ -43,7 +43,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.GroupFilter, dat
 
 	if !sessionClaims.Filter(filter) {
 		logger.Printf("SessionManagerMiddleware: %v", "Filter")
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "you are not allowed to access this resource",
 			ErrCode: 401,
 		}
@@ -51,7 +51,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.GroupFilter, dat
 
 	if sessionClaims.IsExpired() {
 		logger.Printf("SessionManagerMiddleware: %v", "Expired")
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "you are not allowed to access this resource",
 			ErrCode: 401,
 		}
@@ -61,7 +61,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.GroupFilter, dat
 		newSessionClaims, err := session.RefreshSessionToken(sessionClaims, databaseConnection)
 		if err != nil {
 			logger.Printf("SessionManagerMiddleware RefreshSessionToken: %v", err)
-			return nil, internal.GenericError{
+			return nil, helpers.GenericError{
 				Message: "you are not allowed to access this resource",
 				ErrCode: 401,
 			}

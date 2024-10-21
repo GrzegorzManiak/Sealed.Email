@@ -1,7 +1,7 @@
 package loginInit
 
 import (
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/midlewares"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -10,29 +10,29 @@ import (
 func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
 	_, sessionErr := midlewares.SessionManagerMiddleware(ctx, SessionFilter, databaseConnection)
 	if sessionErr != nil {
-		internal.ErrorResponse(ctx, sessionErr)
+		helpers.ErrorResponse(ctx, sessionErr)
 		return
 	}
 
-	input, err := internal.ValidateInputData[Input](ctx)
+	input, err := helpers.ValidateInputData[Input](ctx)
 	if err != nil {
-		internal.ErrorResponse(ctx, err)
+		helpers.ErrorResponse(ctx, err)
 		return
 	}
 
-	logger := internal.GetLogger()
+	logger := helpers.GetLogger()
 	output, err := handler(input, ctx, logger, databaseConnection)
 	if err != nil {
 		logger.Printf("Error handler: %v", err)
-		internal.ErrorResponse(ctx, err)
+		helpers.ErrorResponse(ctx, err)
 		return
 	}
 
-	if err := internal.ValidateOutputData(output); err != nil {
+	if err := helpers.ValidateOutputData(output); err != nil {
 		logger.Printf("Error ValidateOutputData: %v", err)
-		internal.ErrorResponse(ctx, err)
+		helpers.ErrorResponse(ctx, err)
 		return
 	}
 
-	internal.SuccessResponse(ctx, output)
+	helpers.SuccessResponse(ctx, output)
 }

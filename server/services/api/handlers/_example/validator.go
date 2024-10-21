@@ -1,29 +1,29 @@
 package register
 
 import (
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
 var validate = validator.New()
 
-func validateInputData(ctx *gin.Context) (*Input, internal.AppError) {
+func validateInputData(ctx *gin.Context) (*Input, helpers.AppError) {
 	var input Input
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		return nil, internal.DataValidationError(err.Error())
+		return nil, helpers.DataValidationError(err.Error())
 	}
 
 	if err := validate.Struct(&input); err != nil {
-		return nil, internal.DataValidationError(err.Error())
+		return nil, helpers.DataValidationError(err.Error())
 	}
 
 	return &input, nil
 }
 
-func validateOutputData(output interface{}) internal.AppError {
+func validateOutputData(output interface{}) helpers.AppError {
 	if err := validate.Struct(output); err != nil {
-		return internal.InternalServerError()
+		return helpers.InternalServerError()
 	}
 
 	return nil
@@ -32,20 +32,20 @@ func validateOutputData(output interface{}) internal.AppError {
 func ExecuteRoute(ctx *gin.Context) {
 	input, err := validateInputData(ctx)
 	if err != nil {
-		internal.ErrorResponse(ctx, err)
+		helpers.ErrorResponse(ctx, err)
 		return
 	}
 
 	output, err := handler(input, ctx)
 	if err != nil {
-		internal.ErrorResponse(ctx, err)
+		helpers.ErrorResponse(ctx, err)
 		return
 	}
 
 	if err := validateOutputData(output); err != nil {
-		internal.ErrorResponse(ctx, err)
+		helpers.ErrorResponse(ctx, err)
 		return
 	}
 
-	internal.SuccessResponse(ctx, output)
+	helpers.SuccessResponse(ctx, output)
 }

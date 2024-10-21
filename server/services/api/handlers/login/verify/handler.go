@@ -5,7 +5,7 @@ import (
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -13,18 +13,18 @@ import (
 	"time"
 )
 
-func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnection *gorm.DB) (*Output, internal.AppError) {
+func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
 	userVerify := models2.UserVerify{}
 	dbErr := databaseConnection.Where("r_id = ?", data.RID).First(&userVerify)
 	if dbErr.Error != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "User Verify not found",
 			ErrCode: 400,
 		}
 	}
 
 	if userVerify.CreatedAt.Unix() < time.Now().Add(-time.Second*config.Auth.MaxVerifyTimeWindow).Unix() {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "User Verify expired",
 			ErrCode: 400,
 		}
@@ -33,7 +33,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 	user := models2.User{}
 	dbErr = databaseConnection.Where("id = ?", userVerify.UserID).First(&user)
 	if dbErr.Error != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "User not found",
 			ErrCode: 400,
 		}
@@ -45,7 +45,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 		PI: crypto.B64DecodeBigInt(user.PI),
 	})
 	if err != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "User Verify, " + err.Error(),
 			ErrCode: 400,
 		}
@@ -53,7 +53,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 
 	clientValidate, err := parseClientValidate(data)
 	if err != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: err.Error(),
 			ErrCode: 400,
 		}
@@ -61,7 +61,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 
 	clientAuthInit, err := parseClientAuthInit(&userVerify, &user)
 	if err != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: err.Error(),
 			ErrCode: 400,
 		}
@@ -69,7 +69,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 
 	serverAuthInit, err := parseServerAuthInit(&userVerify, &user)
 	if err != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: err.Error(),
 			ErrCode: 400,
 		}
@@ -77,7 +77,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 
 	serverAuthValidate, err := owlServer.AuthValidate(clientAuthInit, clientValidate, serverAuthInit)
 	if err != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: err.Error(),
 			ErrCode: 401,
 		}
@@ -85,7 +85,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 
 	_, err = session.IssueAndSetSessionToken(ctx, user, databaseConnection)
 	if err != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: err.Error(),
 			ErrCode: 400,
 		}

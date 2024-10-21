@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	DomainService "github.com/GrzegorzManiak/NoiseBackend/services/domain"
 )
 
@@ -12,8 +12,8 @@ func main() {
 		panic(err)
 	}
 
-	internal.SetLogger(internal.CreateDebugLogger())
-	internal.RegisterCustomValidators()
+	helpers.SetLogger(helpers.CreateDebugLogger())
+	helpers.RegisterCustomValidators()
 
 	//go APIService.Start()
 	go DomainService.Start()

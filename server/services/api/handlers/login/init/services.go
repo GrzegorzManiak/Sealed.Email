@@ -5,11 +5,11 @@ import (
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"gorm.io/gorm"
 )
 
-func prepareClientAuthInit(data *Input) (*owl.ClientAuthInitRequestPayload, internal.AppError) {
+func prepareClientAuthInit(data *Input) (*owl.ClientAuthInitRequestPayload, helpers.AppError) {
 	clientAuthInit := &owl.ClientAuthInitRequestPayload{
 		U:  data.User,
 		X1: crypto.B64DecodeBytes(data.X1),
@@ -25,7 +25,7 @@ func prepareClientAuthInit(data *Input) (*owl.ClientAuthInitRequestPayload, inte
 	}
 
 	if clientAuthInit.X1 == nil || clientAuthInit.X2 == nil || clientAuthInit.PI1 == nil || clientAuthInit.PI2 == nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "clientAuthInit fields are not properly initialized",
 			ErrCode: 400,
 		}
@@ -34,16 +34,16 @@ func prepareClientAuthInit(data *Input) (*owl.ClientAuthInitRequestPayload, inte
 	return clientAuthInit, nil
 }
 
-func parseRegisteredUser(fetchedUser *models2.User) (*owl.RegistrationResponse, internal.AppError) {
+func parseRegisteredUser(fetchedUser *models2.User) (*owl.RegistrationResponse, helpers.AppError) {
 	if fetchedUser == nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "fetchedUser is nil",
 			ErrCode: 400,
 		}
 	}
 
 	if fetchedUser.X3 == "" || fetchedUser.PI3_V == "" || fetchedUser.PI3_R == "" {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: "fetchedUser fields are not properly initialized",
 			ErrCode: 400,
 		}
@@ -65,7 +65,7 @@ func insertVerifyData(
 	serverAuthInit *owl.ServerAuthInitResponse,
 	clientAuthInit *owl.ClientAuthInitRequestPayload,
 	databaseConnection *gorm.DB,
-) (string, internal.AppError) {
+) (string, helpers.AppError) {
 	RID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
 	newUserVerify := databaseConnection.Create(&models2.UserVerify{
 		RID:      RID,
@@ -86,7 +86,7 @@ func insertVerifyData(
 	})
 
 	if newUserVerify.Error != nil {
-		return "", internal.GenericError{
+		return "", helpers.GenericError{
 			Message: newUserVerify.Error.Error(),
 			ErrCode: 400,
 		}

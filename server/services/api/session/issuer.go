@@ -7,7 +7,7 @@ import (
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"time"
@@ -29,7 +29,7 @@ func (claims *Claims) Sign(key *ecdsa.PrivateKey) error {
 	header := crypto.B64Encode(marshaledHeader)
 	message := fmt.Sprintf("%s.%s", header, content)
 
-	signature, err := internal.SignMessage(key, message)
+	signature, err := cryptography.SignMessage(key, message)
 	if err != nil {
 		return err
 	}

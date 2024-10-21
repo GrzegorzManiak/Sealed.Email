@@ -4,10 +4,10 @@ import (
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 )
 
-func parseClientValidate(data *Input) (*owl.ClientAuthValidateRequestPayload, internal.AppError) {
+func parseClientValidate(data *Input) (*owl.ClientAuthValidateRequestPayload, helpers.AppError) {
 	clientValidate := owl.ClientAuthValidateRequestPayload{
 		ClientKCTag: crypto.B64DecodeBigInt(data.ClientKCTag),
 		Alpha:       crypto.B64DecodeBytes(data.Alpha),
@@ -21,7 +21,7 @@ func parseClientValidate(data *Input) (*owl.ClientAuthValidateRequestPayload, in
 	return &clientValidate, nil
 }
 
-func parseClientAuthInit(userVerify *models2.UserVerify, user *models2.User) (*owl.ClientAuthInitRequestPayload, internal.AppError) {
+func parseClientAuthInit(userVerify *models2.UserVerify, user *models2.User) (*owl.ClientAuthInitRequestPayload, helpers.AppError) {
 	clientAuthInit := owl.ClientAuthInitRequestPayload{
 		U:  user.UID,
 		X1: crypto.B64DecodeBytes(userVerify.X1),
@@ -39,7 +39,7 @@ func parseClientAuthInit(userVerify *models2.UserVerify, user *models2.User) (*o
 	return &clientAuthInit, nil
 }
 
-func parseServerAuthInit(userVerify *models2.UserVerify, user *models2.User) (*owl.ServerAuthInitResponse, internal.AppError) {
+func parseServerAuthInit(userVerify *models2.UserVerify, user *models2.User) (*owl.ServerAuthInitResponse, helpers.AppError) {
 	serverAuthInit := owl.ServerAuthInitResponse{
 		Xx4: crypto.B64DecodeBigInt(userVerify.XPub4),
 		Payload: &owl.ServerAuthInitResponsePayload{

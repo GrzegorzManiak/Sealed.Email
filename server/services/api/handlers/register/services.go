@@ -4,7 +4,7 @@ import (
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"gorm.io/gorm"
 )
 
@@ -12,7 +12,7 @@ func registerUser(
 	data *Input,
 	registeredUser *owl.RegistrationResponse,
 	databaseConnection *gorm.DB,
-) (*models.User, internal.AppError) {
+) (*models.User, helpers.AppError) {
 	user := &models.User{
 		UID: data.User,
 
@@ -30,7 +30,7 @@ func registerUser(
 
 	dbInsert := databaseConnection.Create(user)
 	if dbInsert.Error != nil {
-		return nil, internal.GenericError{
+		return nil, helpers.GenericError{
 			Message: dbInsert.Error.Error(),
 			ErrCode: 400,
 		}

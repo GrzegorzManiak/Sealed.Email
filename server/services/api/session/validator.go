@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
-	"github.com/GrzegorzManiak/NoiseBackend/internal"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -66,7 +66,7 @@ func (claims *Claims) Verify() bool {
 	header := crypto.B64Encode(headerBytes)
 	message := fmt.Sprintf("%s.%s", header, content)
 
-	return internal.VerifyMessage(&config.Session.PublicKey, message, claims.Signature)
+	return cryptography.VerifyMessage(&config.Session.PublicKey, message, claims.Signature)
 }
 
 func RefreshSessionToken(claims Claims, databaseConnection *gorm.DB) (Claims, error) {
