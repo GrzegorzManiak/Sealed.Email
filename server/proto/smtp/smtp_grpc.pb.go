@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.19.6
-// source: proto/smtp/smtp.proto
+// source: smtp/smtp.proto
 
 package smtp
 
@@ -101,5 +101,5 @@ var SmtpService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/smtp/smtp.proto",
+	Metadata: "smtp/smtp.proto",
 }

@@ -1,11 +1,11 @@
-protoc --go_out=./ --go_opt=paths=source_relative \
-    --go-grpc_out=./ --go-grpc_opt=paths=source_relative \
-    proto/domain/domain.proto
+#!/bin/bash
 
-protoc --go_out=./ --go_opt=paths=source_relative \
-    --go-grpc_out=./ --go-grpc_opt=paths=source_relative \
-    proto/smtp/smtp.proto
+GOPROJ_ROOT="$(pwd)/../server"
+PROTO_DIR="${GOPROJ_ROOT}/proto"
+PROTOS=("notification" "domain" "smtp")
 
-protoc --go_out=./ --go_opt=paths=source_relative \
-    --go-grpc_out=./ --go-grpc_opt=paths=source_relative \
-    proto/notification/notification.proto
+for proto in "${PROTOS[@]}"; do
+    protoc --go_out="${PROTO_DIR}" --go_opt=paths=source_relative \
+        --go-grpc_out="${PROTO_DIR}" --go-grpc_opt=paths=source_relative \
+        --proto_path="${PROTO_DIR}" "${PROTO_DIR}"/"${proto}"/"${proto}".proto
+done
