@@ -1,0 +1,76 @@
+syntax = "proto3";
+package smtp;
+option go_package = "github.com/GrzegorzManiak/NoiseBackend/proto/smtp";
+
+service SmtpService {
+  rpc SendEncryptedEmail(EncryptedEmail) returns (SendEmailResponse);
+}
+
+// FYI: <USER>@<SDL>.<TLD>
+//    Domain = ^---------^
+//      <USER> = [a-zA-Z0-9._%+-]+
+//      <SLD> = [a-zA-Z0-9.-]+
+//      <TLD> = [a-zA-Z]{2,}
+
+message PrivateInbox {
+  string pepperedUser = 1; // Hash of the usr with a pepper (the sending domain)
+  string domain = 2;
+  string encryptedKey = 3;
+}
+
+message PublicInbox {
+  string user = 1;
+  string domain = 2;
+  string email = 3;
+}
+
+message EncryptedEmail {
+  string encryptedFrom = 1; // Fully formatted "from" and "to" header value, e.g., "John Doe <johndoe@example.com>"
+  string pepperedUsername = 2; // Hash of the username with a pepper (the sending domain + server name)
+  string fromDomain = 3; // The domain of the sender's email address
+
+  PrivateInbox to = 4; // The primary recipient's private inbox
+  repeated PrivateInbox cc = 5; // Carbon copy recipients
+  repeated PrivateInbox bcc = 6; // Blind carbon copy recipients
+
+  string encryptedSubject = 7;
+  string encryptedBody = 8;
+  string bounceAddressHash = 10;
+  string boundDomain = 11;
+  string dkimSignature = 12;
+
+  repeated string attachments = 13;
+  string contentType = 14; // Content type, e.g., "text/plain", "text/html"
+  map<string, string> headers = 15;
+
+  string replyChain = 16;
+  int64 date = 17;
+  string serverName = 18; // The name of the sending server e.g., "NOISE_V1.0.0"
+  string version = 19;
+}
+
+message PublicEmail {
+  string fromDomain = 1;
+  string fromUser = 2;
+  string fromName = 3;
+  PublicInbox to = 4;
+
+  repeated PublicInbox cc = 5;
+  repeated PublicInbox bcc = 6;
+
+  string subject = 7;
+  string body = 8;
+
+  string contentType = 9; // Content type, e.g., "text/plain", "text/html"
+  map<string, string> headers = 10;
+  repeated string attachments = 11;
+  string replyTo = 12;
+  string dkimSignature = 13;
+  int64 date = 14;
+  string version = 15;
+}
+
+message SendEmailResponse {
+  bool success = 1;
+  string error = 2;
+}

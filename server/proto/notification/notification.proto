@@ -1,0 +1,21 @@
+syntax = "proto3";
+package notification;
+option go_package = "github.com/GrzegorzManiak/NoiseBackend/proto/notification";
+
+service NotificationService {
+  rpc SendNotification (Notification) returns (SendNotificationResponse);
+}
+
+message Notification {
+  string message = 1;
+  string title = 2;
+  string version = 3;
+  string tenantId = 4;
+  string tenantType = 5; // "user" or "enterprise"
+  string messageId = 6;
+}
+
+message SendNotificationResponse {
+  bool success = 1;
+  string message = 2;
+}

@@ -1,0 +1,21 @@
+syntax = "proto3";
+package domain;
+option go_package = "github.com/GrzegorzManiak/NoiseBackend/proto/domain";
+
+service DomainService {
+  rpc QueueDNSVerification (QueueDNSVerificationRequest) returns (QueueDNSVerificationResponse);
+}
+
+message QueueDNSVerificationRequest {
+  string domainName = 1;
+  int32 importance = 3;
+  string tenantId = 5;
+  string tenantType = 6;
+  string dkimPublicKey = 7;
+  string txtVerificationCode = 8;
+}
+
+message QueueDNSVerificationResponse {
+  bool acknowledged = 1;
+  string message = 2;
+}
