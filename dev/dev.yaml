@@ -1,0 +1,91 @@
+server:
+  port: 8080
+  host: 'localhost'
+
+session:
+  privateKey: 'VEEHKF8dUjUmQqasfirtGR6coar5yfGgfk6C8sQIk1U='
+  cookiePath: '/'
+  cookieDomain: 'localhost'
+  cookieName: 'NES-DEV'
+  cookieSecure: false
+
+auth:
+  maxVerifyTimeWindow: 300
+
+domain:
+  provided:
+      - 'beta.noise.email'
+
+  identityProvider: '_identity.{DOMAIN} IN CNAME _identity.mx.noise.email'
+  spfRecord: 'v=spf1 include:_spf.mx.noise.email -all'
+  mxRecords:
+    - 'doom.mx.noise.email'
+    - 'madlib.mx.noise.email'
+    - 'west.mx.noise.email'
+  dkimTemplate: 'default._domainkey.{DOMAIN} IN TXT "v=DKIM1; k=rsa; p={DKIM_PUBLIC_KEY}"'
+  dmarcTemplate: '_dmarc.{DOMAIN} IN TXT "v=DMARC1; p=none; rua=mailto:dmarc-reports@{DOMAIN}; ruf=mailto:dmarc-failures@{DOMAIN}; sp=none; aspf=r;"'
+
+  service:
+    # DNS Resolver Configuration
+    retryEvery: 600
+    retryMax: 100
+
+    # How many goroutines to use for DNS resolution
+    maxConcurrent: 500
+
+    # To lower the number of Database writes, we will batch the writes
+    batchSize: 5
+    batchTimeout: 120
+
+etcd:
+    endpoints:
+        - 'http://localhost:2379'
+
+    domain:
+        username: 'root'
+        # This is a development environment, so we're not too worried about security
+        # In deployment, only the prefix should be exposed to the services, and
+        # the username and password should only be exposed to the relevant services
+        # Also we will be using mTLS for the connection anyway
+        password: 'root'
+        prefix: '/dev/services/domain'
+        ttl: 300
+
+    notification:
+        username: 'notification-dev'
+        password: 'notification-dev'
+        prefix: '/dev/services/notification'
+        ttl: 300
+
+    smtp:
+        username: 'smtp-dev'
+        password: 'smtp-dev'
+        prefix: '/dev/services/smtp'
+        ttl: 120
+
+    api:
+        username: 'api-dev'
+        password: 'api-dev'
+        prefix: '/dev/services/api'
+        ttl: 300
+
+certificates:
+    # -- For development, we turn off authentication
+    requireMTLS: false
+    caCert: './.certs/ca/ca.pem'
+
+    domain:
+        crt: './.certs/domain/domain.crt'
+        key: './.certs/domain/domain.key'
+
+    notification:
+        crt: './.certs/notification/notification.crt'
+        key: './.certs/notification/notification.key'
+
+    smtp:
+        crt: './.certs/smtp/smtp.crt'
+        key: './.certs/smtp/smtp.key'
+
+    api:
+        crt: './.certs/api/api.crt'
+        key: './.certs/api/api.key'
