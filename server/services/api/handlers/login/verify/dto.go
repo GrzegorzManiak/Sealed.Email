@@ -15,8 +15,13 @@ type Output struct {
 	ServerKCTag string `json:"ServerKCTag" validate:"required"`
 }
 
-var SessionFilter = &session.GroupFilter{
+var SessionFilter = &session.APIConfiguration{
 	Allow:           []string{},
 	Block:           []string{"default", "secure"},
 	SessionRequired: false,
+
+	// -- Effective rate limit of 1 request per 2 seconds
+	RateLimit:  true,
+	BucketSize: 10,
+	RefillRate: 0.5,
 }

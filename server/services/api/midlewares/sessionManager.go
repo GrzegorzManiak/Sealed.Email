@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SessionManagerMiddleware(ctx *gin.Context, filter *session.GroupFilter, databaseConnection *gorm.DB) (*session.Claims, helpers.AppError) {
+func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration, databaseConnection *gorm.DB) (*session.Claims, helpers.AppError) {
 	logger := helpers.GetLogger()
 
 	if filter.Allow == nil {

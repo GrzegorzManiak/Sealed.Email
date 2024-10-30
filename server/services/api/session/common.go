@@ -57,10 +57,14 @@ type Claims struct {
 	Token     string
 }
 
-type GroupFilter struct {
+type APIConfiguration struct {
 	SessionRequired bool
 	Allow           []string
 	Block           []string
+
+	RateLimit  bool
+	BucketSize int
+	RefillRate float64
 }
 
 func FindSession(sessionID string, databaseConnection *gorm.DB) (models.Session, error) {
@@ -80,7 +84,7 @@ func (claims *Claims) NeedsRefresh() bool {
 	return claims.Header.RefreshAt < time.Now().Unix()
 }
 
-func (claims *Claims) Filter(filter *GroupFilter) bool {
+func (claims *Claims) Filter(filter *APIConfiguration) bool {
 	if len(filter.Allow) > 0 {
 		for _, group := range filter.Allow {
 			if claims.Header.Group == group {

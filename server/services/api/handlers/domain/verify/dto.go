@@ -8,7 +8,7 @@ type Input struct {
 type Output struct {
 }
 
-var SessionFilter = &session.GroupFilter{
+var SessionFilter = &session.APIConfiguration{
 	Allow:           []string{"default"},
 	Block:           []string{},
 	SessionRequired: false,

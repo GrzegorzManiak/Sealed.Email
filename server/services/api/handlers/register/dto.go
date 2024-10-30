@@ -22,8 +22,13 @@ type Output struct {
 	Message string `json:"message" validate:"required"`
 }
 
-var SessionFilter = &session.GroupFilter{
+var SessionFilter = &session.APIConfiguration{
 	Allow:           []string{},
 	Block:           []string{"default", "secure"},
 	SessionRequired: false,
+
+	// -- Effective rate limit of 1 request per 4 seconds
+	RateLimit:  true,
+	BucketSize: 3,
+	RefillRate: 0.25,
 }
