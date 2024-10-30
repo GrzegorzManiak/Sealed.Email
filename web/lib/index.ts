@@ -2,6 +2,7 @@ import { Login } from "./auth/login";
 import { RegisterUser } from "./auth/register";
 
 const username = 'usfername' + Math.random() * 1000;
+console.log(username);
 
 try {
     const newUser = await RegisterUser(username, 'Test');

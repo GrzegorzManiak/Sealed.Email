@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
-	DomainService "github.com/GrzegorzManiak/NoiseBackend/services/domain"
+	APIService "github.com/GrzegorzManiak/NoiseBackend/services/api"
 )
 
 func main() {
@@ -15,8 +15,8 @@ func main() {
 	helpers.SetLogger(helpers.CreateDebugLogger())
 	helpers.RegisterCustomValidators()
 
-	//go APIService.Start()
-	go DomainService.Start()
+	go APIService.Start()
+	//go DomainService.Start()
 
 	// -- No clue if this is good practice, but it works (It is probably not good practice)
 	select {}
