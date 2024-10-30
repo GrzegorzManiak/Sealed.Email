@@ -34,13 +34,13 @@ func Start() {
 	domain.RegisterDomainServiceServer(grpcServer, &service.Server{QueueDatabaseConnection: queueDatabaseConnection})
 	reflection.Register(grpcServer)
 
-	service := services.ServiceAnnouncement{
+	etcdService := services.ServiceAnnouncement{
 		Id:   ServiceID,
 		Port: (*listener).Addr().(*net.TCPAddr).Port,
 		Host: config.Server.Host,
 	}
 
-	marshaledService, err := service.Marshal()
+	marshaledService, err := etcdService.Marshal()
 	if err != nil {
 		log.Fatalf("failed to marshal service announcement: %v", err)
 	}
@@ -49,7 +49,7 @@ func Start() {
 	etcdContext := context.Background()
 	services.KeepLeaseAlive(etcdContext, etcdClient, config.Etcd.Domain, marshaledService)
 
-	log.Printf(service.String())
+	log.Printf(etcdService.String())
 	if err := grpcServer.Serve(*listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
