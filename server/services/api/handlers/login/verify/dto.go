@@ -13,6 +13,15 @@ type Input struct {
 
 type Output struct {
 	ServerKCTag string `json:"ServerKCTag" validate:"required"`
+
+	SymmetricRootKey     string `json:"encryptedSymmetricRootKey" validate:"required"`
+	AsymmetricPrivateKey string `json:"encryptedAsymmetricPrivateKey" validate:"required"`
+	SymmetricContactsKey string `json:"encryptedSymmetricContactsKey" validate:"required"`
+
+	TotalInboundEmails  uint `json:"totalInboundEmails" validate:"min=0"`
+	TotalInboundBytes   uint `json:"totalInboundBytes" validate:"min=0"`
+	TotalOutboundEmails uint `json:"totalOutboundEmails" validate:"min=0"`
+	TotalOutboundBytes  uint `json:"totalOutboundBytes" validate:"min=0"`
 }
 
 var SessionFilter = &session.APIConfiguration{
