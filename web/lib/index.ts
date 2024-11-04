@@ -2,19 +2,16 @@ import { Login } from "./auth/login";
 import { RegisterUser } from "./auth/register";
 import Session from "./session/session";
 import {EncodeToBase64} from "gowl-client-lib";
+import {AddDomain} from "./api/domain";
 
-const username = 'bob1' + Math.random() * 1000;
-console.log(username);
+const username = 'bob1didbob2';
+console.log(`Logging in as ${username}`);
 
-const newUser = await RegisterUser(username, 'Test');
-if (newUser instanceof Error) throw newUser;
-console.log('REGISTER');
-
-console.log(EncodeToBase64(newUser.RootKey));
-console.log(EncodeToBase64(newUser.PrivateKey))
-console.log(EncodeToBase64(newUser.ContactsKey))
+// const newUser = await RegisterUser(username, 'Test');
+// if (newUser instanceof Error) throw newUser;
 
 const session = new Session(await Login(username, 'Test'));
 await session.DecryptKeys();
-console.log(session.SessionKey)
-console.log('DONE');
+
+
+await AddDomain(session, 'gfaa.dis-email.grzegorz.ie');
