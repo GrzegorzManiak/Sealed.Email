@@ -4,6 +4,7 @@ type UserKeys = {
     PrivateKey: Uint8Array,
     EncryptedRootKey: Uint8Array,
     EncryptedPrivateKey: Uint8Array,
+    EncryptedContactKey: Uint8Array,
 };
 
 type RefID = {

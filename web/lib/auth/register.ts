@@ -7,19 +7,22 @@ import { UserKeys } from './types';
 
 async function GenerateKeys(passwordHash: Uint8Array): Promise<UserKeys> {
     const curve = GetCurve(CurrentCurve);
-    const sym = curve.utils.randomPrivateKey();
+    const rootKey = curve.utils.randomPrivateKey();
     const priv = curve.utils.randomPrivateKey();
+    const contactKey = curve.utils.randomPrivateKey();
     const pub = curve.getPublicKey(priv);
 
-    const EncryptedPrivateKey = await Encrypt(EncodeToBase64(priv), sym);
-    const EncryptedRootKey = await Encrypt(EncodeToBase64(sym), passwordHash);
+    const EncryptedRootKey = await Encrypt(EncodeToBase64(rootKey), passwordHash);
+    const EncryptedPrivateKey = await Encrypt(EncodeToBase64(priv), rootKey);
+    const EncryptedContactKey = await Encrypt(EncodeToBase64(contactKey), rootKey);
 
     return {
-        RootKey: sym,
+        RootKey: rootKey,
         PublicKey: pub,
         PrivateKey: priv,
         EncryptedRootKey: Compress(EncryptedRootKey),
-        EncryptedPrivateKey: Compress(EncryptedPrivateKey)
+        EncryptedPrivateKey: Compress(EncryptedPrivateKey),
+        EncryptedContactKey: Compress(EncryptedContactKey)
     }
 };
 

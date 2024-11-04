@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+      "target": "ES2023",
+      "module": "ES2022",
+      "lib": [
+        "ES2023",
+        "dom"
+      ],
+      "declaration": true,
+      "noImplicitAny": true,
+      "removeComments": true,
+      "esModuleInterop": true,
+      "isolatedModules": false,
+      "sourceMap": true,
+      "declarationDir": "./dist",
+      "allowJs": false,
+      "moduleResolution": "node",
+      "outDir": "./dist",
+      "strict": true,
+      "types": [
+        "bun-types"
+      ]
+    }
+  }
