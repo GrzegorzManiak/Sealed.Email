@@ -18,11 +18,12 @@ type User struct {
 	PI3_V      string
 	PI3_R      string
 
-	// KMS: Key Management System Fields
+	// KMS: Key Management System Fieldss
 	// the root key & asymmetric private key are encrypted with the user's password client side.
 	SymmetricRootKey     string
 	AsymmetricPublicKey  string
 	AsymmetricPrivateKey string
+	SymmetricContactsKey string
 
 	// the recovery root key is encrypted with the user's recovery key, we use the recovery hash
 	// to verify that the user has the correct recovery key.

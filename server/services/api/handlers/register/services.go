@@ -26,6 +26,7 @@ func registerUser(
 		SymmetricRootKey:     data.EncryptedRootKey,
 		AsymmetricPublicKey:  data.PublicKey,
 		AsymmetricPrivateKey: data.EncryptedPrivateKey,
+		SymmetricContactsKey: data.EncryptedContactsKey,
 	}
 
 	dbInsert := databaseConnection.Create(user)

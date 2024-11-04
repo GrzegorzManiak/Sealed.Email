@@ -9,10 +9,11 @@ type Input struct {
 	T    string `json:"T" validate:"P256-B64-Key"`
 	TOS  bool   `json:"tos" validate:"required"`
 
-	Proof               string `json:"proof" validate:"required,base64,gte=40,lte=200"`
-	PublicKey           string `json:"publicKey" validate:"P256-B64-Key"`
-	EncryptedRootKey    string `json:"encryptedRootKey" validate:"Encrypted-B64-Key"`
-	EncryptedPrivateKey string `json:"encryptedPrivateKey" validate:"Encrypted-B64-Key"`
+	Proof                string `json:"proof" validate:"required,base64,gte=40,lte=200"`
+	PublicKey            string `json:"publicKey" validate:"P256-B64-Key"`
+	EncryptedRootKey     string `json:"encryptedRootKey" validate:"Encrypted-B64-Key"`
+	EncryptedPrivateKey  string `json:"encryptedPrivateKey" validate:"Encrypted-B64-Key"`
+	EncryptedContactsKey string `json:"encryptedContactsKey" validate:"Encrypted-B64-Key"`
 
 	// -- Optional fields
 	RecoveryEmail string `json:"recoveryEmail" validate:"omitempty,email"`
