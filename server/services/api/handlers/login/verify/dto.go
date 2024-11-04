@@ -12,7 +12,8 @@ type Input struct {
 }
 
 type Output struct {
-	ServerKCTag string `json:"ServerKCTag" validate:"required"`
+	ServerKCTag   string `json:"ServerKCTag" validate:"required"`
+	IntegrityHash string `json:"integrityHash" validate:"required"`
 
 	SymmetricRootKey     string `json:"encryptedSymmetricRootKey" validate:"required"`
 	AsymmetricPrivateKey string `json:"encryptedAsymmetricPrivateKey" validate:"required"`

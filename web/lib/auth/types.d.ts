@@ -6,6 +6,7 @@ type UserKeys = {
     EncryptedRootKey: Uint8Array,
     EncryptedPrivateKey: Uint8Array,
     EncryptedContactsKey: Uint8Array,
+    IntegrityHash: string,
 };
 
 type RefID = {
@@ -13,6 +14,8 @@ type RefID = {
 };
 
 type ReturnedVerifyData = {
+    integrityHash: string,
+
     encryptedSymmetricRootKey: string,
     encryptedAsymmetricPrivateKey: string,
     encryptedSymmetricContactsKey: string,

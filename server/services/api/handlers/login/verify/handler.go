@@ -92,7 +92,8 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 	}
 
 	return &Output{
-		ServerKCTag: crypto.B64Encode(serverAuthValidate.Payload.ServerKCTag),
+		ServerKCTag:   crypto.B64Encode(serverAuthValidate.Payload.ServerKCTag),
+		IntegrityHash: user.IntegrityHash,
 
 		SymmetricRootKey:     user.SymmetricRootKey,
 		AsymmetricPrivateKey: user.AsymmetricPrivateKey,

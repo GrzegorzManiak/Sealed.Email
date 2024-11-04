@@ -1,9 +1,13 @@
 import { GetCurve, Hash, EncodeToBase64, Client, BigIntToByteArray } from 'gowl-client-lib';
 import { CurrentCurve, Endpoints, ServerName } from '../constants';
 import { Compress, Decompress, Encrypt } from '../symetric';
-import { ProcessDetails } from '../common';
+import { ProcessDetails, CalculateIntegrityHash } from '../common';
 import { ClientError } from '../errors';
 import { UserKeys } from './types';
+
+async function StandardIntegrityHash(rootKey: Uint8Array, priv: Uint8Array, contactKey: Uint8Array): Promise<string> {
+    return await CalculateIntegrityHash([rootKey, priv, contactKey]);
+}
 
 async function GenerateKeys(passwordHash: Uint8Array): Promise<UserKeys> {
     const curve = GetCurve(CurrentCurve);
@@ -16,6 +20,8 @@ async function GenerateKeys(passwordHash: Uint8Array): Promise<UserKeys> {
     const EncryptedPrivateKey = await Encrypt(EncodeToBase64(priv), rootKey);
     const EncryptedContactKey = await Encrypt(EncodeToBase64(contactKey), rootKey);
 
+    const integrityHash = await StandardIntegrityHash(rootKey, priv, contactKey);
+
     return {
         RootKey: rootKey,
         PublicKey: pub,
@@ -23,7 +29,8 @@ async function GenerateKeys(passwordHash: Uint8Array): Promise<UserKeys> {
         ContactsKey: contactKey,
         EncryptedRootKey: Compress(EncryptedRootKey),
         EncryptedPrivateKey: Compress(EncryptedPrivateKey),
-        EncryptedContactsKey: Compress(EncryptedContactKey)
+        EncryptedContactsKey: Compress(EncryptedContactKey),
+        IntegrityHash: integrityHash
     }
 };
 
@@ -78,7 +85,8 @@ async function RegisterUser(username: string, password: string): Promise<ClientE
                 PublicKey: EncodeToBase64(keys.PublicKey),
                 EncryptedRootKey: EncodeToBase64(keys.EncryptedRootKey),
                 EncryptedPrivateKey: EncodeToBase64(keys.EncryptedPrivateKey),
-                EncryptedContactsKey: EncodeToBase64(keys.EncryptedContactsKey)
+                EncryptedContactsKey: EncodeToBase64(keys.EncryptedContactsKey),
+                IntegrityHash: keys.IntegrityHash
             })
         });
 
@@ -108,5 +116,6 @@ export {
     RegisterUser,
     UserCryptoSetup,
     GenerateKeys,
-    SignUID
+    SignUID,
+    StandardIntegrityHash
 };

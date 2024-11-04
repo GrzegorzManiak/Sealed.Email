@@ -14,6 +14,7 @@ type Input struct {
 	EncryptedRootKey     string `json:"encryptedRootKey" validate:"Encrypted-B64-Key"`
 	EncryptedPrivateKey  string `json:"encryptedPrivateKey" validate:"Encrypted-B64-Key"`
 	EncryptedContactsKey string `json:"encryptedContactsKey" validate:"Encrypted-B64-Key"`
+	IntegrityHash        string `json:"integrityHash" validate:"required,base64,gte=40,lte=200"`
 
 	// -- Optional fields
 	RecoveryEmail string `json:"recoveryEmail" validate:"omitempty,email"`

@@ -25,6 +25,8 @@ type User struct {
 	AsymmetricPrivateKey string
 	SymmetricContactsKey string
 
+	IntegrityHash string // Calculated client side upon registration
+
 	// the recovery root key is encrypted with the user's recovery key, we use the recovery hash
 	// to verify that the user has the correct recovery key.
 	RecoveryRootKey *string // e(SymmetricRootKey, RecoveryKey)

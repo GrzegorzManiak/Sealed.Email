@@ -4,11 +4,13 @@ import { Login } from "../auth/login";
 import {Decompress, Decrypt} from "../symetric";
 import {DecodeFromBase64} from "../common";
 import {CryptoGenericError} from "../errors";
+import {StandardIntegrityHash} from "../auth/register";
 
 class Session {
     private readonly _encryptedSymetricRootKey: string;
     private readonly _encryptedAsymetricPrivateKey: string;
     private readonly _encryptedSymetricContactsKey: string;
+    private readonly _integrityHash: string;
 
     private _passwordHash: Uint8Array;
 
@@ -26,6 +28,7 @@ class Session {
         this._encryptedSymetricRootKey = verify.encryptedSymmetricRootKey;
         this._encryptedAsymetricPrivateKey = verify.encryptedAsymmetricPrivateKey;
         this._encryptedSymetricContactsKey = verify.encryptedSymmetricContactsKey;
+        this._integrityHash = verify.integrityHash;
 
         this._rootKey = new Uint8Array();
         this._privateKey = new Uint8Array();
@@ -41,6 +44,7 @@ class Session {
 
     public async DecryptKeys(): Promise<void | CryptoGenericError> {
 
+        // -- Key decryption
         try {
             const decompressedRootKey = Decompress(DecodeFromBase64(this._encryptedSymetricRootKey));
             const decryptedRootKey = await Decrypt(decompressedRootKey, this._passwordHash);
@@ -58,6 +62,18 @@ class Session {
         catch (UnknownError) {
             return CryptoGenericError.from_unknown(UnknownError, new CryptoGenericError(
                 'Failed to decrypt keys'
+            ));
+        }
+
+        // -- Integrity hash verification
+        try {
+            const integrityHash = await StandardIntegrityHash(this._rootKey, this._privateKey, this._contactsKey);
+            if (integrityHash !== this._integrityHash) throw new CryptoGenericError('Integrity hash mismatch');
+        }
+
+        catch (UnknownError) {
+            return CryptoGenericError.from_unknown(UnknownError, new CryptoGenericError(
+                'Failed to verify integrity hash'
             ));
         }
 

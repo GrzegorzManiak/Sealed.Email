@@ -23,6 +23,8 @@ func registerUser(
 		PI3_V:      crypto.B64Encode(registeredUser.Payload.PI3.V),
 		PI3_R:      crypto.B64Encode(registeredUser.Payload.PI3.R),
 
+		IntegrityHash: data.IntegrityHash,
+
 		SymmetricRootKey:     data.EncryptedRootKey,
 		AsymmetricPublicKey:  data.PublicKey,
 		AsymmetricPrivateKey: data.EncryptedPrivateKey,

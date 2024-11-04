@@ -12,6 +12,11 @@ async function Argon2Hash(username: string, password: string) {
     });
 }
 
+async function CalculateIntegrityHash(keys: Array<Uint8Array>): Promise<string> {
+    const joinedKeys = new Uint8Array(keys.reduce((acc, key) => acc + key.length, 0));
+    return EncodeToBase64(await Hash(EncodeToBase64(joinedKeys)));
+}
+
 async function ProcessDetails(username: string, password: string) {
     const usernameHash: string = EncodeToBase64(BigIntToByteArray(await Hash(username + ServerName)));
     const passwordHash = await Argon2Hash(usernameHash, password);
@@ -30,5 +35,6 @@ export {
     Argon2Hash,
     ProcessDetails,
     DecodeFromBase64,
+    CalculateIntegrityHash,
     ServerName
 };
