@@ -57,36 +57,42 @@ func EnsureEtcdConnection(service structs.ServiceConfig, existingClient *clientv
 	return client
 }
 
-func LeaseService(ctx context.Context, client *clientv3.Client, service structs.ServiceConfig, value string) (clientv3.LeaseID, error) {
-	log.Printf("Registering service %s", service.Prefix)
-	lease, err := client.Grant(ctx, service.TTL)
+func LeaseService(ctx context.Context, client *clientv3.Client, serviceAnnouncement ServiceAnnouncement, value string) (clientv3.LeaseID, error) {
+	key := serviceAnnouncement.BuildID()
+	log.Printf("Registering service %s", key)
+	lease, err := client.Grant(ctx, serviceAnnouncement.Service.TTL)
 	if err != nil {
-		log.Printf("failed to create lease for service %s: %v", service.Prefix, err)
+		log.Printf("failed to create lease for service %s: %v", key, err)
 		return 0, err
 	}
 
-	client = EnsureEtcdConnection(service, client)
+	client = EnsureEtcdConnection(serviceAnnouncement.Service, client)
 
-	_, err = client.Put(ctx, service.Prefix, value, clientv3.WithLease(lease.ID))
+	_, err = client.Put(ctx, key, value, clientv3.WithLease(lease.ID))
 	if err != nil {
-		log.Printf("failed to register service %s: %v", service.Prefix, err)
+		log.Printf("failed to register service %s: %v", key, err)
 		return 0, err
 	}
 
 	return lease.ID, nil
 }
 
-func KeepLeaseAlive(ctx context.Context, client *clientv3.Client, service structs.ServiceConfig, value string) {
-	leaseID, err := LeaseService(ctx, client, service, value)
+func KeepLeaseAlive(ctx context.Context, client *clientv3.Client, serviceAnnouncement ServiceAnnouncement, unique bool) {
+	marshaledService, err := serviceAnnouncement.Marshal()
 	if err != nil {
-		log.Fatalf("failed to register service %s: %v", service.Prefix, err)
+		log.Fatalf("failed to marshal service announcement: %v", err)
+	}
+
+	leaseID, err := LeaseService(ctx, client, serviceAnnouncement, marshaledService)
+	if err != nil {
+		log.Fatalf("failed to register service %s: %v", serviceAnnouncement.Service.Prefix, err)
 		return
 	}
 
 	go func() {
 		respChan, err := client.KeepAlive(ctx, leaseID)
 		if err != nil {
-			log.Printf("failed to start KeepAlive for service %s: %v", service.Prefix, err)
+			log.Printf("failed to start KeepAlive for service %s: %v", serviceAnnouncement.Service.Prefix, err)
 			return
 		}
 
@@ -95,7 +101,7 @@ func KeepLeaseAlive(ctx context.Context, client *clientv3.Client, service struct
 			case resp, ok := <-respChan:
 				if !ok {
 					log.Println("KeepAlive channel closed, stopping lease renewals.")
-					KeepLeaseAlive(ctx, client, service, value)
+					KeepLeaseAlive(ctx, client, serviceAnnouncement, unique)
 					return
 				}
 

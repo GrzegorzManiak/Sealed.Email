@@ -1,11 +1,15 @@
 package api
 
 import (
+	"context"
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/services"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/midlewares"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/routes"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"log"
 )
 
@@ -36,7 +40,23 @@ func Start() {
 	routes.LoginRoutes(router, databaseConnection)
 	routes.DomainRoutes(router, databaseConnection)
 
-	err := router.Run()
+	serviceUUID, err := uuid.NewUUID()
+	if err != nil {
+		log.Fatalf("failed to generate service UUID: %v", err)
+	}
+
+	etcdService := services.ServiceAnnouncement{
+		Id:      serviceUUID.String(),
+		Port:    config.Server.Port,
+		Host:    config.Server.Host,
+		Service: config.Etcd.API,
+	}
+
+	etcdClient := services.GetEtcdClient(config.Etcd.API)
+	etcdContext := context.Background()
+	services.KeepLeaseAlive(etcdContext, etcdClient, etcdService, false)
+
+	err = router.Run()
 	if err != nil {
 		panic(err)
 	}

@@ -52,20 +52,20 @@ etcd:
         ttl: 300
 
     notification:
-        username: 'notification-dev'
-        password: 'notification-dev'
+        username: 'root'
+        password: 'root'
         prefix: '/dev/services/notification'
         ttl: 300
 
     smtp:
-        username: 'smtp-dev'
-        password: 'smtp-dev'
+        username: 'root'
+        password: 'root'
         prefix: '/dev/services/smtp'
         ttl: 120
 
     api:
-        username: 'api-dev'
-        password: 'api-dev'
+        username: 'root'
+        password: 'root'
         prefix: '/dev/services/api'
         ttl: 300
 

@@ -24,6 +24,7 @@
 		"@types/argon2-browser": "^1.18.4",
 		"argon2-browser": "^1.18.0",
 		"gowl-client-lib": "^1.1.0",
+		"parse-domain": "^8.2.2",
 		"uuid": "^11.0.2"
 	}
 }

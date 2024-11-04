@@ -10,7 +10,6 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/services/domain/service"
 	"google.golang.org/grpc/reflection"
 	"log"
-	"net"
 )
 
 func Start() {
@@ -35,19 +34,15 @@ func Start() {
 	reflection.Register(grpcServer)
 
 	etcdService := services.ServiceAnnouncement{
-		Id:   ServiceID,
-		Port: (*listener).Addr().(*net.TCPAddr).Port,
-		Host: config.Server.Host,
-	}
-
-	marshaledService, err := etcdService.Marshal()
-	if err != nil {
-		log.Fatalf("failed to marshal service announcement: %v", err)
+		Id:      ServiceID,
+		Port:    config.Server.Port,
+		Host:    config.Server.Host,
+		Service: config.Etcd.Domain,
 	}
 
 	etcdClient := services.GetEtcdClient(config.Etcd.Domain)
 	etcdContext := context.Background()
-	services.KeepLeaseAlive(etcdContext, etcdClient, config.Etcd.Domain, marshaledService)
+	services.KeepLeaseAlive(etcdContext, etcdClient, etcdService, true)
 
 	log.Printf(etcdService.String())
 	if err := grpcServer.Serve(*listener); err != nil {
