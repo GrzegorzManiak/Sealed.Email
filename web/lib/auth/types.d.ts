@@ -2,22 +2,29 @@ type UserKeys = {
     RootKey: Uint8Array,
     PublicKey: Uint8Array,
     PrivateKey: Uint8Array,
+    ContactsKey: Uint8Array,
     EncryptedRootKey: Uint8Array,
     EncryptedPrivateKey: Uint8Array,
-    EncryptedContactKey: Uint8Array,
+    EncryptedContactsKey: Uint8Array,
 };
 
 type RefID = {
     RID: string,
 };
 
-type ReturnedKeys = {
-    EncryptedRootKey: Uint8Array,
-    EncryptedPrivateKey: Uint8Array,
+type ReturnedVerifyData = {
+    encryptedSymmetricRootKey: string,
+    encryptedAsymmetricPrivateKey: string,
+    encryptedSymmetricContactsKey: string,
+
+    totalInboundEmails: number,
+    totalInboundBytes: number,
+    totalOutboundEmails: number,
+    totalOutboundBytes: number,
 };
 
 export {
     UserKeys,
     RefID,
-    ReturnedKeys
+    ReturnedVerifyData
 };

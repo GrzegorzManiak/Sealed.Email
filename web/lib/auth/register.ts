@@ -20,9 +20,10 @@ async function GenerateKeys(passwordHash: Uint8Array): Promise<UserKeys> {
         RootKey: rootKey,
         PublicKey: pub,
         PrivateKey: priv,
+        ContactsKey: contactKey,
         EncryptedRootKey: Compress(EncryptedRootKey),
         EncryptedPrivateKey: Compress(EncryptedPrivateKey),
-        EncryptedContactKey: Compress(EncryptedContactKey)
+        EncryptedContactsKey: Compress(EncryptedContactKey)
     }
 };
 
@@ -76,7 +77,8 @@ async function RegisterUser(username: string, password: string): Promise<ClientE
                 Proof: EncodeToBase64(proof),
                 PublicKey: EncodeToBase64(keys.PublicKey),
                 EncryptedRootKey: EncodeToBase64(keys.EncryptedRootKey),
-                EncryptedPrivateKey: EncodeToBase64(keys.EncryptedPrivateKey)
+                EncryptedPrivateKey: EncodeToBase64(keys.EncryptedPrivateKey),
+                EncryptedContactsKey: EncodeToBase64(keys.EncryptedContactsKey)
             })
         });
 

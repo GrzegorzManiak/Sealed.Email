@@ -2,7 +2,7 @@ import { BigIntToByteArray, Client, Hash, EncodeToBase64, ServerAuthInit, Server
 import { ProcessDetails } from "../common";
 import { CurrentCurve, Endpoints, ServerName } from "../constants";
 import { ClientError, GenericError } from "../errors";
-import { RefID, ReturnedKeys } from "./types";
+import { RefID, ReturnedVerifyData } from "./types";
 
 async function LoginInit(client: Client): Promise<ServerAuthInit & RefID> {
     const payload = await client.AuthInit();
@@ -30,7 +30,7 @@ async function LoginInit(client: Client): Promise<ServerAuthInit & RefID> {
     return await response.json();
 };
 
-async function LoginVerify(client: Client, data: ServerAuthInit & RefID): Promise<ServerAuthVerify & ReturnedKeys> {
+async function LoginVerify(client: Client, data: ServerAuthInit & RefID): Promise<ServerAuthVerify & ReturnedVerifyData> {
     const payload = await client.AuthVerify(data);
     if (payload instanceof Error) throw payload;
 
@@ -59,7 +59,7 @@ async function LoginVerify(client: Client, data: ServerAuthInit & RefID): Promis
     return await response.json();
 };
 
-async function Login(username: string, password: string): Promise<Client | ClientError> {
+async function Login(username: string, password: string): Promise<{ client: Client, passwordHash: Uint8Array, usernameHash: string, verify: ReturnedVerifyData } | ClientError> {
     try {
         const { usernameHash, passwordHash } = await ProcessDetails(username, password);
         const client = new Client(usernameHash, passwordHash.encoded, ServerName, CurrentCurve);
@@ -76,7 +76,12 @@ async function Login(username: string, password: string): Promise<Client | Clien
             'LOGIN-FAIL-SV'
         );
 
-        return client;
+        return {
+            client,
+            passwordHash: passwordHash.hash,
+            usernameHash: usernameHash,
+            verify
+        };
     }   
 
     catch (UnknownError) {

@@ -156,9 +156,16 @@ class ClientError extends GenericError {
     }
 };
 
+class CryptoGenericError extends GenericError {
+    public constructor(message: string) {
+        super(message, 400, 'CryptoGenericError');
+    }
+}
+
 export {
     SerializedGenericError,
     GenericError,
     DeserializedGenericError,
+    CryptoGenericError,
     ClientError
 }
