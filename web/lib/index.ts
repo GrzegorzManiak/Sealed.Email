@@ -16,5 +16,5 @@ console.log(EncodeToBase64(newUser.ContactsKey))
 
 const session = new Session(await Login(username, 'Test'));
 await session.DecryptKeys();
-
+console.log(session.SessionKey)
 console.log('DONE');
