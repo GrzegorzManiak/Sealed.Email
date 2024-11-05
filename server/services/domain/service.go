@@ -42,7 +42,7 @@ func Start() {
 
 	etcdClient := services.GetEtcdClient(config.Etcd.Domain)
 	etcdContext := context.Background()
-	services.KeepLeaseAlive(etcdContext, etcdClient, etcdService, true)
+	services.KeepServiceAnnouncementAlive(etcdContext, etcdClient, etcdService, true)
 
 	log.Printf(etcdService.String())
 	if err := grpcServer.Serve(*listener); err != nil {
