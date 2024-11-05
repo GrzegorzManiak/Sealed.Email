@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"log"
 	"time"
@@ -27,7 +28,7 @@ func GetEtcdClient(service structs.ServiceConfig) *clientv3.Client {
 func DestroyEtcdClient(client *clientv3.Client) {
 	err := client.Close()
 	if err != nil {
-		log.Printf("failed to close etcd client: %v", err)
+		helpers.GetLogger().Printf("failed to close etcd client: %v", err)
 	}
 }
 
@@ -42,27 +43,29 @@ func CheckClientConnection(client *clientv3.Client) error {
 }
 
 func EnsureEtcdConnection(service structs.ServiceConfig, existingClient *clientv3.Client) *clientv3.Client {
+	logger := helpers.GetLogger()
 	if existingClient != nil {
 		err := CheckClientConnection(existingClient)
 		if err == nil {
-			log.Printf("etcd connection successful")
+			logger.Printf("etcd connection successful")
 			return existingClient
 		}
-		log.Printf("etcd connection failed: %v", err)
+		logger.Printf("etcd connection failed: %v", err)
 		DestroyEtcdClient(existingClient)
 	}
 
 	client := GetEtcdClient(service)
-	log.Printf("etcd connection successful")
+	logger.Printf("etcd connection successful")
 	return client
 }
 
 func LeaseService(ctx context.Context, client *clientv3.Client, serviceAnnouncement ServiceAnnouncement, value string) (clientv3.LeaseID, error) {
 	key := serviceAnnouncement.BuildID()
-	log.Printf("Registering service %s", key)
+	logger := helpers.GetLogger()
+	logger.Printf("Registering service %s", key)
 	lease, err := client.Grant(ctx, serviceAnnouncement.Service.TTL)
 	if err != nil {
-		log.Printf("failed to create lease for service %s: %v", key, err)
+		logger.Printf("failed to create lease for service %s: %v", key, err)
 		return 0, err
 	}
 
@@ -79,20 +82,21 @@ func LeaseService(ctx context.Context, client *clientv3.Client, serviceAnnouncem
 
 func KeepLeaseAlive(ctx context.Context, client *clientv3.Client, serviceAnnouncement ServiceAnnouncement, unique bool) {
 	marshaledService, err := serviceAnnouncement.Marshal()
+	logger := helpers.GetLogger()
 	if err != nil {
-		log.Fatalf("failed to marshal service announcement: %v", err)
+		logger.Fatalf("failed to marshal service announcement: %v", err)
 	}
 
 	leaseID, err := LeaseService(ctx, client, serviceAnnouncement, marshaledService)
 	if err != nil {
-		log.Fatalf("failed to register service %s: %v", serviceAnnouncement.Service.Prefix, err)
+		logger.Fatalf("failed to register service %s: %v", serviceAnnouncement.Service.Prefix, err)
 		return
 	}
 
 	go func() {
 		respChan, err := client.KeepAlive(ctx, leaseID)
 		if err != nil {
-			log.Printf("failed to start KeepAlive for service %s: %v", serviceAnnouncement.Service.Prefix, err)
+			logger.Printf("failed to start KeepAlive for service %s: %v", serviceAnnouncement.Service.Prefix, err)
 			return
 		}
 
@@ -100,7 +104,7 @@ func KeepLeaseAlive(ctx context.Context, client *clientv3.Client, serviceAnnounc
 			select {
 			case resp, ok := <-respChan:
 				if !ok {
-					log.Println("KeepAlive channel closed, stopping lease renewals.")
+					logger.Println("KeepAlive channel closed, stopping lease renewals.")
 					KeepLeaseAlive(ctx, client, serviceAnnouncement, unique)
 					return
 				}
@@ -109,9 +113,40 @@ func KeepLeaseAlive(ctx context.Context, client *clientv3.Client, serviceAnnounc
 				time.Sleep(sleepFor)
 
 			case <-ctx.Done():
-				log.Println("KeepLeaseAlive context canceled, exiting.")
+				logger.Println("KeepLeaseAlive context canceled, exiting.")
 				return
 			}
 		}
 	}()
+}
+
+func GetAllLeases(ctx context.Context, client *clientv3.Client) ([]clientv3.LeaseStatus, error) {
+
+	resp, err := client.Leases(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Leases, nil
+}
+
+type KeyValueImpl struct {
+	Key   string
+	Value string
+}
+
+func GetAllKeys(ctx context.Context, client *clientv3.Client) ([]KeyValueImpl, error) {
+	resp, err := client.Get(ctx, ServicePrefix, clientv3.WithPrefix())
+	if err != nil {
+		helpers.GetLogger().Printf("failed to get keys: %v", err)
+		return nil, err
+	}
+
+	keys := make([]KeyValueImpl, 0)
+
+	for _, kv := range resp.Kvs {
+		keys = append(keys, KeyValueImpl{Key: string(kv.Key), Value: string(kv.Value)})
+	}
+
+	return keys, nil
 }
