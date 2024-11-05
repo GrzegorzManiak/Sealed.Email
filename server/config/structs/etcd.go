@@ -7,8 +7,13 @@ type ServiceConfig struct {
 	TTL      int64  `yaml:"ttl"`
 }
 
+type ConnectionPoolConfig struct {
+	RefreshInterval int `yaml:"refreshInterval"`
+}
+
 type EtcdConfig struct {
-	Endpoints []string `yaml:"endpoints"`
+	Endpoints      []string             `yaml:"endpoints"`
+	ConnectionPool ConnectionPoolConfig `yaml:"connectionPool"`
 
 	Domain       ServiceConfig `yaml:"domain"`
 	Notification ServiceConfig `yaml:"notification"`

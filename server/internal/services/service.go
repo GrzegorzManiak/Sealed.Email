@@ -16,7 +16,7 @@ type ServiceAnnouncement struct {
 }
 
 func (s ServiceAnnouncement) String() string {
-	return fmt.Sprintf("ServiceAnnouncement{Id: %s, Port: %d, Host: %s, Service: %s}", s.Id, s.Port, s.Host, s.Service.Prefix)
+	return fmt.Sprintf("ServiceAnnouncement{Id: %s, Port: %s, Host: %s, Service: %s}", s.Id, s.Port, s.Host, s.Service.Prefix)
 }
 
 func (s ServiceAnnouncement) Marshal() (string, error) {

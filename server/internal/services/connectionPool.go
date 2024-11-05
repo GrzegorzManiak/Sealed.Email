@@ -6,6 +6,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"sync"
+	"time"
 )
 
 var apiConnectionPool map[string]ServiceAnnouncement
@@ -64,21 +65,18 @@ func BuildConnectionPools(ctx context.Context, client *clientv3.Client) error {
 			continue
 		}
 
-		logger.Printf("Service announcement: %s", service.String())
+		logger.Printf("Service discoverd: %s", service.String())
 
 		switch service.Service.Prefix {
 		case config.Etcd.Domain.Prefix:
-
 			service.Service = config.Etcd.Domain
 			domainConnectionPool[service.Id] = service
 
 		case config.Etcd.Notification.Prefix:
-
 			service.Service = config.Etcd.Notification
 			notificationConnectionPool[service.Id] = service
 
 		case config.Etcd.SMTP.Prefix:
-
 			service.Service = config.Etcd.SMTP
 			smtpConnectionPool[service.Id] = service
 
@@ -89,4 +87,29 @@ func BuildConnectionPools(ctx context.Context, client *clientv3.Client) error {
 	}
 
 	return nil
+}
+
+func KeepConnectionPoolsAlive(ctx context.Context, client *clientv3.Client) {
+	logger := helpers.GetLogger()
+
+	go func() {
+		logger.Println("Starting connection pool refresh loop")
+
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Println("Connection pool refresh loop context canceled, exiting.")
+				return
+
+			default:
+				logger.Println("Refreshing connection pools")
+				err := BuildConnectionPools(ctx, client)
+				if err != nil {
+					logger.Printf("failed to build connection pools: %v", err)
+				}
+
+				time.Sleep(time.Duration(config.Etcd.ConnectionPool.RefreshInterval) * time.Second)
+			}
+		}
+	}()
 }

@@ -41,6 +41,9 @@ etcd:
     endpoints:
         - 'http://localhost:2379'
 
+    connectionPool:
+        refreshInterval: 30
+
     domain:
         username: 'root'
         # This is a development environment, so we're not too worried about security
@@ -49,25 +52,25 @@ etcd:
         # Also we will be using mTLS for the connection anyway
         password: 'root'
         prefix: '/dev/services/domain'
-        ttl: 300
+        ttl: 30
 
     notification:
         username: 'root'
         password: 'root'
         prefix: '/dev/services/notification'
-        ttl: 300
+        ttl: 30
 
     smtp:
         username: 'root'
         password: 'root'
         prefix: '/dev/services/smtp'
-        ttl: 120
+        ttl: 30
 
     api:
         username: 'root'
         password: 'root'
         prefix: '/dev/services/api'
-        ttl: 300
+        ttl: 30
 
 certificates:
     # -- For development, we turn off authentication

@@ -55,8 +55,7 @@ func Start() {
 	etcdClient := services.GetEtcdClient(config.Etcd.API)
 	etcdContext := context.Background()
 	services.KeepLeaseAlive(etcdContext, etcdClient, etcdService, false)
-
-	services.BuildConnectionPools(etcdContext, etcdClient)
+	services.KeepConnectionPoolsAlive(etcdContext, etcdClient)
 
 	err = router.Run()
 	if err != nil {
