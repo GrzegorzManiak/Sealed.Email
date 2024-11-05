@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	DomainDatabase "github.com/GrzegorzManiak/NoiseBackend/database/domain"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/services"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/domain"
@@ -14,6 +15,7 @@ import (
 
 func Start() {
 	log.Printf("------------------ Starting Domain Service ------------------")
+	logger := helpers.GetLogger()
 
 	queueDatabaseConnection := DomainDatabase.InitiateConnection()
 	//primaryDatabaseConnection := DomainDatabase.InitiateConnection()
@@ -33,18 +35,19 @@ func Start() {
 	domain.RegisterDomainServiceServer(grpcServer, &service.Server{QueueDatabaseConnection: queueDatabaseConnection})
 	reflection.Register(grpcServer)
 
-	etcdService := services.ServiceAnnouncement{
+	serviceAnnouncement := services.ServiceAnnouncement{
 		Id:      ServiceID,
 		Port:    config.Server.Port,
 		Host:    config.Server.Host,
 		Service: config.Etcd.Domain,
 	}
 
-	etcdClient := services.GetEtcdClient(config.Etcd.Domain)
+	services.InstantiateEtcdClient(config.Etcd.API)
 	etcdContext := context.Background()
-	services.KeepServiceAnnouncementAlive(etcdContext, etcdClient, etcdService, true)
+	services.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false)
+	services.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
 
-	log.Printf(etcdService.String())
+	logger.Printf(serviceAnnouncement.String())
 	if err := grpcServer.Serve(*listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

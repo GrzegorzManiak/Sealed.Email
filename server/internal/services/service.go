@@ -29,8 +29,8 @@ func (s ServiceAnnouncement) BuildID() string {
 	return fmt.Sprintf("%s/%s%s", ServicePrefix, s.Id, s.Service.Prefix)
 }
 
-func UnmarshalServiceAnnouncement(data string) (ServiceAnnouncement, error) {
+func UnmarshalServiceAnnouncement(data []byte) (ServiceAnnouncement, error) {
 	var serviceAnnouncement ServiceAnnouncement
-	err := json.Unmarshal([]byte(data), &serviceAnnouncement)
+	err := json.Unmarshal(data, &serviceAnnouncement)
 	return serviceAnnouncement, err
 }

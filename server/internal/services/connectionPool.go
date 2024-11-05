@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
+	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"sync"
@@ -17,42 +18,43 @@ var domainConnectionPool map[string]ServiceAnnouncement
 
 var notificationConnectionPool map[string]ServiceAnnouncement
 
-var lock = &sync.Mutex{}
+var connectionPoolLock = &sync.Mutex{}
 
 func GetApiConnectionPool() map[string]ServiceAnnouncement {
-	lock.Lock()
-	defer lock.Unlock()
+	connectionPoolLock.Lock()
+	defer connectionPoolLock.Unlock()
 	return apiConnectionPool
 }
 
 func GetSmtpConnectionPool() map[string]ServiceAnnouncement {
-	lock.Lock()
-	defer lock.Unlock()
+	connectionPoolLock.Lock()
+	defer connectionPoolLock.Unlock()
 	return smtpConnectionPool
 }
 
 func GetDomainConnectionPool() map[string]ServiceAnnouncement {
-	lock.Lock()
-	defer lock.Unlock()
+	connectionPoolLock.Lock()
+	defer connectionPoolLock.Unlock()
 	return domainConnectionPool
 }
 
 func GetNotificationConnectionPool() map[string]ServiceAnnouncement {
-	lock.Lock()
-	defer lock.Unlock()
+	connectionPoolLock.Lock()
+	defer connectionPoolLock.Unlock()
 	return notificationConnectionPool
 }
 
-func BuildConnectionPools(ctx context.Context, client *clientv3.Client) error {
+func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service structs.ServiceConfig) error {
 	logger := helpers.GetLogger()
+	EnsureEtcdConnection(service)
 	keyValues, err := GetAllKeys(ctx, client)
 	if err != nil {
 		logger.Printf("failed to get keys: %v", err)
 		return err
 	}
 
-	lock.Lock()
-	defer lock.Unlock()
+	connectionPoolLock.Lock()
+	defer connectionPoolLock.Unlock()
 	apiConnectionPool = make(map[string]ServiceAnnouncement)
 	smtpConnectionPool = make(map[string]ServiceAnnouncement)
 	domainConnectionPool = make(map[string]ServiceAnnouncement)
@@ -89,7 +91,7 @@ func BuildConnectionPools(ctx context.Context, client *clientv3.Client) error {
 	return nil
 }
 
-func KeepConnectionPoolsAlive(ctx context.Context, client *clientv3.Client) {
+func KeepConnectionPoolsAlive(ctx context.Context, service structs.ServiceConfig) {
 	logger := helpers.GetLogger()
 
 	go func() {
@@ -103,7 +105,7 @@ func KeepConnectionPoolsAlive(ctx context.Context, client *clientv3.Client) {
 
 			default:
 				logger.Println("Refreshing connection pools")
-				err := BuildConnectionPools(ctx, client)
+				err := BuildConnectionPools(ctx, GetEtcdClient(), service)
 				if err != nil {
 					logger.Printf("failed to build connection pools: %v", err)
 				}

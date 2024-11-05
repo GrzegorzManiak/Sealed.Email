@@ -9,6 +9,8 @@ import (
 )
 
 func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnouncement ServiceAnnouncement, value string) (clientv3.LeaseID, error) {
+	EnsureEtcdConnection(serviceAnnouncement.Service)
+
 	key := serviceAnnouncement.BuildID()
 	logger := helpers.GetLogger()
 	logger.Printf("Registering service %s", key)
@@ -17,8 +19,6 @@ func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnoun
 		logger.Printf("failed to create lease for service %s: %v", key, err)
 		return 0, err
 	}
-
-	client = EnsureEtcdConnection(serviceAnnouncement.Service, client)
 
 	_, err = client.Put(ctx, key, value, clientv3.WithLease(lease.ID))
 	if err != nil {
@@ -29,21 +29,21 @@ func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnoun
 	return lease.ID, nil
 }
 
-func KeepServiceAnnouncementAlive(ctx context.Context, client *clientv3.Client, serviceAnnouncement ServiceAnnouncement, unique bool) {
+func KeepServiceAnnouncementAlive(ctx context.Context, serviceAnnouncement ServiceAnnouncement, unique bool) {
 	marshaledService, err := serviceAnnouncement.Marshal()
 	logger := helpers.GetLogger()
 	if err != nil {
 		logger.Fatalf("failed to marshal service announcement: %v", err)
 	}
 
-	leaseID, err := AnnounceService(ctx, client, serviceAnnouncement, marshaledService)
+	leaseID, err := AnnounceService(ctx, GetEtcdClient(), serviceAnnouncement, marshaledService)
 	if err != nil {
 		logger.Fatalf("failed to register service %s: %v", serviceAnnouncement.Service.Prefix, err)
 		return
 	}
 
 	go func() {
-		respChan, err := client.KeepAlive(ctx, leaseID)
+		respChan, err := GetEtcdClient().KeepAlive(ctx, leaseID)
 		if err != nil {
 			logger.Printf("failed to start KeepAlive for service %s: %v", serviceAnnouncement.Service.Prefix, err)
 			return
@@ -54,7 +54,7 @@ func KeepServiceAnnouncementAlive(ctx context.Context, client *clientv3.Client, 
 			case resp, ok := <-respChan:
 				if !ok {
 					logger.Println("KeepAlive channel closed, stopping lease renewals.")
-					KeepServiceAnnouncementAlive(ctx, client, serviceAnnouncement, unique)
+					KeepServiceAnnouncementAlive(ctx, serviceAnnouncement, unique)
 					return
 				}
 

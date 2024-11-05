@@ -5,12 +5,30 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"sync"
 	"time"
 )
 
-func GetEtcdClient(service structs.ServiceConfig) *clientv3.Client {
-	client, err := clientv3.New(clientv3.Config{
+var clientLock = &sync.Mutex{}
+var client = &clientv3.Client{}
+
+func GetEtcdClient() *clientv3.Client {
+	clientLock.Lock()
+	defer clientLock.Unlock()
+	if client == nil {
+		panic("etcd client is not initialized")
+	}
+	return client
+}
+
+func InstantiateEtcdClient(service structs.ServiceConfig) {
+	if client != nil {
+		helpers.GetLogger().Printf("[WARN] etcd client already initialized")
+	}
+
+	newClient, err := clientv3.New(clientv3.Config{
 		Endpoints:   config.Etcd.Endpoints,
 		DialTimeout: 2 * time.Second,
 		Username:    service.Username,
@@ -21,7 +39,9 @@ func GetEtcdClient(service structs.ServiceConfig) *clientv3.Client {
 		panic(err)
 	}
 
-	return client
+	clientLock.Lock()
+	defer clientLock.Unlock()
+	client = newClient
 }
 
 func DestroyEtcdClient(client *clientv3.Client) {
@@ -31,7 +51,7 @@ func DestroyEtcdClient(client *clientv3.Client) {
 	}
 }
 
-func CheckClientConnection(client *clientv3.Client) error {
+func CheckClientConnection() error {
 	for _, endpoint := range client.Endpoints() {
 		_, err := client.Status(context.Background(), endpoint)
 		if err != nil {
@@ -41,21 +61,20 @@ func CheckClientConnection(client *clientv3.Client) error {
 	return nil
 }
 
-func EnsureEtcdConnection(service structs.ServiceConfig, existingClient *clientv3.Client) *clientv3.Client {
+func EnsureEtcdConnection(service structs.ServiceConfig) {
 	logger := helpers.GetLogger()
-	if existingClient != nil {
-		err := CheckClientConnection(existingClient)
+	if client != nil {
+		err := CheckClientConnection()
 		if err == nil {
 			logger.Printf("etcd connection successful")
-			return existingClient
+			return
 		}
 		logger.Printf("etcd connection failed: %v", err)
-		DestroyEtcdClient(existingClient)
+		DestroyEtcdClient(client)
 	}
 
-	client := GetEtcdClient(service)
-	logger.Printf("etcd connection successful")
-	return client
+	logger.Printf("reconnecting to etcd")
+	InstantiateEtcdClient(service)
 }
 
 func GetAllLeases(ctx context.Context, client *clientv3.Client) ([]clientv3.LeaseStatus, error) {
@@ -68,23 +87,12 @@ func GetAllLeases(ctx context.Context, client *clientv3.Client) ([]clientv3.Leas
 	return resp.Leases, nil
 }
 
-type KeyValueImpl struct {
-	Key   string
-	Value string
-}
-
-func GetAllKeys(ctx context.Context, client *clientv3.Client) ([]KeyValueImpl, error) {
+func GetAllKeys(ctx context.Context, client *clientv3.Client) ([]*mvccpb.KeyValue, error) {
 	resp, err := client.Get(ctx, ServicePrefix, clientv3.WithPrefix())
 	if err != nil {
 		helpers.GetLogger().Printf("failed to get keys: %v", err)
 		return nil, err
 	}
 
-	keys := make([]KeyValueImpl, 0)
-
-	for _, kv := range resp.Kvs {
-		keys = append(keys, KeyValueImpl{Key: string(kv.Key), Value: string(kv.Value)})
-	}
-
-	return keys, nil
+	return resp.Kvs, nil
 }
