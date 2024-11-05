@@ -109,7 +109,7 @@ func KeepLeaseAlive(ctx context.Context, client *clientv3.Client, serviceAnnounc
 					return
 				}
 
-				sleepFor := time.Duration(resp.TTL) * time.Second / 3
+				sleepFor := (time.Duration(resp.TTL) * time.Second) / 3
 				time.Sleep(sleepFor)
 
 			case <-ctx.Done():
