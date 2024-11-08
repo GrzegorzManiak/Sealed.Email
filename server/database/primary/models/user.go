@@ -29,8 +29,8 @@ type User struct {
 
 	// the recovery root key is encrypted with the user's recovery key, we use the recovery hash
 	// to verify that the user has the correct recovery key.
-	RecoveryRootKey *string // e(SymmetricRootKey, RecoveryKey)
-	RecoveryHash    *string // h(RecoveryKey + UID)
+	RecoveryRootKey string // e(SymmetricRootKey, RecoveryKey)
+	RecoveryHash    string // h(RecoveryKey + UID)
 
 	// Relations
 	Sessions []Session `gorm:"foreignKey:UserID"`
@@ -40,4 +40,13 @@ type User struct {
 	TotalInboundBytes   uint
 	TotalOutboundEmails uint
 	TotalOutboundBytes  uint
+
+	// Admin Fields
+	Holds []UserHold `gorm:"foreignKey:UserID"`
+	Quota UserQuota  `gorm:"foreignKey:UserID"`
+	Flags []string
+
+	// Email Fields
+	Inboxes []UserInbox  `gorm:"foreignKey:UserID"`
+	Domains []UserDomain `gorm:"foreignKey:UserID"`
 }
