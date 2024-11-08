@@ -5,7 +5,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/services"
+	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/midlewares"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/routes"
 	"github.com/gin-contrib/pprof"
@@ -47,17 +47,17 @@ func Start() {
 		logger.Fatalf("failed to generate service UUID: %v", err)
 	}
 
-	serviceAnnouncement := services.ServiceAnnouncement{
+	serviceAnnouncement := ServiceProvider.ServiceAnnouncement{
 		Id:      serviceUUID.String(),
 		Port:    config.Server.Port,
 		Host:    config.Server.Host,
 		Service: config.Etcd.API,
 	}
 
-	services.InstantiateEtcdClient(config.Etcd.API)
+	ServiceProvider.InstantiateEtcdClient(config.Etcd.API)
 	etcdContext := context.Background()
-	services.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false)
-	services.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
+	ServiceProvider.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false)
+	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
 
 	logger.Printf(serviceAnnouncement.String())
 	err = router.Run()
