@@ -6,6 +6,8 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 	"sync"
 	"time"
 )
@@ -131,6 +133,86 @@ func KeepConnectionPoolsAlive(ctx context.Context, service structs.ServiceConfig
 	}()
 }
 
-func ShouldFetchConnectionPools() bool {
-	return time.Now().Unix()-poolLastUpdated > int64(config.Etcd.ConnectionPool.RefreshInterval)
+type GrpcConnection struct {
+	Conn    *grpc.ClientConn
+	Service ServiceAnnouncement
+
+	TimeAdded     int64
+	LastRefreshed int64
+	LastChecked   int64
+	Succeeded     bool
+}
+
+func RefreshPool(newPool map[string]ServiceAnnouncement, oldPool map[string]*GrpcConnection, grpcSecurityPolicy grpc.DialOption) map[string]*GrpcConnection {
+	logger := helpers.GetLogger()
+	pool := make(map[string]*GrpcConnection)
+	curTime := time.Now().Unix()
+
+	for key, value := range newPool {
+
+		// -- Check if the connection is already in the pool
+		if _, ok := oldPool[key]; ok {
+
+			// -- check if the connection exists in the new pool
+			if _, ok := newPool[key]; !ok {
+				logger.Printf("Service %s has been removed from the pool", key)
+				continue
+			}
+
+			oldPool[key].LastRefreshed = curTime
+			pool[key] = oldPool[key]
+			continue
+		}
+
+		conn, err := grpc.NewClient(
+			value.Host+":"+value.Port,
+			grpcSecurityPolicy,
+			grpc.WithDefaultCallOptions(
+				grpc.MaxCallRecvMsgSize(1024*1024*1),
+			),
+			grpc.WithKeepaliveParams(keepalive.ClientParameters{
+				Time:    10 * time.Second, // -- Check connection every 10 seconds
+				Timeout: 5 * time.Second,  // -- Timeout after 5 seconds of no response
+			}),
+		)
+
+		if err != nil {
+			logger.Printf("failed to dial: %v", err)
+			continue
+		}
+
+		logger.Printf("Successfully dialed %s", key)
+		pool[key] = &GrpcConnection{
+			Conn:          conn,
+			Service:       value,
+			TimeAdded:     curTime,
+			LastRefreshed: curTime,
+			LastChecked:   curTime,
+			Succeeded:     true,
+		}
+	}
+
+	return pool
+}
+
+func RoundRobin(index *int, pool map[string]*GrpcConnection) *GrpcConnection {
+	*index++
+	if *index >= len(pool) {
+		*index = 0
+	}
+
+	i := 0
+	var client *GrpcConnection
+	for _, connection := range pool {
+		if i == 0 {
+			client = connection
+		}
+
+		if i == *index {
+			return connection
+		}
+		i++
+	}
+
+	return client
 }

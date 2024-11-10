@@ -11,6 +11,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	config.Server.Port = "50151"
 	helpers.SetLogger(helpers.CreateDebugLogger())
 	go DomainService.Start()
 	select {}

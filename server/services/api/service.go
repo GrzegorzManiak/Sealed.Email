@@ -6,13 +6,14 @@ import (
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
-	"github.com/GrzegorzManiak/NoiseBackend/services/api/grpc"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/midlewares"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/outsideServices"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/routes"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"log"
+	"time"
 )
 
 func Start() {
@@ -59,7 +60,15 @@ func Start() {
 	etcdContext := context.Background()
 	ServiceProvider.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false)
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
-	ServiceProvider.RegisterCallback("filler", grpc.PoolCallback)
+	ServiceProvider.RegisterCallback("filler", outsideServices.PoolCallback)
+
+	go func() {
+		time.Sleep(5 * time.Second)
+		err = outsideServices.AddDomainToVerificationQueue(context.Background(), "test")
+		if err != nil {
+			logger.Printf("failed to add domain to verification queue: %v", err)
+		}
+	}()
 
 	logger.Printf(serviceAnnouncement.String())
 	err = router.Run()

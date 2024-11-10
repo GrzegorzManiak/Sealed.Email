@@ -1,4 +1,4 @@
-package grpc
+package outsideServices
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
@@ -58,19 +58,19 @@ func PoolCallback() {
 	}()
 }
 
-func GetDomainClient() *service.GrpcConnection {
+func getDomainClient() *service.GrpcConnection {
 	grpcDomainPoolRWLock.RLock()
 	defer grpcDomainPoolRWLock.RUnlock()
 	return service.RoundRobin(&domainIndex, domainGrpcConnectionPool)
 }
 
-func GetSmtpClient() *service.GrpcConnection {
+func getSmtpClient() *service.GrpcConnection {
 	grpcSmtpPoolRWLock.RLock()
 	defer grpcSmtpPoolRWLock.RUnlock()
 	return service.RoundRobin(&smtpIndex, smtpGrpcConnectionPool)
 }
 
-func GetNotificationClient() *service.GrpcConnection {
+func getNotificationClient() *service.GrpcConnection {
 	grpcNotificationPoolRWLock.RLock()
 	defer grpcNotificationPoolRWLock.RUnlock()
 	return service.RoundRobin(&notificationIndex, notificationGrpcConnectionPool)
