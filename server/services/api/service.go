@@ -58,6 +58,7 @@ func Start() {
 	etcdContext := context.Background()
 	ServiceProvider.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false)
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
+	ServiceProvider.RegisterCallback("filler", PoolCallback)
 
 	logger.Printf(serviceAnnouncement.String())
 	err = router.Run()

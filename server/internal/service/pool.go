@@ -10,15 +10,15 @@ import (
 	"time"
 )
 
-var apiConnectionPool map[string]ServiceAnnouncement
+// TODO: Change the single mutex to a rwmutex
 
-var smtpConnectionPool map[string]ServiceAnnouncement
-
-var domainConnectionPool map[string]ServiceAnnouncement
-
-var notificationConnectionPool map[string]ServiceAnnouncement
-
+var poolLastUpdated int64 = 0
 var connectionPoolLock = &sync.Mutex{}
+
+var apiConnectionPool map[string]ServiceAnnouncement
+var smtpConnectionPool map[string]ServiceAnnouncement
+var domainConnectionPool map[string]ServiceAnnouncement
+var notificationConnectionPool map[string]ServiceAnnouncement
 
 func GetApiConnectionPool() map[string]ServiceAnnouncement {
 	connectionPoolLock.Lock()
@@ -44,6 +44,18 @@ func GetNotificationConnectionPool() map[string]ServiceAnnouncement {
 	return notificationConnectionPool
 }
 
+var callbacks = make(map[string]func())
+
+func RegisterCallback(id string, callback func()) {
+	callbacks[id] = callback
+}
+
+func RunCallbacks() {
+	for _, callback := range callbacks {
+		go callback()
+	}
+}
+
 func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service structs.ServiceConfig) error {
 	logger := helpers.GetLogger()
 	EnsureEtcdConnection(service)
@@ -54,7 +66,6 @@ func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service 
 	}
 
 	connectionPoolLock.Lock()
-	defer connectionPoolLock.Unlock()
 	apiConnectionPool = make(map[string]ServiceAnnouncement)
 	smtpConnectionPool = make(map[string]ServiceAnnouncement)
 	domainConnectionPool = make(map[string]ServiceAnnouncement)
@@ -88,6 +99,10 @@ func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service 
 		}
 	}
 
+	poolLastUpdated = time.Now().Unix()
+	// IMPORTANT: Do not use defer here, as it will cause a deadlock
+	connectionPoolLock.Unlock()
+	RunCallbacks()
 	return nil
 }
 
@@ -114,4 +129,8 @@ func KeepConnectionPoolsAlive(ctx context.Context, service structs.ServiceConfig
 			}
 		}
 	}()
+}
+
+func ShouldFetchConnectionPools() bool {
+	return time.Now().Unix()-poolLastUpdated > int64(config.Etcd.ConnectionPool.RefreshInterval)
 }
