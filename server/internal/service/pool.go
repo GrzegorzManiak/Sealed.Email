@@ -12,10 +12,9 @@ import (
 	"time"
 )
 
-// TODO: Change the single mutex to a rwmutex
-
 var poolLastUpdated int64 = 0
-var connectionPoolLock = &sync.Mutex{}
+
+var connectionPoolLock = &sync.RWMutex{}
 
 var apiConnectionPool map[string]ServiceAnnouncement
 var smtpConnectionPool map[string]ServiceAnnouncement
@@ -23,26 +22,26 @@ var domainConnectionPool map[string]ServiceAnnouncement
 var notificationConnectionPool map[string]ServiceAnnouncement
 
 func GetApiConnectionPool() map[string]ServiceAnnouncement {
-	connectionPoolLock.Lock()
-	defer connectionPoolLock.Unlock()
+	connectionPoolLock.RLock()
+	defer connectionPoolLock.RUnlock()
 	return apiConnectionPool
 }
 
 func GetSmtpConnectionPool() map[string]ServiceAnnouncement {
-	connectionPoolLock.Lock()
-	defer connectionPoolLock.Unlock()
+	connectionPoolLock.RLock()
+	defer connectionPoolLock.RUnlock()
 	return smtpConnectionPool
 }
 
 func GetDomainConnectionPool() map[string]ServiceAnnouncement {
-	connectionPoolLock.Lock()
-	defer connectionPoolLock.Unlock()
+	connectionPoolLock.RLock()
+	defer connectionPoolLock.RUnlock()
 	return domainConnectionPool
 }
 
 func GetNotificationConnectionPool() map[string]ServiceAnnouncement {
-	connectionPoolLock.Lock()
-	defer connectionPoolLock.Unlock()
+	connectionPoolLock.RLock()
+	defer connectionPoolLock.RUnlock()
 	return notificationConnectionPool
 }
 
