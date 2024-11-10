@@ -194,24 +194,20 @@ func RefreshPool(newPool map[string]ServiceAnnouncement, oldPool map[string]*Grp
 	return pool
 }
 
-func RoundRobin(index *int, pool map[string]*GrpcConnection) *GrpcConnection {
-	*index++
-	if *index >= len(pool) {
-		*index = 0
+func RoundRobin(index *int, rwLock *sync.RWMutex, pool map[string]*GrpcConnection) *GrpcConnection {
+	rwLock.RLock()
+	defer rwLock.RUnlock()
+
+	if len(pool) == 0 {
+		return nil
 	}
 
-	i := 0
-	var client *GrpcConnection
-	for _, connection := range pool {
-		if i == 0 {
-			client = connection
-		}
+	*index = (*index + 1) % len(pool)
 
-		if i == *index {
-			return connection
-		}
-		i++
+	keys := make([]string, 0, len(pool))
+	for key := range pool {
+		keys = append(keys, key)
 	}
 
-	return client
+	return pool[keys[*index]]
 }

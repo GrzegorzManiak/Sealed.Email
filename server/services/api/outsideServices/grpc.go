@@ -61,17 +61,17 @@ func PoolCallback() {
 func getDomainClient() *service.GrpcConnection {
 	grpcDomainPoolRWLock.RLock()
 	defer grpcDomainPoolRWLock.RUnlock()
-	return service.RoundRobin(&domainIndex, domainGrpcConnectionPool)
+	return service.RoundRobin(&domainIndex, grpcDomainPoolRWLock, domainGrpcConnectionPool)
 }
 
 func getSmtpClient() *service.GrpcConnection {
 	grpcSmtpPoolRWLock.RLock()
 	defer grpcSmtpPoolRWLock.RUnlock()
-	return service.RoundRobin(&smtpIndex, smtpGrpcConnectionPool)
+	return service.RoundRobin(&smtpIndex, grpcSmtpPoolRWLock, smtpGrpcConnectionPool)
 }
 
 func getNotificationClient() *service.GrpcConnection {
 	grpcNotificationPoolRWLock.RLock()
 	defer grpcNotificationPoolRWLock.RUnlock()
-	return service.RoundRobin(&notificationIndex, notificationGrpcConnectionPool)
+	return service.RoundRobin(&notificationIndex, grpcNotificationPoolRWLock, smtpGrpcConnectionPool)
 }
