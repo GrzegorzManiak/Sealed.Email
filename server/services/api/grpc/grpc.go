@@ -1,4 +1,4 @@
-package api
+package grpc
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
