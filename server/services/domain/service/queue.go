@@ -14,7 +14,7 @@ var QueueName = "Domain Verification Queue"
 
 func Worker(entry *queue.Entry, primaryDatabaseConnection *gorm.DB) int8 {
 
-	data, err := database.UnmarshalVerificationQueue(entry.Data)
+	_, err := database.UnmarshalVerificationQueue(entry.Data)
 	if err != nil {
 		return 2
 	}
@@ -26,6 +26,5 @@ func Worker(entry *queue.Entry, primaryDatabaseConnection *gorm.DB) int8 {
 	defer primaryDatabaseMutex.Unlock()
 
 	fmt.Println("Executing Queue: ", entry.String())
-	fmt.Println("Data: ", data)
 	return 0
 }
