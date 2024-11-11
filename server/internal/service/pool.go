@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
@@ -11,8 +12,6 @@ import (
 	"sync"
 	"time"
 )
-
-var poolLastUpdated int64 = 0
 
 var connectionPoolLock = &sync.RWMutex{}
 
@@ -59,18 +58,18 @@ func RunCallbacks() {
 
 func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service structs.ServiceConfig) error {
 	logger := helpers.GetLogger()
-	EnsureEtcdConnection(service)
+	if err := InstantiateEtcdClient(service); err != nil {
+		return fmt.Errorf("failed to instantiate etcd client: %w", err)
+	}
+
 	keyValues, err := GetAllKeys(ctx, client)
 	if err != nil {
-		logger.Printf("failed to get keys: %v", err)
-		return err
+		return fmt.Errorf("failed to get keys: %w", err)
 	}
 
 	connectionPoolLock.Lock()
-	apiConnectionPool = make(map[string]Announcement)
-	smtpConnectionPool = make(map[string]Announcement)
-	domainConnectionPool = make(map[string]Announcement)
-	notificationConnectionPool = make(map[string]Announcement)
+	apiConnectionPool, smtpConnectionPool, domainConnectionPool, notificationConnectionPool =
+		make(map[string]Announcement), make(map[string]Announcement), make(map[string]Announcement), make(map[string]Announcement)
 
 	for _, keyValue := range keyValues {
 		service, err := UnmarshalServiceAnnouncement(keyValue.Value)
@@ -79,29 +78,21 @@ func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service 
 			continue
 		}
 
-		logger.Printf("Service discoverd: %s", service.String())
-
 		switch service.Service.Prefix {
 		case config.Etcd.Domain.Prefix:
-			service.Service = config.Etcd.Domain
 			domainConnectionPool[service.Id] = service
 
 		case config.Etcd.Notification.Prefix:
-			service.Service = config.Etcd.Notification
 			notificationConnectionPool[service.Id] = service
 
 		case config.Etcd.SMTP.Prefix:
-			service.Service = config.Etcd.SMTP
 			smtpConnectionPool[service.Id] = service
 
 		case config.Etcd.API.Prefix:
-			service.Service = config.Etcd.API
 			apiConnectionPool[service.Id] = service
 		}
 	}
 
-	poolLastUpdated = time.Now().Unix()
-	// IMPORTANT: Do not use defer here, as it will cause a deadlock
 	connectionPoolLock.Unlock()
 	RunCallbacks()
 	return nil
@@ -125,7 +116,6 @@ func KeepConnectionPoolsAlive(ctx context.Context, service structs.ServiceConfig
 				if err != nil {
 					logger.Printf("failed to build connection pools: %v", err)
 				}
-
 				time.Sleep(time.Duration(config.Etcd.ConnectionPool.RefreshInterval) * time.Second)
 			}
 		}
@@ -142,56 +132,63 @@ type GrpcConnection struct {
 	Succeeded     bool
 }
 
-func RefreshPool(newPool map[string]Announcement, oldPool map[string]*GrpcConnection, grpcSecurityPolicy grpc.DialOption) map[string]*GrpcConnection {
+func RefreshPool(
+	newPool map[string]Announcement,
+	oldPool map[string]*GrpcConnection,
+	grpcSecurityPolicy grpc.DialOption,
+) map[string]*GrpcConnection {
 	logger := helpers.GetLogger()
 	pool := make(map[string]*GrpcConnection)
 	curTime := time.Now().Unix()
 
-	for key, value := range newPool {
-
-		// -- Check if the connection is already in the pool
-		if _, ok := oldPool[key]; ok {
-
-			// -- check if the connection exists in the new pool
-			if _, ok := newPool[key]; !ok {
-				logger.Printf("Service %s has been removed from the pool", key)
-				continue
-			}
-
-			oldPool[key].LastRefreshed = curTime
-			pool[key] = oldPool[key]
+	for key, announcement := range newPool {
+		if conn, exists := oldPool[key]; exists {
+			conn.LastRefreshed = curTime
+			pool[key] = conn
 			continue
 		}
 
-		conn, err := grpc.NewClient(
-			value.Host+":"+value.Port,
-			grpcSecurityPolicy,
-			grpc.WithDefaultCallOptions(
-				grpc.MaxCallRecvMsgSize(1024*1024*1),
-			),
-			grpc.WithKeepaliveParams(keepalive.ClientParameters{
-				Time:    10 * time.Second, // -- Check connection every 10 seconds
-				Timeout: 5 * time.Second,  // -- Timeout after 5 seconds of no response
-			}),
-		)
-
+		newConn, err := InitializeGrpcConnection(announcement, grpcSecurityPolicy)
 		if err != nil {
-			logger.Printf("failed to dial: %v", err)
+			logger.Printf("failed to initialize connection for %s: %v", key, err)
 			continue
 		}
 
 		logger.Printf("Successfully dialed %s", key)
-		pool[key] = &GrpcConnection{
-			Conn:          conn,
-			Service:       value,
-			TimeAdded:     curTime,
-			LastRefreshed: curTime,
-			LastChecked:   curTime,
-			Succeeded:     true,
-		}
+		pool[key] = newConn
 	}
 
 	return pool
+}
+
+func InitializeGrpcConnection(
+	service Announcement,
+	grpcSecurityPolicy grpc.DialOption,
+) (*GrpcConnection, error) {
+	conn, err := grpc.NewClient(
+		fmt.Sprintf("%s:%s", service.Host, service.Port),
+		grpcSecurityPolicy,
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(1024*1024*1),
+		),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:    10 * time.Second, // Check connection every 10 seconds
+			Timeout: 5 * time.Second,  // Timeout after 5 seconds of no response
+		}),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to dial: %w", err)
+	}
+
+	curTime := time.Now().Unix()
+	return &GrpcConnection{
+		Conn:          conn,
+		Service:       service,
+		TimeAdded:     curTime,
+		LastRefreshed: curTime,
+		LastChecked:   curTime,
+		Succeeded:     true,
+	}, nil
 }
 
 func RoundRobin(index *int, rwLock *sync.RWMutex, pool map[string]*GrpcConnection) *GrpcConnection {
