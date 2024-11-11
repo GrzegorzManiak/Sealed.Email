@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
@@ -11,21 +12,22 @@ import (
 	"time"
 )
 
-var clientLock = &sync.Mutex{}
+var clientLock = &sync.RWMutex{}
 var client = &clientv3.Client{}
 
 func GetEtcdClient() *clientv3.Client {
-	clientLock.Lock()
-	defer clientLock.Unlock()
+	clientLock.RLock()
+	defer clientLock.RUnlock()
 	if client == nil {
 		panic("etcd client is not initialized")
 	}
 	return client
 }
 
-func InstantiateEtcdClient(service structs.ServiceConfig) {
+func InstantiateEtcdClient(service structs.ServiceConfig) error {
 	if client != nil {
 		helpers.GetLogger().Printf("[WARN] etcd client already initialized")
+		return nil
 	}
 
 	newClient, err := clientv3.New(clientv3.Config{
@@ -36,55 +38,65 @@ func InstantiateEtcdClient(service structs.ServiceConfig) {
 	})
 
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to instantiate etcd client: %w", err)
 	}
 
 	clientLock.Lock()
 	defer clientLock.Unlock()
 	client = newClient
+
+	return nil
 }
 
-func DestroyEtcdClient(client *clientv3.Client) {
-	err := client.Close()
-	if err != nil {
-		helpers.GetLogger().Printf("failed to close etcd client: %v", err)
+func DestroyEtcdClient(client *clientv3.Client) error {
+	if client == nil {
+		return fmt.Errorf("etcd client is already nil or uninitialized")
 	}
+
+	if err := client.Close(); err != nil {
+		return fmt.Errorf("failed to close etcd client: %w", err)
+	}
+
+	return nil
 }
 
 func CheckClientConnection() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
 	for _, endpoint := range client.Endpoints() {
-		_, err := client.Status(context.Background(), endpoint)
-		if err != nil {
-			return err
+		if _, err := client.Status(ctx, endpoint); err != nil {
+			return fmt.Errorf("etcd client connection failed for endpoint %s: %w", endpoint, err)
 		}
 	}
+
 	return nil
 }
 
 func EnsureEtcdConnection(service structs.ServiceConfig) {
+	clientLock.Lock()
+	defer clientLock.Unlock()
 	logger := helpers.GetLogger()
+
 	if client != nil {
-		err := CheckClientConnection()
-		if err == nil {
-			logger.Printf("etcd connection successful")
+		if err := CheckClientConnection(); err == nil {
+			logger.Println("etcd connection successful")
 			return
+		} else {
+			logger.Printf("etcd connection lost, attempting to reconnect: %v", err)
+			if err := DestroyEtcdClient(client); err != nil {
+				logger.Printf("failed to destroy etcd client: %v", err)
+			}
+			client = nil
 		}
-		logger.Printf("etcd connection failed: %v", err)
-		DestroyEtcdClient(client)
 	}
 
-	logger.Printf("reconnecting to etcd")
-	InstantiateEtcdClient(service)
-}
-
-func GetAllLeases(ctx context.Context, client *clientv3.Client) ([]clientv3.LeaseStatus, error) {
-
-	resp, err := client.Leases(ctx)
-	if err != nil {
-		return nil, err
+	logger.Println("connecting to etcd")
+	if err := InstantiateEtcdClient(service); err != nil {
+		logger.Printf("failed to reconnect to etcd: %v", err)
+	} else {
+		logger.Println("reconnected to etcd successfully")
 	}
-
-	return resp.Leases, nil
 }
 
 func GetAllKeys(ctx context.Context, client *clientv3.Client) ([]*mvccpb.KeyValue, error) {
