@@ -35,7 +35,7 @@ func Start() {
 	domain.RegisterDomainServiceServer(grpcServer, &QueueService.Server{QueueDatabaseConnection: queueDatabaseConnection})
 	reflection.Register(grpcServer)
 
-	serviceAnnouncement := ServiceProvider.ServiceAnnouncement{
+	serviceAnnouncement := ServiceProvider.Announcement{
 		Id:      ServiceID,
 		Port:    config.Server.Port,
 		Host:    config.Server.Host,

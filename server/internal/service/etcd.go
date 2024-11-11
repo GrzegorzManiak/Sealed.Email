@@ -88,7 +88,7 @@ func GetAllLeases(ctx context.Context, client *clientv3.Client) ([]clientv3.Leas
 }
 
 func GetAllKeys(ctx context.Context, client *clientv3.Client) ([]*mvccpb.KeyValue, error) {
-	resp, err := client.Get(ctx, ServicePrefix, clientv3.WithPrefix())
+	resp, err := client.Get(ctx, Prefix, clientv3.WithPrefix())
 	if err != nil {
 		helpers.GetLogger().Printf("failed to get keys: %v", err)
 		return nil, err

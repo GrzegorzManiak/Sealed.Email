@@ -49,7 +49,7 @@ func Start() {
 		logger.Fatalf("failed to generate service UUID: %v", err)
 	}
 
-	serviceAnnouncement := ServiceProvider.ServiceAnnouncement{
+	serviceAnnouncement := ServiceProvider.Announcement{
 		Id:      serviceUUID.String(),
 		Port:    config.Server.Port,
 		Host:    config.Server.Host,

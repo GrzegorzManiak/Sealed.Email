@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnouncement ServiceAnnouncement, value string) (clientv3.LeaseID, error) {
+func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnouncement Announcement, value string) (clientv3.LeaseID, error) {
 	EnsureEtcdConnection(serviceAnnouncement.Service)
 
 	key := serviceAnnouncement.BuildID()
@@ -29,7 +29,7 @@ func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnoun
 	return lease.ID, nil
 }
 
-func KeepServiceAnnouncementAlive(ctx context.Context, serviceAnnouncement ServiceAnnouncement, unique bool) {
+func KeepServiceAnnouncementAlive(ctx context.Context, serviceAnnouncement Announcement, unique bool) {
 	marshaledService, err := serviceAnnouncement.Marshal()
 	logger := helpers.GetLogger()
 	if err != nil {

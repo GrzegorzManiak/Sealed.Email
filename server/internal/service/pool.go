@@ -16,30 +16,30 @@ var poolLastUpdated int64 = 0
 
 var connectionPoolLock = &sync.RWMutex{}
 
-var apiConnectionPool map[string]ServiceAnnouncement
-var smtpConnectionPool map[string]ServiceAnnouncement
-var domainConnectionPool map[string]ServiceAnnouncement
-var notificationConnectionPool map[string]ServiceAnnouncement
+var apiConnectionPool map[string]Announcement
+var smtpConnectionPool map[string]Announcement
+var domainConnectionPool map[string]Announcement
+var notificationConnectionPool map[string]Announcement
 
-func GetApiConnectionPool() map[string]ServiceAnnouncement {
+func GetApiConnectionPool() map[string]Announcement {
 	connectionPoolLock.RLock()
 	defer connectionPoolLock.RUnlock()
 	return apiConnectionPool
 }
 
-func GetSmtpConnectionPool() map[string]ServiceAnnouncement {
+func GetSmtpConnectionPool() map[string]Announcement {
 	connectionPoolLock.RLock()
 	defer connectionPoolLock.RUnlock()
 	return smtpConnectionPool
 }
 
-func GetDomainConnectionPool() map[string]ServiceAnnouncement {
+func GetDomainConnectionPool() map[string]Announcement {
 	connectionPoolLock.RLock()
 	defer connectionPoolLock.RUnlock()
 	return domainConnectionPool
 }
 
-func GetNotificationConnectionPool() map[string]ServiceAnnouncement {
+func GetNotificationConnectionPool() map[string]Announcement {
 	connectionPoolLock.RLock()
 	defer connectionPoolLock.RUnlock()
 	return notificationConnectionPool
@@ -67,10 +67,10 @@ func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service 
 	}
 
 	connectionPoolLock.Lock()
-	apiConnectionPool = make(map[string]ServiceAnnouncement)
-	smtpConnectionPool = make(map[string]ServiceAnnouncement)
-	domainConnectionPool = make(map[string]ServiceAnnouncement)
-	notificationConnectionPool = make(map[string]ServiceAnnouncement)
+	apiConnectionPool = make(map[string]Announcement)
+	smtpConnectionPool = make(map[string]Announcement)
+	domainConnectionPool = make(map[string]Announcement)
+	notificationConnectionPool = make(map[string]Announcement)
 
 	for _, keyValue := range keyValues {
 		service, err := UnmarshalServiceAnnouncement(keyValue.Value)
@@ -134,7 +134,7 @@ func KeepConnectionPoolsAlive(ctx context.Context, service structs.ServiceConfig
 
 type GrpcConnection struct {
 	Conn    *grpc.ClientConn
-	Service ServiceAnnouncement
+	Service Announcement
 
 	TimeAdded     int64
 	LastRefreshed int64
@@ -142,7 +142,7 @@ type GrpcConnection struct {
 	Succeeded     bool
 }
 
-func RefreshPool(newPool map[string]ServiceAnnouncement, oldPool map[string]*GrpcConnection, grpcSecurityPolicy grpc.DialOption) map[string]*GrpcConnection {
+func RefreshPool(newPool map[string]Announcement, oldPool map[string]*GrpcConnection, grpcSecurityPolicy grpc.DialOption) map[string]*GrpcConnection {
 	logger := helpers.GetLogger()
 	pool := make(map[string]*GrpcConnection)
 	curTime := time.Now().Unix()
