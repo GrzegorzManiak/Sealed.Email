@@ -2,48 +2,49 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	clientv3 "go.etcd.io/etcd/client/v3"
-	"log"
 	"time"
 )
 
 func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnouncement Announcement, value string) (clientv3.LeaseID, error) {
-	EnsureEtcdConnection(serviceAnnouncement.Service)
+	if err := EnsureEtcdConnection(serviceAnnouncement.Service); err != nil {
+		return 0, fmt.Errorf("failed to ensure etcd connection: %w", err)
+	}
 
 	key := serviceAnnouncement.BuildID()
 	logger := helpers.GetLogger()
 	logger.Printf("Registering service %s", key)
+
 	lease, err := client.Grant(ctx, serviceAnnouncement.Service.TTL)
 	if err != nil {
-		logger.Printf("failed to create lease for service %s: %v", key, err)
-		return 0, err
+		return 0, fmt.Errorf("failed to create lease for service %s: %w", key, err)
 	}
 
 	_, err = client.Put(ctx, key, value, clientv3.WithLease(lease.ID))
 	if err != nil {
-		log.Printf("failed to register service %s: %v", key, err)
-		return 0, err
+		return 0, fmt.Errorf("failed to register service %s: %w", key, err)
 	}
 
+	logger.Printf("Service %s registered successfully", key)
 	return lease.ID, nil
 }
 
-func KeepServiceAnnouncementAlive(ctx context.Context, serviceAnnouncement Announcement, unique bool) {
-	marshaledService, err := serviceAnnouncement.Marshal()
+func KeepServiceAnnouncementAlive(ctx context.Context, serviceAnnouncement Announcement, unique bool) error {
 	logger := helpers.GetLogger()
+	marshaledService, err := serviceAnnouncement.Marshal()
 	if err != nil {
-		logger.Fatalf("failed to marshal service announcement: %v", err)
+		return fmt.Errorf("failed to marshal service announcement: %w", err)
 	}
 
 	leaseID, err := AnnounceService(ctx, GetEtcdClient(), serviceAnnouncement, marshaledService)
 	if err != nil {
-		logger.Fatalf("failed to register service %s: %v", serviceAnnouncement.Service.Prefix, err)
-		return
+		return fmt.Errorf("failed to register service %s: %w", serviceAnnouncement.Service.Prefix, err)
 	}
 
 	go func() {
-		respChan, err := GetEtcdClient().KeepAlive(ctx, leaseID)
+		lease, err := GetEtcdClient().KeepAlive(ctx, leaseID)
 		if err != nil {
 			logger.Printf("failed to start KeepAlive for service %s: %v", serviceAnnouncement.Service.Prefix, err)
 			return
@@ -51,20 +52,25 @@ func KeepServiceAnnouncementAlive(ctx context.Context, serviceAnnouncement Annou
 
 		for {
 			select {
-			case resp, ok := <-respChan:
+			case <-ctx.Done():
+				logger.Println("Context cancelled, stopping KeepAlive for service.")
+				return
+
+			case resp, ok := <-lease:
 				if !ok {
-					logger.Println("KeepAlive channel closed, stopping lease renewals.")
-					KeepServiceAnnouncementAlive(ctx, serviceAnnouncement, unique)
-					return
+					logger.Println("Failed to get response from KeepAlive channel, retrying.")
+					lease, err = GetEtcdClient().KeepAlive(ctx, leaseID)
+					if err != nil {
+						logger.Printf("failed to start KeepAlive for service %s: %v", serviceAnnouncement.Service.Prefix, err)
+					}
 				}
 
+				// FYI: KeepAlive handles the TTL, we just check if it failed (And restart it)
 				sleepFor := (time.Duration(resp.TTL) * time.Second) / 3
 				time.Sleep(sleepFor)
-
-			case <-ctx.Done():
-				logger.Println("KeepLeaseAlive context canceled, exiting.")
-				return
 			}
 		}
 	}()
+
+	return nil
 }

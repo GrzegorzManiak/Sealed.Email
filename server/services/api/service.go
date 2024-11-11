@@ -56,9 +56,15 @@ func Start() {
 		Service: config.Etcd.API,
 	}
 
-	ServiceProvider.InstantiateEtcdClient(config.Etcd.API)
 	etcdContext := context.Background()
-	ServiceProvider.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false)
+	if err := ServiceProvider.InstantiateEtcdClient(config.Etcd.API); err != nil {
+		logger.Fatalf("failed to instantiate etcd client: %v", err)
+	}
+
+	if err := ServiceProvider.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false); err != nil {
+		logger.Fatalf("failed to keep service announcement alive: %v", err)
+	}
+
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
 	ServiceProvider.RegisterCallback("filler", outsideServices.PoolCallback)
 

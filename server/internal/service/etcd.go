@@ -25,11 +25,6 @@ func GetEtcdClient() *clientv3.Client {
 }
 
 func InstantiateEtcdClient(service structs.ServiceConfig) error {
-	if client != nil {
-		helpers.GetLogger().Printf("[WARN] etcd client already initialized")
-		return nil
-	}
-
 	newClient, err := clientv3.New(clientv3.Config{
 		Endpoints:   config.Etcd.Endpoints,
 		DialTimeout: 2 * time.Second,
@@ -73,7 +68,7 @@ func CheckClientConnection() error {
 	return nil
 }
 
-func EnsureEtcdConnection(service structs.ServiceConfig) {
+func EnsureEtcdConnection(service structs.ServiceConfig) error {
 	clientLock.Lock()
 	defer clientLock.Unlock()
 	logger := helpers.GetLogger()
@@ -81,7 +76,7 @@ func EnsureEtcdConnection(service structs.ServiceConfig) {
 	if client != nil {
 		if err := CheckClientConnection(); err == nil {
 			logger.Println("etcd connection successful")
-			return
+			return nil
 		} else {
 			logger.Printf("etcd connection lost, attempting to reconnect: %v", err)
 			if err := DestroyEtcdClient(client); err != nil {
@@ -93,10 +88,11 @@ func EnsureEtcdConnection(service structs.ServiceConfig) {
 
 	logger.Println("connecting to etcd")
 	if err := InstantiateEtcdClient(service); err != nil {
-		logger.Printf("failed to reconnect to etcd: %v", err)
-	} else {
-		logger.Println("reconnected to etcd successfully")
+		return fmt.Errorf("failed to ensure etcd connection: %w", err)
 	}
+
+	logger.Println("etcd connection successful")
+	return nil
 }
 
 func GetAllKeys(ctx context.Context, client *clientv3.Client) ([]*mvccpb.KeyValue, error) {
