@@ -1,6 +1,6 @@
 import { GetCurve, Hash, EncodeToBase64, Client, BigIntToByteArray } from 'gowl-client-lib';
 import { CurrentCurve, Endpoints, ServerName } from '../constants';
-import { Compress, Decompress, Encrypt } from '../symetric';
+import {Compress, Decompress, Encrypt, NewKey} from '../symetric';
 import { ProcessDetails, CalculateIntegrityHash } from '../common';
 import { ClientError } from '../errors';
 import { UserKeys } from './types';
@@ -10,10 +10,11 @@ async function StandardIntegrityHash(rootKey: Uint8Array, priv: Uint8Array, cont
 }
 
 async function GenerateKeys(passwordHash: Uint8Array): Promise<UserKeys> {
+    const rootKey = NewKey();
+    const contactKey = NewKey();
+
     const curve = GetCurve(CurrentCurve);
-    const rootKey = curve.utils.randomPrivateKey();
     const priv = curve.utils.randomPrivateKey();
-    const contactKey = curve.utils.randomPrivateKey();
     const pub = curve.getPublicKey(priv);
 
     const EncryptedRootKey = await Encrypt(EncodeToBase64(rootKey), passwordHash);

@@ -10,7 +10,7 @@ async function Encrypt(text: string, key: Uint8Array): Promise<{ iv: number[], d
         { name: 'AES-GCM', iv: iv }, cryptoKey, data);
   
     return { iv: Array.from(iv), data: Array.from(new Uint8Array(encrypted)) };
-};
+}
   
 async function Decrypt(encryptedData: { iv: number[], data: number[] }, key: Uint8Array): Promise<string> {
     const { iv, data } = encryptedData;
@@ -25,24 +25,29 @@ async function Decrypt(encryptedData: { iv: number[], data: number[] }, key: Uin
   
     const decoder = new TextDecoder();
     return decoder.decode(decrypted);
-};
+}
 
 function Compress(encryptedData: { iv: number[], data: number[] }): Uint8Array {
     const { iv, data } = encryptedData;
     const ivArray = new Uint8Array(iv);
     const dataArray = new Uint8Array(data);
     return new Uint8Array([ ...ivArray, ...dataArray ]);
-};
+}
 
 function Decompress(compressedData: Uint8Array): { iv: number[], data: number[] } {
     const iv = compressedData.slice(0, 16);
     const data = compressedData.slice(16);
     return { iv: Array.from(iv), data: Array.from(data) };
 }
+
+function NewKey(length = 32): Uint8Array {
+    return crypto.getRandomValues(new Uint8Array(length));
+}
   
 export {
     Encrypt,
     Decrypt,
     Compress,
-    Decompress
+    Decompress,
+    NewKey
 }

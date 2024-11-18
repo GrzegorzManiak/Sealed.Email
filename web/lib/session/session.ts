@@ -1,11 +1,11 @@
 import {Statistics} from "./types";
 import {ReturnedVerifyData} from "../auth/types";
 import { Login } from "../auth/login";
-import {Decompress, Decrypt} from "../symetric";
+import {Compress, Decompress, Decrypt, Encrypt} from "../symetric";
 import {DecodeFromBase64} from "../common";
 import {CryptoGenericError} from "../errors";
 import {StandardIntegrityHash} from "../auth/register";
-import {BigIntToByteArray} from "gowl-client-lib";
+import {BigIntToByteArray, EncodeToBase64} from "gowl-client-lib";
 import {COOKIE_NAME} from "../constants";
 
 class Session {
@@ -105,10 +105,17 @@ class Session {
         this._sessionEstablished = true;
     }
 
+    public async EncryptKey(key: Uint8Array | string): Promise<string> {
+        if (typeof key !== 'string') key = EncodeToBase64(key);
+        const encryptedKey = Compress(await Encrypt(key, this._rootKey));
+        return EncodeToBase64(encryptedKey);
+    }
+
     public get Statistics(): Statistics { return this._statistics; }
     public get SessionEstablished(): boolean { return this._sessionEstablished; }
     public get SessionKey(): Uint8Array { return this._sessionKey; }
     public get Token(): string { return this._sessionToken; }
+    public get CookieToken(): string { return `${COOKIE_NAME}=${this._sessionToken}`; }
     public get IsTokenAuthenticated(): boolean { return this._sessionToken.length > 0; }
 }
 
