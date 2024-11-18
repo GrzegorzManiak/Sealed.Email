@@ -7,8 +7,8 @@ type User struct {
 
 	// UID: The user's unique identifier (The user can hash their id before sending it to the server)
 	// RecoveryEmail: The user's recovery email, it is hashed with the user's UID on the client side
-	UID           string  `gorm:"unique"`
-	RecoveryEmail *string `gorm:"unique"`
+	UID           string `gorm:"unique"`
+	RecoveryEmail string `gorm:"unique"`
 
 	// GOWL: GOWL Specific Fields
 	ServerName string
@@ -42,11 +42,11 @@ type User struct {
 	TotalOutboundBytes  uint
 
 	// Admin Fields
-	Holds []UserHold `gorm:"foreignKey:UserID"`
-	Quota UserQuota  `gorm:"foreignKey:UserID"`
-	Flags []string
-
-	// Email Fields
-	Inboxes []UserInbox  `gorm:"foreignKey:UserID"`
-	Domains []UserDomain `gorm:"foreignKey:UserID"`
+	//Holds []UserHold `gorm:"foreignKey:UserID"`
+	//Quota UserQuota  `gorm:"foreignKey:UserID"`
+	//Flags []string
+	//
+	//// Email Fields
+	//Inboxes []UserInbox  `gorm:"foreignKey:UserID"`
+	//Domains []UserDomain `gorm:"foreignKey:UserID"`
 }
