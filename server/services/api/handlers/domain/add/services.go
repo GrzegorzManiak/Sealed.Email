@@ -24,6 +24,8 @@ func insertDomain(
 	}
 
 	RID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
+	TXT := buildTxtChallenge()
+
 	domainModel := models.UserDomain{
 		RID:    RID,
 		UserID: user.ID,
@@ -36,6 +38,7 @@ func insertDomain(
 		DKIMKeysCreatedAt: time.Now().Unix(),
 		DKIMPublicKey:     kp.EncodePublicKey(),
 		DKIMPrivateKey:    kp.EncodePrivateKey(),
+		TxtChallenge:      TXT,
 
 		Version:          1,
 		EncryptedRootKey: privateKey,
@@ -63,7 +66,7 @@ func trimDomain(domain string) (string, helpers.AppError) {
 }
 
 func generateDKIMKeyPair() (*cryptography.RSAKeyPair, helpers.AppError) {
-	kp, err := cryptography.GenerateRSAKeyPair(config.Auth.DKIMKeySize)
+	kp, err := cryptography.GenerateRSAKeyPair(config.Domain.DKIMKeySize)
 	if err != nil {
 		helpers.GetLogger().Printf("Error generating RSA key pair: %v", err)
 		return &cryptography.RSAKeyPair{}, helpers.GenericError{
@@ -72,4 +75,9 @@ func generateDKIMKeyPair() (*cryptography.RSAKeyPair, helpers.AppError) {
 		}
 	}
 	return kp, nil
+}
+
+func buildTxtChallenge() string {
+	RID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
+	return fmt.Sprintf("%s=%s", config.Domain.TxtVerificationPrefix, RID)
 }

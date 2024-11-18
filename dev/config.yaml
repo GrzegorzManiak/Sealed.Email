@@ -11,12 +11,13 @@ session:
 
 auth:
   maxVerifyTimeWindow: 300
-  DKIMKeySize: 4096
 
 domain:
   provided:
       - 'beta.noise.email'
 
+  DKIMKeySize: 4096
+  txtVerificationPrefix: '_nes-challenge'
   identityProvider: '_identity.{DOMAIN} IN CNAME _identity.mx.noise.email'
   spfRecord: 'v=spf1 include:_spf.mx.noise.email -all'
   mxRecords:

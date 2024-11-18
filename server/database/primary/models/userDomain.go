@@ -19,6 +19,7 @@ type UserDomain struct {
 	DKIMKeysCreatedAt int64
 	DKIMPublicKey     string
 	DKIMPrivateKey    string
+	TxtChallenge      string
 
 	Version          uint
 	EncryptedRootKey string

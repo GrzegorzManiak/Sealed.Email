@@ -8,8 +8,10 @@ type Input struct {
 }
 
 type Output struct {
-	DKIMPublicKey string `json:"dkimPubKey"`
-	Verification  string `json:"verification"`
+	DKIMPublicKey    string `json:"dkimPubKey"`
+	DomainID         string `json:"domainID"`
+	TxtRecord        string `json:"txtRecord"`
+	SentVerification bool   `json:"sentVerification"`
 }
 
 var SessionFilter = &session.APIConfiguration{

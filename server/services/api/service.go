@@ -13,7 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"log"
-	"time"
 )
 
 func Start() {
@@ -67,14 +66,6 @@ func Start() {
 
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
 	ServiceProvider.RegisterCallback("filler", outsideServices.PoolCallback)
-
-	go func() {
-		time.Sleep(5 * time.Second)
-		err = outsideServices.AddDomainToVerificationQueue(context.Background(), "test")
-		if err != nil {
-			logger.Printf("failed to add domain to verification queue: %v", err)
-		}
-	}()
 
 	logger.Printf(serviceAnnouncement.String())
 	err = router.Run()

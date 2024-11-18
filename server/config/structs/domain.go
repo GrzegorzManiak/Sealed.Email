@@ -9,11 +9,14 @@ type DomainServiceConfig struct {
 }
 
 type DomainConfig struct {
-	ProvidedDomains  []string            `yaml:"provided"`
-	IdentityProvider string              `yaml:"identityProvider"`
-	SpfRecord        string              `yaml:"spfRecord"`
-	MxRecords        []string            `yaml:"mxRecords"`
-	DkimTemplate     string              `yaml:"dkimTemplate"`
-	DmarcTemplate    string              `yaml:"dmarcTemplate"`
-	Service          DomainServiceConfig `yaml:"service"`
+	ProvidedDomains       []string `yaml:"provided"`
+	IdentityProvider      string   `yaml:"identityProvider"`
+	SpfRecord             string   `yaml:"spfRecord"`
+	MxRecords             []string `yaml:"mxRecords"`
+	DkimTemplate          string   `yaml:"dkimTemplate"`
+	DmarcTemplate         string   `yaml:"dmarcTemplate"`
+	DKIMKeySize           int      `yaml:"DKIMKeySize"`
+	TxtVerificationPrefix string   `yaml:"txtVerificationPrefix"`
+
+	Service DomainServiceConfig `yaml:"service"`
 }
