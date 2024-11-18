@@ -1,4 +1,4 @@
-# Points Of Interest
+\# Points Of Interest
 
 Just some random tidbits of information that I found interesting / Ideas that I want
 to explore further.
