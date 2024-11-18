@@ -2,6 +2,7 @@ package session
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"gorm.io/gorm"
 	"time"
 )
@@ -104,4 +105,16 @@ func (claims *Claims) Filter(filter *APIConfiguration) bool {
 	}
 
 	return true
+}
+
+func (claims *Claims) FetchUser(databaseConnection *gorm.DB) (models.User, helpers.AppError) {
+	user := models.User{}
+	err := databaseConnection.Where("uid = ?", claims.Content.UserID).First(&user)
+	if err.Error != nil {
+		return models.User{}, helpers.GenericError{
+			Message: "User not found",
+			ErrCode: 400,
+		}
+	}
+	return user, nil
 }

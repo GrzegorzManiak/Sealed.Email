@@ -6,21 +6,19 @@ import (
 
 type UserDomain struct {
 	gorm.Model
-	UID    string `gorm:"unique"`
+	RID    string `gorm:"unique"`
 	UserID uint   `gorm:"uniqueIndex"`
 
-	RootDomain string
-	Subdomain  string
-	Domain     string
-	Verified   bool
+	Domain   string
+	Verified bool
 
 	CatchAll                    bool
 	CatchAllPublicKey           string
 	CatchAllEncryptedPrivateKey string
 
-	DKIMKeysCreatedAt       uint
-	DKIMPublicKey           string
-	DKIMEncryptedPrivateKey string
+	DKIMKeysCreatedAt uint
+	DKIMPublicKey     string
+	DKIMPrivateKey    string
 
 	Version          uint
 	EncryptedRootKey string
