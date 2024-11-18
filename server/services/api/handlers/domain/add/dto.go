@@ -3,8 +3,8 @@ package domainAdd
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
-	Domain           string `json:"domain"`
-	EncryptedRootKey string `json:"encRootKey"`
+	Domain           string `json:"domain" validate:"fqdn"`
+	EncryptedRootKey string `json:"encRootKey" validate:"Encrypted-B64-Key"`
 }
 
 type Output struct {
