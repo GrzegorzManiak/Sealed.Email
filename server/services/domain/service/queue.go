@@ -1,10 +1,10 @@
 package service
 
 import (
-	"fmt"
 	database "github.com/GrzegorzManiak/NoiseBackend/database/domain/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"gorm.io/gorm"
+	"math/rand"
 	"sync"
 	"time"
 )
@@ -19,12 +19,14 @@ func Worker(entry *queue.Entry, primaryDatabaseConnection *gorm.DB) int8 {
 		return 2
 	}
 
-	time.Sleep(time.Second * 5)
+	// -- Sleep for 5 - 10 seconds
+	time.Sleep(time.Duration(5+rand.Intn(5)) * time.Second)
 
-	// -- Lock when we will be writing to primary database
-	primaryDatabaseMutex.Lock()
-	defer primaryDatabaseMutex.Unlock()
-
-	fmt.Println("Executing Queue: ", entry.String())
-	return 0
+	// -- Return 1/2
+	random := rand.Intn(2)
+	if random == 0 {
+		return 1
+	} else {
+		return 2
+	}
 }

@@ -1,154 +1,166 @@
 package queue
 
 import (
-	"context"
+	"fmt"
 	"gorm.io/gorm"
-	"log"
 	"strings"
 	"sync"
 	"time"
 )
 
-var rwMutex sync.RWMutex = sync.RWMutex{}
+type Queue struct {
+	Name         string
+	BatchTimeout int
+	MaxBatchSize int
 
-/**
-I was thinking of a system that just auto-writes each request to the MySQL db
-This will be our buffer.
+	entriesLock sync.RWMutex
+	readyLock   sync.Mutex
+	queueLock   sync.Mutex
+	workLock    sync.Mutex
 
-We then have a task runner that gets x number of the next requests and executes
-them.
+	entries *[]Entry
+	ready   *[]Entry
+	queue   *[]Entry
+	workers int
 
-We also need a function for refreshing a task.
-*/
-
-func PushToQueue(databaseConnection *gorm.DB, entry *Entry) (string, error) {
-	rwMutex.Lock()
-	defer rwMutex.Unlock()
-
-	err := databaseConnection.Create(entry).Error
-	if err != nil {
-		return "", err
-	}
-
-	return entry.Uuid, nil
+	database *gorm.DB
 }
 
-func UpdateEntry(databaseConnection *gorm.DB, entry Entry) error {
-	rwMutex.Lock()
-	defer rwMutex.Unlock()
+func (q *Queue) GetBatch() (error error) {
+	q.entriesLock.Lock()
+	defer q.entriesLock.Unlock()
 
-	err := databaseConnection.Save(&entry).Error
-	if err != nil {
-		return err
+	numToFetch := q.MaxBatchSize - len(*q.entries)
+	if numToFetch <= 0 {
+		return nil
 	}
 
-	return nil
-}
+	// -- Limit the number of entries fetched
+	if float64(len(*q.queue)) > (float64(q.MaxBatchSize) * 1.5) {
+		return nil
+	}
 
-func GetNextEntries(databaseConnection *gorm.DB, queue string, limit int) ([]Entry, error) {
+	if q.database == nil {
+		return fmt.Errorf("database is not initialized")
+	}
+
 	var entries []Entry
-	queue = strings.ToLower(queue)
-	time := time.Now().Unix()
-
-	err := databaseConnection.
-		Where("queue = ? AND status != ? AND total_attempts < permitted_attempts AND next_execution <= ?", queue, 2, time).
+	err := q.database.
+		Where("queue = ? AND status != ? AND total_attempts <= permitted_attempts AND next_execution <= ?", q.Name, 3, time.Now().Unix()).
 		Order("next_execution ASC").
-		Limit(limit).
+		Limit(numToFetch).
 		Find(&entries).
 		Error
 
-	return entries, err
-}
-
-func MarkAsInprogress(databaseConnection *gorm.DB, uuid string) error {
-	var entry Entry
-	err := databaseConnection.
-		Where("uuid = ?", uuid).
-		First(&entry).
-		Error
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to fetch entries: %w", err)
 	}
 
-	entry.Status = 1
-	err = UpdateEntry(databaseConnection, entry)
-	if err != nil {
-		return err
+	for i := range entries {
+		entries[i].LogAttempt()
 	}
 
+	if len(entries) > 0 {
+		err = q.database.Save(entries).Error
+		if err != nil {
+			return fmt.Errorf("failed to update entries: %w", err)
+		}
+	}
+
+	*q.entries = append(*q.entries, entries...)
 	return nil
 }
 
-func Dispatcher(
-	ctx context.Context,
-	databaseConnection *gorm.DB,
-	queue string,
-	timeout int,
-	maximumWorkers int,
-	worker func(entry *Entry) int8,
-) {
-	totalActiveWorkers := 0
-	workersMutex := sync.Mutex{}
-	timeoutDuration := time.Duration(timeout) * time.Second
+func (q *Queue) BatchUpdate() (error error) {
+	q.readyLock.Lock()
+	defer q.readyLock.Unlock()
 
-	err := databaseConnection.AutoMigrate(&Entry{})
-	if err != nil {
-		log.Fatalf("Failed to migrate: %v", err)
+	if len(*q.ready) == 0 {
+		return nil
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			if databaseConnection.Error != nil {
-				log.Fatalf("Failed to get table: %v", databaseConnection.Error)
-				return
-			}
+	err := q.database.Save(*q.ready).Error
+	if err != nil {
+		return fmt.Errorf("failed to update entries: %w", err)
+	}
 
-			if totalActiveWorkers >= maximumWorkers {
-				time.Sleep(1)
-				continue
-			}
+	*q.ready = nil
+	return nil
+}
 
-			entries, err := GetNextEntries(databaseConnection, queue, maximumWorkers)
-			if err != nil {
-				log.Printf("Failed to get entries: %v", err)
-				time.Sleep(timeoutDuration)
-				continue
-			}
+func (q *Queue) FlushQueue() (error error) {
+	q.queueLock.Lock()
+	defer q.queueLock.Unlock()
 
-			for _, entry := range entries {
-				workersMutex.Lock()
-				if totalActiveWorkers >= maximumWorkers {
-					workersMutex.Unlock()
-					time.Sleep(timeoutDuration)
-					continue
-				}
-				totalActiveWorkers++
-				workersMutex.Unlock()
+	if len(*q.queue) == 0 {
+		return nil
+	}
 
-				go func(entry Entry) {
-					println("Worker started", entry.Uuid)
-					entry.LogAttempt()
-					err := UpdateEntry(databaseConnection, entry)
-					if err != nil {
-						log.Printf("Failed to update entry: %v", err)
-					}
+	err := q.database.Create(*q.queue).Error
+	if err != nil {
+		return fmt.Errorf("failed to flush queue: %w", err)
+	}
 
-					output := worker(&entry)
-					entry.LogResult(output)
+	*q.queue = nil
+	return nil
+}
 
-					err = UpdateEntry(databaseConnection, entry)
-					if err != nil {
-						log.Printf("Failed to update entry: %v", err)
-					}
+func (q *Queue) AddEntry(entry *Entry) {
+	q.queueLock.Lock()
+	defer q.queueLock.Unlock()
+	*q.queue = append(*q.queue, *entry)
+}
 
-					workersMutex.Lock()
-					totalActiveWorkers--
-					workersMutex.Unlock()
-				}(entry)
-			}
-		}
+func (q *Queue) UpdateEntry(entry *Entry) {
+	q.readyLock.Lock()
+	defer q.readyLock.Unlock()
+	*q.ready = append(*q.ready, *entry)
+}
+
+func (q *Queue) RequestWork() (entry *Entry) {
+	q.workLock.Lock()
+	defer q.workLock.Unlock()
+
+	if q.workers >= q.MaxBatchSize {
+		return nil
+	}
+
+	if len(*q.entries) == 0 {
+		return nil
+	}
+
+	entry = &(*q.entries)[0]
+	*q.entries = (*q.entries)[1:]
+	q.workers++
+	return entry
+}
+
+func (q *Queue) FinishWork(entry *Entry) {
+	q.workLock.Lock()
+	defer q.workLock.Unlock()
+	q.workers--
+}
+
+func NewQueue(
+	databaseConnection *gorm.DB,
+	queueName string,
+	timeout int,
+	maximumWorkers int,
+) *Queue {
+	queueName = strings.ToLower(queueName)
+	return &Queue{
+		Name:         queueName,
+		BatchTimeout: timeout,
+		MaxBatchSize: maximumWorkers,
+
+		entriesLock: sync.RWMutex{},
+		readyLock:   sync.Mutex{},
+		queueLock:   sync.Mutex{},
+
+		entries: &[]Entry{},
+		ready:   &[]Entry{},
+		queue:   &[]Entry{},
+
+		database: databaseConnection,
 	}
 }

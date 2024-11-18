@@ -21,12 +21,17 @@ func Start() {
 	//primaryDatabaseConnection := DomainDatabase.InitiateConnection()
 	queueContext := context.Background()
 
-	go queue.Dispatcher(
-		queueContext,
+	domainQueue := queue.NewQueue(
 		queueDatabaseConnection,
 		QueueService.QueueName,
 		config.Domain.Service.BatchTimeout,
 		config.Domain.Service.MaxConcurrent,
+	)
+
+	go queue.Dispatcher(
+		queueContext,
+		queueDatabaseConnection,
+		domainQueue,
 		func(entry *queue.Entry) int8 {
 			return QueueService.Worker(entry, queueDatabaseConnection)
 		})
@@ -36,7 +41,10 @@ func Start() {
 		log.Fatalf("failed to create gRPC service: %v", err)
 	}
 
-	domain.RegisterDomainServiceServer(grpcServer, &QueueService.Server{QueueDatabaseConnection: queueDatabaseConnection})
+	domain.RegisterDomainServiceServer(grpcServer, &QueueService.Server{
+		QueueDatabaseConnection: queueDatabaseConnection,
+		Queue:                   domainQueue,
+	})
 	reflection.Register(grpcServer)
 
 	serviceAnnouncement := ServiceProvider.Announcement{

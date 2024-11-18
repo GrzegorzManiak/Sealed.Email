@@ -25,7 +25,11 @@ type EntryData interface {
 	Marshal() (string, error)
 }
 
-// BeforeSave 0 - Pending, 1 - Verified, 2 - Failed, 3 - Expired
+// BeforeSave
+// 0 - Pending,
+// 1 - Verified,
+// 2 - Failed,
+// 3 - Expired
 func (entry *Entry) BeforeSave(tx *gorm.DB) (err error) {
 	if entry.Status > 3 || entry.Status < 0 {
 		entry.Status = 2
@@ -43,15 +47,6 @@ func (entry *Entry) BeforeSave(tx *gorm.DB) (err error) {
 	return
 }
 
-func (entry *Entry) IsPending() bool {
-	currentTime := time.Now().Unix()
-	return (entry.Status == 0 || entry.Status == 2 || entry.NextExecution < currentTime) && entry.TotalAttempts < entry.PermittedAttempts
-}
-
-func (entry *Entry) IsExpired() bool {
-	return entry.TotalAttempts >= entry.PermittedAttempts
-}
-
 func (entry *Entry) LogAttempt() {
 	timeNow := time.Now().Unix()
 	entry.LastExecution = timeNow
@@ -59,15 +54,17 @@ func (entry *Entry) LogAttempt() {
 	entry.TotalAttempts++
 
 	if entry.TotalAttempts >= entry.PermittedAttempts {
-		entry.Status = 2
+		entry.Status = 3
 	}
 }
 
-func (entry *Entry) LogResult(status int8) {
-	if status > 3 || status < 0 {
-		entry.Status = 2
-	} else {
+func (entry *Entry) LogStatus(status int8) {
+	if entry.TotalAttempts >= entry.PermittedAttempts {
+		entry.Status = 3
+	} else if status >= 0 && status <= 3 {
 		entry.Status = status
+	} else {
+		entry.Status = 2
 	}
 }
 

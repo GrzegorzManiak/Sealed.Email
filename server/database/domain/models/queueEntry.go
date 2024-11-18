@@ -8,7 +8,7 @@ type VerificationQueue struct {
 	DomainName      string
 	DkimPublicKey   string
 	TxtVerification string
-	TenantID        uint
+	TenantID        uint64
 	TenantType      string
 }
 
