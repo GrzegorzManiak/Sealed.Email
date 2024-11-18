@@ -31,7 +31,11 @@ func Start() {
 			return QueueService.Worker(entry, queueDatabaseConnection)
 		})
 
-	listener, grpcServer, ServiceID := ServiceProvider.CreateGRPCService(config.Certificates.Domain)
+	listener, grpcServer, ServiceID, err := ServiceProvider.CreateGRPCService(config.Certificates.Domain)
+	if err != nil {
+		log.Fatalf("failed to create gRPC service: %v", err)
+	}
+
 	domain.RegisterDomainServiceServer(grpcServer, &QueueService.Server{QueueDatabaseConnection: queueDatabaseConnection})
 	reflection.Register(grpcServer)
 
@@ -48,7 +52,7 @@ func Start() {
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
 
 	logger.Printf(serviceAnnouncement.String())
-	if err := grpcServer.Serve(*listener); err != nil {
+	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
