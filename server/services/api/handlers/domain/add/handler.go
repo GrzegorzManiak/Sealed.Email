@@ -20,6 +20,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 	}
 
 	return &Output{
-		Verification: domainModel.RID,
+		Verification:  domainModel.RID,
+		DKIMPublicKey: domainModel.DKIMPublicKey,
 	}, nil
 }

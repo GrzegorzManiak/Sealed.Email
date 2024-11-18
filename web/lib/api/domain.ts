@@ -37,6 +37,8 @@ async function AddDomainRequest(session: Session, domain: string, encRootKey: st
             'DOMAIN-ADD-FAIL'
         );
     }
+
+    console.log("Domain added successfully", await response.json());
 }
 
 async function AddDomain(session: Session, domain: string): Promise<void> {

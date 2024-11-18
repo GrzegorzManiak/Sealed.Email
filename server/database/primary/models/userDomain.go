@@ -7,7 +7,7 @@ import (
 type UserDomain struct {
 	gorm.Model
 	RID    string `gorm:"unique"`
-	UserID uint   `gorm:"uniqueIndex"`
+	UserID uint   `gorm:"index"`
 
 	Domain   string
 	Verified bool
@@ -16,7 +16,7 @@ type UserDomain struct {
 	CatchAllPublicKey           string
 	CatchAllEncryptedPrivateKey string
 
-	DKIMKeysCreatedAt uint
+	DKIMKeysCreatedAt int64
 	DKIMPublicKey     string
 	DKIMPrivateKey    string
 
