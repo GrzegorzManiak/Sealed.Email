@@ -6,9 +6,9 @@ import {AddDomain} from "./api/domain";
 
 const username = 'bob1didbob2';
 console.log(`Logging in as ${username}`);
-/*
-const newUser = await RegisterUser(username, 'Test');
-if (newUser instanceof Error) throw newUser;*/
+
+// const newUser = await RegisterUser(username, 'Test');
+// if (newUser instanceof Error) throw newUser;
 
 const session = new Session(await Login(username, 'Test'), true);
 await session.DecryptKeys();

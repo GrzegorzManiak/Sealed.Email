@@ -11,7 +11,7 @@ session:
 
 auth:
   maxVerifyTimeWindow: 300
-  DKIMSize: 512
+  DKIMKeySize: 4096
 
 domain:
   provided:
