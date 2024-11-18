@@ -11,6 +11,7 @@ session:
 
 auth:
   maxVerifyTimeWindow: 300
+  DKIMSize: 512
 
 domain:
   provided:
