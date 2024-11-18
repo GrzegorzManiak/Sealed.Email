@@ -2,8 +2,8 @@
 
 ## Plan
 
-- [x] Domain adding
-- [x] Domain DNS verification
-- [x] Domain Management
-- [x] Remove reminince of rate limiting (Will be done in nginx)
-- [x] Fix domain queue
+1. [ ] Domain adding
+2. [ ] Domain DNS verification
+3. [ ] Domain Management
+4. [ ] Remove reminince of rate limiting (Will be done in nginx)
+5. [ ] Fix domain queue
