@@ -9,7 +9,7 @@ service DomainService {
 message QueueDNSVerificationRequest {
   string domainName = 1;
   int32 importance = 3;
-  string tenantId = 5;
+  uint64 tenantId = 5;
   string tenantType = 6;
   string dkimPublicKey = 7;
   string txtVerificationCode = 8;

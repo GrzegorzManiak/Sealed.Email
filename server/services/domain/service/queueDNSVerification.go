@@ -9,13 +9,7 @@ import (
 )
 
 func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSVerificationRequest) (*domain.QueueDNSVerificationResponse, error) {
-	entry, err := queue.Initiate(config.Domain.Service.RetryMax, config.Domain.Service.RetryInterval, QueueName, database.VerificationQueue{
-		DomainName:      "A",
-		DkimPublicKey:   "B",
-		TxtVerification: "C",
-		TenantID:        0,
-		TenantType:      "D",
-	})
+	entry, err := queue.Initiate(config.Domain.Service.RetryMax, config.Domain.Service.RetryInterval, QueueName, database.VerificationQueue{})
 	if err != nil {
 		return &domain.QueueDNSVerificationResponse{
 			Message:      "Failed to initiate DNS verification request",

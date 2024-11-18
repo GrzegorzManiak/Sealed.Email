@@ -6,7 +6,6 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	domainService "github.com/GrzegorzManiak/NoiseBackend/proto/domain"
-	"strconv"
 )
 
 func AddDomainToVerificationQueue(ctx context.Context, domainModel *models.UserDomain) helpers.AppError {
@@ -19,7 +18,7 @@ func AddDomainToVerificationQueue(ctx context.Context, domainModel *models.UserD
 	_, err := stub.QueueDNSVerification(ctx, &domainService.QueueDNSVerificationRequest{
 		DomainName:          domainModel.Domain,
 		Importance:          10,
-		TenantId:            strconv.Itoa(int(domainModel.UserID)),
+		TenantId:            uint64(domainModel.UserID),
 		TenantType:          "user",
 		DkimPublicKey:       domainModel.DKIMPublicKey,
 		TxtVerificationCode: domainModel.TxtChallenge,
