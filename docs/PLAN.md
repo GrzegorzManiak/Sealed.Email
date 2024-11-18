@@ -7,3 +7,4 @@
 3. [ ] Domain Management
 4. [ ] Remove reminince of rate limiting (Will be done in nginx)
 5. [ ] Fix domain queue
+6. [ ] Fix login verify collisions

@@ -14,6 +14,7 @@ type RefID = {
 };
 
 type ReturnedVerifyData = {
+    _headers: Headers,
     integrityHash: string,
 
     encryptedSymmetricRootKey: string,

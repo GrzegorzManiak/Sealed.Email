@@ -56,7 +56,10 @@ async function LoginVerify(client: Client, data: ServerAuthInit & RefID): Promis
         );
     }
 
-    return await response.json();
+    return {
+        ...await response.json(),
+        _headers: response.headers
+    };
 };
 
 async function Login(username: string, password: string): Promise<{ client: Client, passwordHash: Uint8Array, usernameHash: string, verify: ReturnedVerifyData } | ClientError> {

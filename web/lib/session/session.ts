@@ -6,6 +6,7 @@ import {DecodeFromBase64} from "../common";
 import {CryptoGenericError} from "../errors";
 import {StandardIntegrityHash} from "../auth/register";
 import {BigIntToByteArray} from "gowl-client-lib";
+import {COOKIE_NAME} from "../constants";
 
 class Session {
     private readonly _encryptedSymetricRootKey: string;
@@ -14,6 +15,7 @@ class Session {
     private readonly _integrityHash: string;
 
     private _sessionEstablished: boolean = false;
+    private _sessionToken: string = '';
 
     private _passwordHash: Uint8Array;
 
@@ -24,7 +26,7 @@ class Session {
 
     private _statistics: Statistics;
 
-    public constructor(awaitedLogin: Awaited<ReturnType<typeof Login>>) {
+    public constructor(awaitedLogin: Awaited<ReturnType<typeof Login>>, captureCookie: boolean = false) {
         if (awaitedLogin instanceof Error) throw awaitedLogin;
         const { verify, passwordHash, client } = awaitedLogin;
         this._passwordHash = passwordHash;
@@ -32,6 +34,7 @@ class Session {
         const sessionKey = client.GetSessionKey();
         if (sessionKey instanceof Error) throw sessionKey;
         this._sessionKey = BigIntToByteArray(sessionKey);
+        if (captureCookie) this._sessionToken = this._FindSessionToken(verify._headers);
 
         this._encryptedSymetricRootKey = verify.encryptedSymmetricRootKey;
         this._encryptedAsymetricPrivateKey = verify.encryptedAsymmetricPrivateKey;
@@ -48,6 +51,19 @@ class Session {
             totalOutboundEmails: verify.totalOutboundEmails,
             totalOutboundBytes: verify.totalOutboundBytes
         };
+    }
+
+    private _FindSessionToken(headers: Headers): string {
+        const cookies = headers.getSetCookie();
+        for (const cookie of cookies) {
+            const [name, value] = cookie.split('=');
+            if (name.trim() !== COOKIE_NAME) continue;
+            const parts = value.split(';');
+            let longest = '';
+            for (const part of parts) if (part.length > longest.length) longest = part;
+            return longest;
+        }
+        return '';
     }
 
     public async DecryptKeys(): Promise<void | CryptoGenericError> {
@@ -92,6 +108,8 @@ class Session {
     public get Statistics(): Statistics { return this._statistics; }
     public get SessionEstablished(): boolean { return this._sessionEstablished; }
     public get SessionKey(): Uint8Array { return this._sessionKey; }
+    public get Token(): string { return this._sessionToken; }
+    public get IsTokenAuthenticated(): boolean { return this._sessionToken.length > 0; }
 }
 
 export default Session;

@@ -1,6 +1,7 @@
 import { SupportedCurves } from "gowl-client-lib";
 
 const ROOT = 'http://localhost:8080';
+const COOKIE_NAME = 'NES-DEV';
 
 const Endpoints = {
     REGISTER:       [`${ROOT}/register`, 'POST'],
@@ -21,5 +22,6 @@ export {
     CurrentCurve,
     ServerName,
     Endpoints,
+    COOKIE_NAME,
     ROOT
 }
