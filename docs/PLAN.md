@@ -11,4 +11,4 @@
 7. [ ] Add localization tags to errors
 8. [ ] Add Error type to server errors so that the client can display the correct error message correctly in headers not as json
 9. [ ] DKIM Key encryption at rest.
-10. [ ] Implement a proper logging system
+10. [x] Implement a proper logging system
