@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.uber.org/zap"
 	"sync"
 	"time"
 )
@@ -19,7 +19,7 @@ func GetEtcdClient() *clientv3.Client {
 	clientLock.RLock()
 	defer clientLock.RUnlock()
 	if client == nil {
-		panic("etcd client is not initialized")
+		zap.L().Panic("etcd client is not initialized")
 	}
 	return client
 }
@@ -71,33 +71,31 @@ func CheckClientConnection() error {
 func EnsureEtcdConnection(service structs.ServiceConfig) error {
 	clientLock.Lock()
 	defer clientLock.Unlock()
-	logger := helpers.GetLogger()
 
 	if client != nil {
 		if err := CheckClientConnection(); err == nil {
-			logger.Println("etcd connection successful")
 			return nil
 		} else {
-			logger.Printf("etcd connection lost, attempting to reconnect: %v", err)
+			zap.L().Warn("etcd client connection failed, reconnecting", zap.Error(err))
 			if err := DestroyEtcdClient(client); err != nil {
-				logger.Printf("failed to destroy etcd client: %v", err)
+				return fmt.Errorf("failed to destroy etcd client: %w", err)
 			}
 			client = nil
 		}
 	}
 
-	logger.Println("connecting to etcd")
 	if err := InstantiateEtcdClient(service); err != nil {
+		zap.L().Error("failed to ensure etcd connection", zap.Error(err))
 		return fmt.Errorf("failed to ensure etcd connection: %w", err)
 	}
 
-	logger.Println("etcd connection successful")
 	return nil
 }
 
 func GetAllKeys(ctx context.Context, client *clientv3.Client) ([]*mvccpb.KeyValue, error) {
 	resp, err := client.Get(ctx, Prefix, clientv3.WithPrefix())
 	if err != nil {
+		zap.L().Error("failed to retrieve keys", zap.Error(err))
 		return nil, fmt.Errorf("failed to retrieve keys with prefix %s: %w", Prefix, err)
 	}
 	return resp.Kvs, nil

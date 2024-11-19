@@ -4,39 +4,27 @@ import (
 	"context"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/midlewares"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/outsideServices"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/routes"
 	"github.com/gin-contrib/pprof"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"log"
+	"go.uber.org/zap"
+	"time"
 )
 
 func Start() {
-	log.Printf("------------------ Starting API Service ------------------")
-	logger := helpers.GetLogger()
+	zap.L().Info("Starting API service")
 
 	router := gin.Default()
+	router.Use(ginzap.Ginzap(zap.L(), time.RFC3339, true))
+	router.Use(ginzap.RecoveryWithZap(zap.L(), true))
 	router.Use(midlewares.URLCleanerMiddleware())
-	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	pprof.Register(router, "debug/")
-
-	// COORS to allow every origin (Anon function)
-	router.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
 
 	databaseConnection := PrimaryDatabase.InitiateConnection()
 	routes.RegisterRoutes(router, databaseConnection)
@@ -45,7 +33,7 @@ func Start() {
 
 	serviceUUID, err := uuid.NewUUID()
 	if err != nil {
-		logger.Fatalf("failed to generate service UUID: %v", err)
+		zap.L().Panic("failed to generate service UUID", zap.Error(err))
 	}
 
 	serviceAnnouncement := ServiceProvider.Announcement{
@@ -57,19 +45,18 @@ func Start() {
 
 	etcdContext := context.Background()
 	if err := ServiceProvider.InstantiateEtcdClient(config.Etcd.API); err != nil {
-		logger.Fatalf("failed to instantiate etcd client: %v", err)
+		zap.L().Panic("failed to instantiate etcd client", zap.Error(err))
 	}
 
 	if err := ServiceProvider.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false); err != nil {
-		logger.Fatalf("failed to keep service announcement alive: %v", err)
+		zap.L().Panic("failed to keep service announcement alive", zap.Error(err))
 	}
 
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
 	ServiceProvider.RegisterCallback("filler", outsideServices.PoolCallback)
 
-	logger.Printf(serviceAnnouncement.String())
 	err = router.Run()
 	if err != nil {
-		logger.Fatalf("failed to start router: %v", err)
+		zap.L().Panic("failed to run API service", zap.Error(err))
 	}
 }

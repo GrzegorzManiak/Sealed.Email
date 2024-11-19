@@ -7,12 +7,14 @@ import (
 	"crypto/sha256"
 	"errors"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
+	"go.uber.org/zap"
 	"math/big"
 )
 
 func ByteArrToECDSAPublicKey(curve elliptic.Curve, publicKey []byte) (*ecdsa.PublicKey, error) {
 	x, y := elliptic.UnmarshalCompressed(curve, publicKey)
 	if x == nil || y == nil {
+		zap.L().Debug("failed to unmarshal public key")
 		return nil, errors.New("failed to unmarshal public key")
 	}
 	return &ecdsa.PublicKey{
@@ -37,6 +39,7 @@ func SignMessage(privateKey *ecdsa.PrivateKey, message string) ([]byte, error) {
 	hash := sha256.Sum256([]byte(message))
 	r, s, err := ecdsa.Sign(rand.Reader, privateKey, hash[:])
 	if err != nil {
+		zap.L().Debug("failed to sign message", zap.Error(err))
 		return nil, err
 	}
 
@@ -47,6 +50,7 @@ func SignMessage(privateKey *ecdsa.PrivateKey, message string) ([]byte, error) {
 func GenerateKeyPair(curve elliptic.Curve) (*ecdsa.PrivateKey, *ecdsa.PublicKey, error) {
 	privateKey, err := ecdsa.GenerateKey(curve, rand.Reader)
 	if err != nil {
+		zap.L().Debug("failed to generate key pair", zap.Error(err))
 		return nil, nil, err
 	}
 

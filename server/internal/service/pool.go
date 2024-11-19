@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"sync"
@@ -57,7 +57,6 @@ func RunCallbacks() {
 }
 
 func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service structs.ServiceConfig) error {
-	logger := helpers.GetLogger()
 	if err := InstantiateEtcdClient(service); err != nil {
 		return fmt.Errorf("failed to instantiate etcd client: %w", err)
 	}
@@ -74,7 +73,7 @@ func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service 
 	for _, keyValue := range keyValues {
 		service, err := UnmarshalServiceAnnouncement(keyValue.Value)
 		if err != nil {
-			logger.Printf("failed to unmarshal service announcement: %v", err)
+			zap.L().Error("failed to unmarshal service announcement", zap.Error(err))
 			continue
 		}
 
@@ -99,22 +98,19 @@ func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service 
 }
 
 func KeepConnectionPoolsAlive(ctx context.Context, service structs.ServiceConfig) {
-	logger := helpers.GetLogger()
 
 	go func() {
-		logger.Println("Starting connection pool refresh loop")
 
 		for {
 			select {
 			case <-ctx.Done():
-				logger.Println("Connection pool refresh loop context canceled, exiting.")
+				zap.L().Warn("Context done, stopping connection pool refresh", zap.Error(ctx.Err()), zap.String("service", service.Prefix))
 				return
 
 			default:
-				logger.Println("Refreshing connection pools")
 				err := BuildConnectionPools(ctx, GetEtcdClient(), service)
 				if err != nil {
-					logger.Printf("failed to build connection pools: %v", err)
+					zap.L().Error("failed to build connection pools", zap.Error(err))
 				}
 				time.Sleep(time.Duration(config.Etcd.ConnectionPool.RefreshInterval) * time.Second)
 			}
@@ -137,7 +133,6 @@ func RefreshPool(
 	oldPool map[string]*GrpcConnection,
 	grpcSecurityPolicy grpc.DialOption,
 ) map[string]*GrpcConnection {
-	logger := helpers.GetLogger()
 	pool := make(map[string]*GrpcConnection)
 	curTime := time.Now().Unix()
 
@@ -150,11 +145,11 @@ func RefreshPool(
 
 		newConn, err := InitializeGrpcConnection(announcement, grpcSecurityPolicy)
 		if err != nil {
-			logger.Printf("failed to initialize connection for %s: %v", key, err)
+			zap.L().Error("failed to initialize gRPC connection", zap.Error(err), zap.String("key", key), zap.Any("announcement", announcement))
 			continue
 		}
 
-		logger.Printf("Successfully dialed %s", key)
+		zap.L().Info("Initialized gRPC connection", zap.String("key", key), zap.Any("announcement", announcement))
 		pool[key] = newConn
 	}
 

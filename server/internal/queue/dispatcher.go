@@ -2,8 +2,8 @@ package queue
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"log"
 	"time"
 )
 
@@ -16,7 +16,7 @@ func Dispatcher(
 	// -- Migrate the table
 	err := databaseConnection.AutoMigrate(&Entry{})
 	if err != nil {
-		log.Fatalf("Failed to migrate: %v", err)
+		zap.L().Panic("failed to migrate table", zap.Error(err))
 	}
 
 	go refreshPool(ctx, databaseConnection, queue, queue.BatchTimeout)
@@ -41,14 +41,15 @@ func refreshPool(
 		default:
 			// -- Check if the database connection is still alive
 			if databaseConnection.Error != nil {
-				log.Fatalf("Failed to get table: %v", databaseConnection.Error)
+				zap.L().Error("failed to get table", zap.Error(databaseConnection.Error))
+				panic(databaseConnection.Error)
 				return
 			}
 
 			// -- Get the next entries
 			err := queue.GetBatch()
 			if err != nil {
-				log.Printf("Failed to get entries: %v", err)
+				zap.L().Warn("failed to get batch", zap.Error(err))
 				time.Sleep(time.Duration(timeout) * time.Second)
 				continue
 			}
@@ -56,7 +57,7 @@ func refreshPool(
 			// -- Flush the queue
 			err = queue.FlushQueue()
 			if err != nil {
-				log.Printf("Failed to flush queue: %v", err)
+				zap.L().Warn("failed to flush queue", zap.Error(err))
 				time.Sleep(time.Duration(timeout) * time.Second)
 				continue
 			}
@@ -64,7 +65,7 @@ func refreshPool(
 			// -- Batch update
 			err = queue.BatchUpdate()
 			if err != nil {
-				log.Printf("Failed to batch update: %v", err)
+				zap.L().Warn("failed to batch update", zap.Error(err))
 				time.Sleep(time.Duration(timeout) * time.Second)
 				continue
 			}
@@ -97,7 +98,6 @@ func runWorkers(
 }
 
 func workerWrapper(entry *Entry, queue *Queue, worker func(entry *Entry) int8) {
-	println("Worker started", entry.Uuid)
 	output := worker(entry)
 	entry.LogStatus(output)
 	queue.UpdateEntry(entry)

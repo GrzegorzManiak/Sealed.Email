@@ -9,10 +9,9 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
 )
 
-func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
+func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
 
 	proof := crypto.B64DecodeBytes(data.Proof)
 	publicKey, err := cryptography.ByteArrToECDSAPublicKey(config.CURVE, crypto.B64DecodeBytes(data.PublicKey))

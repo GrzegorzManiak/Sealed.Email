@@ -4,18 +4,16 @@ import (
 	"context"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	DomainDatabase "github.com/GrzegorzManiak/NoiseBackend/database/domain"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/domain"
 	QueueService "github.com/GrzegorzManiak/NoiseBackend/services/domain/service"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/reflection"
-	"log"
 )
 
 func Start() {
-	log.Printf("------------------ Starting Domain Service ------------------")
-	logger := helpers.GetLogger()
+	zap.L().Info("Starting domain service")
 
 	queueDatabaseConnection := DomainDatabase.InitiateConnection()
 	//primaryDatabaseConnection := DomainDatabase.InitiateConnection()
@@ -36,15 +34,8 @@ func Start() {
 			return QueueService.Worker(entry, queueDatabaseConnection)
 		})
 
-	listener, grpcServer, ServiceID, err := ServiceProvider.CreateGRPCService(config.Certificates.Domain)
-	if err != nil {
-		log.Fatalf("failed to create gRPC service: %v", err)
-	}
-
-	domain.RegisterDomainServiceServer(grpcServer, &QueueService.Server{
-		QueueDatabaseConnection: queueDatabaseConnection,
-		Queue:                   domainQueue,
-	})
+	listener, grpcServer, ServiceID := ServiceProvider.CreateGRPCService(config.Certificates.Domain)
+	domain.RegisterDomainServiceServer(grpcServer, &QueueService.Server{QueueDatabaseConnection: queueDatabaseConnection, Queue: domainQueue})
 	reflection.Register(grpcServer)
 
 	serviceAnnouncement := ServiceProvider.Announcement{
@@ -54,13 +45,13 @@ func Start() {
 		Service: config.Etcd.Domain,
 	}
 
-	ServiceProvider.InstantiateEtcdClient(config.Etcd.API)
 	etcdContext := context.Background()
+	ServiceProvider.InstantiateEtcdClient(config.Etcd.API)
 	ServiceProvider.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false)
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
 
-	logger.Printf(serviceAnnouncement.String())
+	zap.L().Info("Domain service started", zap.String("service_id", ServiceID))
 	if err := grpcServer.Serve(listener); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		zap.L().Panic("failed to serve gRPC server", zap.Error(err))
 	}
 }

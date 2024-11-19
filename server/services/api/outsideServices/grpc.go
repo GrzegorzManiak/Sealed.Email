@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-var grpcSecurityPolicy, _ = service.GetTransportSecurityPolicy(config.Certificates.API)
+var grpcSecurityPolicy = service.GetTransportSecurityPolicy(config.Certificates.API)
 
 var domainIndex = 0
 var grpcDomainPoolRWLock = &sync.RWMutex{}

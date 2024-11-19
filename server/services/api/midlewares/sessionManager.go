@@ -5,11 +5,11 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration, databaseConnection *gorm.DB) (*session.Claims, helpers.AppError) {
-	logger := helpers.GetLogger()
 
 	if filter.Allow == nil {
 		filter.Allow = []string{}
@@ -25,7 +25,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration
 			return nil, nil
 		}
 
-		logger.Printf("SessionManagerMiddleware Cookie: %v", err)
+		zap.L().Debug("SessionManagerMiddleware", zap.Error(err), zap.String("cookie", cookie), zap.Any("filter", filter))
 		return nil, helpers.GenericError{
 			Message: "you are not allowed to access this resource",
 			ErrCode: 401,
@@ -34,7 +34,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration
 
 	sessionClaims, err := session.ParseSessionToken(cookie)
 	if err != nil {
-		logger.Printf("SessionManagerMiddleware ParseSessionToken: %v", err)
+		zap.L().Debug("SessionManagerMiddleware", zap.Error(err), zap.String("cookie", cookie), zap.Any("filter", filter))
 		return nil, helpers.GenericError{
 			Message: "you are not allowed to access this resource",
 			ErrCode: 401,
@@ -42,7 +42,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration
 	}
 
 	if !sessionClaims.Filter(filter) {
-		logger.Printf("SessionManagerMiddleware: %v", "Filter")
+		zap.L().Debug("SessionManagerMiddleware", zap.Any("sessionClaims", sessionClaims), zap.Any("filter", filter))
 		return nil, helpers.GenericError{
 			Message: "you are not allowed to access this resource",
 			ErrCode: 401,
@@ -50,7 +50,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration
 	}
 
 	if sessionClaims.IsExpired() {
-		logger.Printf("SessionManagerMiddleware: %v", "Expired")
+		zap.L().Debug("SessionManagerMiddleware", zap.Any("sessionClaims", sessionClaims), zap.Any("filter", filter))
 		return nil, helpers.GenericError{
 			Message: "you are not allowed to access this resource",
 			ErrCode: 401,
@@ -60,7 +60,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration
 	if sessionClaims.NeedsRefresh() {
 		newSessionClaims, err := session.RefreshSessionToken(sessionClaims, databaseConnection)
 		if err != nil {
-			logger.Printf("SessionManagerMiddleware RefreshSessionToken: %v", err)
+			zap.L().Debug("SessionManagerMiddleware", zap.Error(err), zap.Any("sessionClaims", sessionClaims), zap.Any("filter", filter))
 			return nil, helpers.GenericError{
 				Message: "you are not allowed to access this resource",
 				ErrCode: 401,

@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -14,8 +14,7 @@ func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnoun
 	}
 
 	key := serviceAnnouncement.BuildID()
-	logger := helpers.GetLogger()
-	logger.Printf("Registering service %s", key)
+	zap.L().Debug("Registering service", zap.String("key", key), zap.String("value", value))
 
 	lease, err := client.Grant(ctx, serviceAnnouncement.Service.TTL)
 	if err != nil {
@@ -27,12 +26,11 @@ func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnoun
 		return 0, fmt.Errorf("failed to register service %s: %w", key, err)
 	}
 
-	logger.Printf("Service %s registered successfully", key)
+	zap.L().Info("Service registered", zap.String("key", key), zap.String("value", value))
 	return lease.ID, nil
 }
 
 func KeepServiceAnnouncementAlive(ctx context.Context, serviceAnnouncement Announcement, unique bool) error {
-	logger := helpers.GetLogger()
 	marshaledService, err := serviceAnnouncement.Marshal()
 	if err != nil {
 		return fmt.Errorf("failed to marshal service announcement: %w", err)
@@ -46,22 +44,22 @@ func KeepServiceAnnouncementAlive(ctx context.Context, serviceAnnouncement Annou
 	go func() {
 		lease, err := GetEtcdClient().KeepAlive(ctx, leaseID)
 		if err != nil {
-			logger.Printf("failed to start KeepAlive for service %s: %v", serviceAnnouncement.Service.Prefix, err)
+			zap.L().Error("failed to start KeepAlive for service", zap.String("service", serviceAnnouncement.Service.Prefix), zap.Error(err))
 			return
 		}
 
 		for {
 			select {
 			case <-ctx.Done():
-				logger.Println("Context cancelled, stopping KeepAlive for service.")
+				zap.L().Info("Context done, stopping KeepAlive for service", zap.String("service", serviceAnnouncement.Service.Prefix))
 				return
 
 			case resp, ok := <-lease:
 				if !ok {
-					logger.Println("Failed to get response from KeepAlive channel, retrying.")
+					zap.L().Error("KeepAlive channel closed, stopping KeepAlive for service", zap.String("service", serviceAnnouncement.Service.Prefix))
 					lease, err = GetEtcdClient().KeepAlive(ctx, leaseID)
 					if err != nil {
-						logger.Printf("failed to start KeepAlive for service %s: %v", serviceAnnouncement.Service.Prefix, err)
+						zap.L().Error("failed to restart KeepAlive for service", zap.String("service", serviceAnnouncement.Service.Prefix), zap.Error(err))
 					}
 				}
 

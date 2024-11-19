@@ -8,10 +8,9 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
 )
 
-func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
+func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
 	fetchedUser := models.User{}
 	dbErr := databaseConnection.Where("uid = ?", data.User).First(&fetchedUser)
 	if dbErr.Error != nil {

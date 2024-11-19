@@ -4,6 +4,7 @@ import (
 	"crypto/elliptic"
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
+	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
 	"os"
 )
@@ -29,11 +30,13 @@ var Etcd structs.EtcdConfig
 func ParseConfig(rawConfig RawConfig) error {
 	sessionConfig, err := rawConfig.Session.Parse()
 	if err != nil {
+		zap.L().Error("failed to parse session config", zap.Error(err), zap.Any("config", rawConfig.Session))
 		return fmt.Errorf("failed to parse session config: %w", err)
 	}
 
 	authConfig, err := rawConfig.Auth.Parse()
 	if err != nil {
+		zap.L().Error("failed to parse auth config", zap.Error(err), zap.Any("config", rawConfig.Auth))
 		return fmt.Errorf("failed to parse auth config: %w", err)
 	}
 
@@ -50,19 +53,19 @@ func ParseConfig(rawConfig RawConfig) error {
 func LoadConfig(configPath string) error {
 	f, err := os.Open(configPath)
 	if err != nil {
-		panic(err)
+		zap.L().Panic("failed to open config file", zap.Error(err), zap.String("path", configPath))
 	}
 	defer f.Close()
 
 	rawConfig := RawConfig{}
 	err = yaml.NewDecoder(f).Decode(&rawConfig)
 	if err != nil {
-		panic(err)
+		zap.L().Panic("failed to decode config file", zap.Error(err), zap.String("path", configPath))
 	}
 
 	err = ParseConfig(rawConfig)
 	if err != nil {
-		panic(err)
+		zap.L().Panic("failed to parse config", zap.Error(err))
 	}
 
 	return nil

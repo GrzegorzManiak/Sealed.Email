@@ -9,11 +9,10 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
 	"time"
 )
 
-func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
+func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
 	userVerify := models2.UserVerify{}
 	dbErr := databaseConnection.Where("r_id = ?", data.RID).First(&userVerify)
 	if dbErr.Error != nil {

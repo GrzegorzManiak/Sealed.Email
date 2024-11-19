@@ -3,6 +3,7 @@ package helpers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
 )
 
 var validate = validator.New()
@@ -56,16 +57,16 @@ func encryptedKeyValidation(fl validator.FieldLevel) bool {
 func RegisterCustomValidators() {
 	err := validate.RegisterValidation(P256KeyValidatorTag, p256KeyValidation)
 	if err != nil {
-		panic(err)
+		zap.L().Panic("failed to register custom validator", zap.Error(err))
 	}
 
 	err = validate.RegisterValidation(EncryptedKeyValidatorTag, encryptedKeyValidation)
 	if err != nil {
-		panic(err)
+		zap.L().Panic("failed to register custom validator", zap.Error(err))
 	}
 
 	err = validate.RegisterValidation(GenericKeyValidatorTag, genericKeyValidation)
 	if err != nil {
-		panic(err)
+		zap.L().Panic("failed to register custom validator", zap.Error(err))
 	}
 }

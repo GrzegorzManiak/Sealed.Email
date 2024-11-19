@@ -7,6 +7,7 @@ import (
 	models "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"strings"
 	"time"
@@ -68,7 +69,7 @@ func trimDomain(domain string) (string, helpers.AppError) {
 func generateDKIMKeyPair() (*cryptography.RSAKeyPair, helpers.AppError) {
 	kp, err := cryptography.GenerateRSAKeyPair(config.Domain.DKIMKeySize)
 	if err != nil {
-		helpers.GetLogger().Printf("Error generating RSA key pair: %v", err)
+		zap.L().Error("Error generating RSA key pair", zap.Error(err))
 		return &cryptography.RSAKeyPair{}, helpers.GenericError{
 			Message: "Error generating RSA key pair",
 			ErrCode: 500,

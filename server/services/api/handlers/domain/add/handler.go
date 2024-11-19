@@ -5,11 +5,11 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/outsideServices"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"log"
 )
 
-func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnection *gorm.DB, user *models.User) (*Output, helpers.AppError) {
+func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *models.User) (*Output, helpers.AppError) {
 	domain, err := trimDomain(data.Domain)
 	if err != nil {
 		return nil, err
@@ -24,7 +24,7 @@ func handler(data *Input, ctx *gin.Context, logger *log.Logger, databaseConnecti
 	err = outsideServices.AddDomainToVerificationQueue(ctx, &domainModel)
 	sentVerification := true
 	if err != nil {
-		logger.Printf("Error adding domain to verification queue: %v", err)
+		zap.L().Warn("failed to send verification request", zap.Error(err))
 		sentVerification = false
 	}
 

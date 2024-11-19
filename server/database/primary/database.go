@@ -2,14 +2,18 @@ package primary
 
 import (
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
+	"go.uber.org/zap"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"moul.io/zapgorm2"
 )
 
 func InitiateConnection() *gorm.DB {
-	databaseConnection, err := gorm.Open(sqlite.Open("./dev/primary.db"), &gorm.Config{})
+	logger := zapgorm2.New(zap.L())
+	logger.SetAsDefault()
+	databaseConnection, err := gorm.Open(sqlite.Open("./dev/primary.db"), &gorm.Config{Logger: logger})
 	if err != nil {
-		panic("failed to connect database")
+		zap.L().Panic("failed to connect to database", zap.Error(err))
 	}
 
 	AutoMigrateTables(databaseConnection)

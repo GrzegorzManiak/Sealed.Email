@@ -4,6 +4,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/midlewares"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -20,16 +21,15 @@ func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
 		return
 	}
 
-	logger := helpers.GetLogger()
-	output, err := handler(input, ctx, logger)
+	output, err := handler(input, ctx)
 	if err != nil {
-		logger.Printf("Error handler: %v", err)
+		zap.L().Debug("Error handler", zap.Error(err), zap.Any("input", input), zap.Any("output", output))
 		helpers.ErrorResponse(ctx, err)
 		return
 	}
 
 	if err := helpers.ValidateOutputData(output); err != nil {
-		logger.Printf("Error ValidateOutputData: %v", err)
+		zap.L().Debug("Error ValidateOutputData", zap.Error(err), zap.Any("output", output))
 		helpers.ErrorResponse(ctx, err)
 		return
 	}

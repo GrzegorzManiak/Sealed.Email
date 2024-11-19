@@ -4,14 +4,15 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	APIService "github.com/GrzegorzManiak/NoiseBackend/services/api"
+	"go.uber.org/zap"
 )
 
 func main() {
+	zap.ReplaceGlobals(helpers.CustomFormatter())
 	err := config.LoadConfig("./dev/config.yaml")
 	if err != nil {
-		panic(err)
+		zap.L().Panic("failed to load config", zap.Error(err))
 	}
-	helpers.SetLogger(helpers.CreateDebugLogger())
 	helpers.RegisterCustomValidators()
 	go APIService.Start()
 	select {}
