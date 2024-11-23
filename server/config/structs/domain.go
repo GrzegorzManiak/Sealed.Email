@@ -1,22 +1,25 @@
 package structs
 
 type DomainServiceConfig struct {
-	RetryMax      int64 `yaml:"retryMax"`
-	RetryInterval int64 `yaml:"retryInterval"`
-	MaxConcurrent int   `yaml:"maxConcurrent"`
-	BatchSize     int   `yaml:"batchSize"`
-	BatchTimeout  int   `yaml:"batchTimeout"`
+	RetryMax      int64  `yaml:"retryMax"`
+	RetryInterval int64  `yaml:"retryInterval"`
+	MaxConcurrent int    `yaml:"maxConcurrent"`
+	BatchSize     int    `yaml:"batchSize"`
+	BatchTimeout  int    `yaml:"batchTimeout"`
+	DNS           string `yaml:"dns"`
+	VerifyAll     bool   `yaml:"verifyAll"`
 }
 
 type DomainConfig struct {
 	ProvidedDomains   []string `yaml:"provided"`
 	IdentityTemplate  string   `yaml:"identityTemplate"`
-	SpfRecord         string   `yaml:"spfRecord"`
+	SpfRecordTemplate string   `yaml:"spfRecordTemplate"`
 	MxRecords         []string `yaml:"mxRecords"`
 	DkimTemplate      string   `yaml:"dkimTemplate"`
 	DmarcTemplate     string   `yaml:"dmarcTemplate"`
 	DKIMKeySize       int      `yaml:"DKIMKeySize"`
 	ChallengeTemplate string   `yaml:"challengeTemplate"`
+	ChallengePrefix   string   `yaml:"challengePrefix"`
 
 	Service DomainServiceConfig `yaml:"service"`
 }

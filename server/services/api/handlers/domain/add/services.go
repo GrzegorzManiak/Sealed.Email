@@ -36,7 +36,7 @@ func insertDomain(
 		DKIMKeysCreatedAt: time.Now().Unix(),
 		DKIMPublicKey:     kp.EncodePublicKey(),
 		DKIMPrivateKey:    kp.EncodePrivateKey(),
-		TxtChallenge:      crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N)),
+		TxtChallenge:      config.Domain.ChallengePrefix + "=" + crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N)),
 
 		Version:          1,
 		EncryptedRootKey: privateKey,
@@ -62,28 +62,4 @@ func generateDKIMKeyPair() (*cryptography.RSAKeyPair, helpers.AppError) {
 		}
 	}
 	return kp, nil
-}
-
-func buildChallengeTemplate(domain string, txtChallenge string) string {
-	return fmt.Sprintf(
-		config.Domain.ChallengeTemplate,
-		domain,
-		txtChallenge,
-	)
-}
-
-func buildDKIMRecord(domain string, publicKey string) string {
-	return fmt.Sprintf(
-		config.Domain.DkimTemplate,
-		"default",
-		domain,
-		publicKey,
-	)
-}
-
-func buildIdentity(domain string) string {
-	return fmt.Sprintf(
-		config.Domain.IdentityTemplate,
-		domain,
-	)
 }

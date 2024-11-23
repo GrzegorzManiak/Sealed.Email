@@ -17,9 +17,10 @@ domain:
       - 'beta.noise.email'
 
   DKIMKeySize: 2048 # Will be 4096 in production, just too slow for development
-  challengeTemplate: '_nes_verification.%s IN TXT "%s"'
-  identityTemplate: '_identity.%s IN CNAME _identity.mx.noise.email'
-  spfRecord: 'v=spf1 include:_spf.mx.noise.email -all'
+  challengeTemplate: '%s 300 IN TXT "%s"'
+  challengePrefix: '_nes-challenge'
+  identityTemplate: '_identity.%s 300 IN CNAME _identity.mx.noise.email'
+  spfRecordTemplate: '_spf.%s 300 IN TXT "v=spf1 include:_spf.mx.noise.email -all"'
   mxRecords:
     - 'doom.mx.noise.email'
     - 'madlib.mx.noise.email'
@@ -38,6 +39,9 @@ domain:
     # To lower the number of Database writes, we will batch the writes
     batchSize: 5
     batchTimeout: 30
+
+    dns: '1.1.1.1:53'
+    verifyAll: true
 
 etcd:
     endpoints:
