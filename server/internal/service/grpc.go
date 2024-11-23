@@ -16,7 +16,8 @@ import (
 
 func CreateGRPCServer(certPaths structs.ServiceCertificates) *grpc.Server {
 	if !config.Certificates.RequireMTLS {
-		zap.L().Panic("mTLS is disabled, creating insecure gRPC server")
+		zap.L().Info("!!!! WARNING: mTLS is disabled !!!!")
+		return grpc.NewServer()
 	}
 
 	caCert, err := config.Certificates.ReadCaCert()
