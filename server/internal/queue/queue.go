@@ -48,7 +48,7 @@ func (q *Queue) GetBatch() (error error) {
 
 	var entries []Entry
 	err := q.database.
-		Where("queue = ? AND status != ? AND total_attempts <= permitted_attempts AND next_execution <= ?", q.Name, 3, time.Now().Unix()).
+		Where("queue = ? AND status != ? AND status != ? AND total_attempts <= permitted_attempts AND next_execution <= ?", q.Name, 3, 1, time.Now().Unix()).
 		Order("next_execution ASC").
 		Limit(numToFetch).
 		Find(&entries).
