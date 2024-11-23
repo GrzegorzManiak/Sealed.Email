@@ -3,7 +3,7 @@
 ## Plan
 
 1. [x] Domain adding
-2. [ ] Domain DNS verification
+2. [x] Domain DNS verification
 3. [ ] Domain Management
 4. [ ] Remove reminince of rate limiting (Will be done in nginx)
 5. [x] Fix domain queue
