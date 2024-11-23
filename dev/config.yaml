@@ -44,7 +44,7 @@ etcd:
         - 'http://localhost:2379'
 
     connectionPool:
-        refreshInterval: 30
+        refreshInterval: 5
 
     domain:
         username: 'root'
