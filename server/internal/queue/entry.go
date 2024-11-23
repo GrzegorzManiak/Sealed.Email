@@ -85,7 +85,7 @@ func Initiate(maxAttempts int64, retryInterval int64, queue string, data EntryDa
 	entry.RetryInterval = retryInterval
 	entry.Queue = queue
 	timeNow := time.Now().Unix()
-	entry.NextExecution = timeNow
+	entry.NextExecution = timeNow + (60 * 0)
 	entry.Data = dataString
 
 	return &entry, err

@@ -26,6 +26,7 @@ func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSV
 		TxtVerification: req.TxtVerificationCode,
 		TenantID:        req.TenantId,
 		TenantType:      req.TenantType,
+		DomainID:        req.DomainID,
 	})
 
 	entry.RefID = fmt.Sprintf("%d:%s:%s", req.TenantId, req.TenantType, cleanDomain)

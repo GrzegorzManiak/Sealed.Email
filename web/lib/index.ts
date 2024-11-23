@@ -15,4 +15,4 @@ await session.DecryptKeys();
 
 
 // console.log("Session token:", session.Token);
-await AddDomain(session, 'gfaa.dis-email.grzegorz.ie');
+await AddDomain(session, 'test.grzegorz.ie');

@@ -33,11 +33,11 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *m
 		DomainID:         domainModel.RID,
 		SentVerification: sentVerification,
 		DNS: &DNSRecords{
-			DKIM:         buildDKIMRecord(domain, domainModel.DKIMPublicKey),
+			DKIM:         helpers.BuildDKIMRecord(domain, domainModel.DKIMPublicKey),
 			MX:           config.Domain.MxRecords,
-			Verification: buildChallengeTemplate(domain, domainModel.TxtChallenge),
-			Identity:     buildIdentity(domain),
-			SPF:          config.Domain.SpfRecord,
+			Verification: helpers.BuildChallengeTemplate(domain, domainModel.TxtChallenge),
+			Identity:     helpers.BuildIdentity(domain),
+			SPF:          helpers.BuildSPFRecord(domain),
 		},
 	}, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	DomainDatabase "github.com/GrzegorzManiak/NoiseBackend/database/domain"
+	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/domain"
@@ -16,7 +17,7 @@ func Start() {
 	zap.L().Info("Starting domain service")
 
 	queueDatabaseConnection := DomainDatabase.InitiateConnection()
-	//primaryDatabaseConnection := DomainDatabase.InitiateConnection()
+	primaryDatabaseConnection := PrimaryDatabase.InitiateConnection()
 	queueContext := context.Background()
 
 	domainQueue := queue.NewQueue(
@@ -31,11 +32,13 @@ func Start() {
 		queueDatabaseConnection,
 		domainQueue,
 		func(entry *queue.Entry) int8 {
-			return QueueService.Worker(entry, queueDatabaseConnection)
+			return QueueService.Worker(entry, primaryDatabaseConnection)
 		})
 
 	listener, grpcServer, ServiceID := ServiceProvider.CreateGRPCService(config.Certificates.Domain)
-	domain.RegisterDomainServiceServer(grpcServer, &QueueService.Server{QueueDatabaseConnection: queueDatabaseConnection, Queue: domainQueue})
+	domain.RegisterDomainServiceServer(grpcServer, &QueueService.Server{
+		QueueDatabaseConnection: queueDatabaseConnection,
+		Queue:                   domainQueue})
 	reflection.Register(grpcServer)
 
 	serviceAnnouncement := ServiceProvider.Announcement{
