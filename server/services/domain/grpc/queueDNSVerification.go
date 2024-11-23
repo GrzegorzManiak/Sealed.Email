@@ -1,4 +1,4 @@
-package service
+package grpc
 
 import (
 	"context"
@@ -8,10 +8,11 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/domain"
+	"github.com/GrzegorzManiak/NoiseBackend/services/domain/service"
 	"go.uber.org/zap"
 )
 
-func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSVerificationRequest) (*domain.QueueDNSVerificationResponse, error) {
+func (s *service.Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSVerificationRequest) (*domain.QueueDNSVerificationResponse, error) {
 	cleanDomain, domainErr := helpers.TrimDomain(req.DomainName)
 	if domainErr != nil {
 		return &domain.QueueDNSVerificationResponse{
@@ -20,7 +21,7 @@ func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSV
 		}, nil
 	}
 
-	entry, err := queue.Initiate(config.Domain.Service.RetryMax, config.Domain.Service.RetryInterval, QueueName, database.VerificationQueue{
+	entry, err := queue.Initiate(config.Domain.Service.RetryMax, config.Domain.Service.RetryInterval, service.QueueName, database.VerificationQueue{
 		DomainName:      cleanDomain,
 		DkimPublicKey:   req.DkimPublicKey,
 		TxtVerification: req.TxtVerificationCode,
