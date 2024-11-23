@@ -14,7 +14,6 @@ func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnoun
 	}
 
 	key := serviceAnnouncement.BuildID()
-	zap.L().Debug("Registering service", zap.String("key", key), zap.String("value", value))
 
 	lease, err := client.Grant(ctx, serviceAnnouncement.Service.TTL)
 	if err != nil {
