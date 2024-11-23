@@ -10,7 +10,7 @@ import (
 )
 
 func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *models.User) (*Output, helpers.AppError) {
-	domain, err := trimDomain(data.Domain)
+	domain, err := helpers.TrimDomain(data.Domain)
 	if err != nil {
 		return nil, err
 	}

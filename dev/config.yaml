@@ -16,7 +16,7 @@ domain:
   provided:
       - 'beta.noise.email'
 
-  DKIMKeySize: 4096
+  DKIMKeySize: 2048 # Will be 4096 in production, just too slow for development
   txtVerificationPrefix: '_nes-challenge'
   identityProvider: '_identity.{DOMAIN} IN CNAME _identity.mx.noise.email'
   spfRecord: 'v=spf1 include:_spf.mx.noise.email -all'
@@ -44,7 +44,7 @@ etcd:
         - 'http://localhost:2379'
 
     connectionPool:
-        refreshInterval: 5
+        refreshInterval: 2 # dev only
 
     domain:
         username: 'root'

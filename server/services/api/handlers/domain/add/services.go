@@ -9,7 +9,6 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"strings"
 	"time"
 )
 
@@ -53,17 +52,6 @@ func insertDomain(
 	}
 
 	return domainModel, nil
-}
-
-func trimDomain(domain string) (string, helpers.AppError) {
-	domain = strings.Trim(domain, " .")
-	if domain == "" {
-		return "", helpers.GenericError{
-			Message: "Domain is empty",
-			ErrCode: 400,
-		}
-	}
-	return domain, nil
 }
 
 func generateDKIMKeyPair() (*cryptography.RSAKeyPair, helpers.AppError) {

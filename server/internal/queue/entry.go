@@ -10,7 +10,9 @@ import (
 
 type Entry struct {
 	gorm.Model
-	Uuid              string `gorm:"unique"`
+	Uuid  string `gorm:"unique"`
+	RefID string `gorm:"unique, index"`
+
 	LastExecution     int64
 	NextExecution     int64
 	RetryInterval     int64
