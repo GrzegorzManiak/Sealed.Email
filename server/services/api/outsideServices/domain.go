@@ -20,8 +20,8 @@ func AddDomainToVerificationQueue(ctx context.Context, domainModel *models.UserD
 		Importance:          10,
 		TenantId:            uint64(domainModel.UserID),
 		TenantType:          "user",
-		DkimPublicKey:       domainModel.DKIMPublicKey,
 		TxtVerificationCode: domainModel.TxtChallenge,
+		DomainID:            uint64(domainModel.ID),
 	})
 
 	if err != nil {
