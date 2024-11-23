@@ -16,6 +16,13 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *m
 		return nil, err
 	}
 
+	if domainAlreadyAdded(domain, user.ID, databaseConnection) {
+		return nil, helpers.GenericError{
+			Message: "Domain already added",
+			ErrCode: 400,
+		}
+	}
+
 	domainModel, err := insertDomain(user, domain, data.EncryptedRootKey, databaseConnection)
 	if err != nil {
 		return nil, err

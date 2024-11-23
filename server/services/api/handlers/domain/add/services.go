@@ -63,3 +63,13 @@ func generateDKIMKeyPair() (*cryptography.RSAKeyPair, helpers.AppError) {
 	}
 	return kp, nil
 }
+
+func domainAlreadyAdded(domain string, userID uint, databaseConnection *gorm.DB) bool {
+	var count int64
+	err := databaseConnection.Model(&models.UserDomain{}).Where("domain = ? AND user_id = ?", domain, userID).Count(&count)
+	if err.Error != nil {
+		zap.L().Error("Error checking if domain already added", zap.Error(err.Error))
+		return true
+	}
+	return count > 0
+}
