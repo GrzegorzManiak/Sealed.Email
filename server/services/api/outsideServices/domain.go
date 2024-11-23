@@ -24,5 +24,9 @@ func AddDomainToVerificationQueue(ctx context.Context, domainModel *models.UserD
 		TxtVerificationCode: domainModel.TxtChallenge,
 	})
 
-	return helpers.GenericError{Message: fmt.Sprintf("Failed to queue domain verification: %v", err), ErrCode: 500}
+	if err != nil {
+		return helpers.GenericError{Message: fmt.Sprintf("Failed to queue DNS verification: %s", err.Error()), ErrCode: 500}
+	}
+
+	return nil
 }
