@@ -1,6 +1,7 @@
 package domainAdd
 
 import (
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/outsideServices"
@@ -30,8 +31,13 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *m
 
 	return &Output{
 		DomainID:         domainModel.RID,
-		DKIMPublicKey:    domainModel.DKIMPublicKey,
 		SentVerification: sentVerification,
-		TxtRecord:        domainModel.TxtChallenge,
+		DNS: &DNSRecords{
+			DKIM:         buildDKIMRecord(domain, domainModel.DKIMPublicKey),
+			MX:           config.Domain.MxRecords,
+			Verification: buildChallengeTemplate(domain, domainModel.TxtChallenge),
+			Identity:     buildIdentity(domain),
+			SPF:          config.Domain.SpfRecord,
+		},
 	}, nil
 }

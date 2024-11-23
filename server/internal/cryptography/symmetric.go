@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
-	"encoding/pem"
+	"encoding/base64"
 	"errors"
 )
 
@@ -21,7 +21,7 @@ func (rsaKeyPair *RSAKeyPair) EncodePublicKey() string {
 	return string(rsaKeyPair.PublicKey)
 }
 
-func GenerateRSAKeyPair(length int) (rsaKeyPair *RSAKeyPair, err error) {
+func GenerateRSAKeyPair(length int) (*RSAKeyPair, error) {
 	if length < 2048 {
 		return &RSAKeyPair{}, errors.New("key length must be at least 2048 bits")
 	}
@@ -32,19 +32,15 @@ func GenerateRSAKeyPair(length int) (rsaKeyPair *RSAKeyPair, err error) {
 	}
 
 	privateBytes := x509.MarshalPKCS1PrivateKey(private)
-	privateBlock := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateBytes}
-	privateKey := pem.EncodeToMemory(privateBlock)
-
+	privateKey := base64.StdEncoding.EncodeToString(privateBytes)
 	pubBytes, err := x509.MarshalPKIXPublicKey(&private.PublicKey)
 	if err != nil {
 		return &RSAKeyPair{}, err
 	}
 
-	pubBlock := &pem.Block{Type: "PUBLIC KEY", Bytes: pubBytes}
-	publicKey := pem.EncodeToMemory(pubBlock)
-
+	publicKey := base64.StdEncoding.EncodeToString(pubBytes)
 	return &RSAKeyPair{
-		PrivateKey: privateKey,
-		PublicKey:  publicKey,
+		PrivateKey: []byte(privateKey),
+		PublicKey:  []byte(publicKey),
 	}, nil
 }

@@ -7,11 +7,18 @@ type Input struct {
 	EncryptedRootKey string `json:"encRootKey" validate:"Encrypted-B64-Key"`
 }
 
+type DNSRecords struct {
+	MX           []string `json:"mx"`
+	DKIM         string   `json:"dkim"`
+	Verification string   `json:"verification"`
+	Identity     string   `json:"identity"`
+	SPF          string   `json:"spf"`
+}
+
 type Output struct {
-	DKIMPublicKey    string `json:"dkimPubKey"`
-	DomainID         string `json:"domainID"`
-	TxtRecord        string `json:"txtRecord"`
-	SentVerification bool   `json:"sentVerification"`
+	DomainID         string      `json:"domainID"`
+	SentVerification bool        `json:"sentVerification"`
+	DNS              *DNSRecords `json:"dns"`
 }
 
 var SessionFilter = &session.APIConfiguration{

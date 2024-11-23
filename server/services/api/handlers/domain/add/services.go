@@ -22,9 +22,7 @@ func insertDomain(
 	if err != nil {
 		return models.UserDomain{}, err
 	}
-
 	RID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
-	TXT := buildTxtChallenge()
 
 	domainModel := models.UserDomain{
 		RID:    RID,
@@ -38,7 +36,7 @@ func insertDomain(
 		DKIMKeysCreatedAt: time.Now().Unix(),
 		DKIMPublicKey:     kp.EncodePublicKey(),
 		DKIMPrivateKey:    kp.EncodePrivateKey(),
-		TxtChallenge:      TXT,
+		TxtChallenge:      crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N)),
 
 		Version:          1,
 		EncryptedRootKey: privateKey,
@@ -66,7 +64,26 @@ func generateDKIMKeyPair() (*cryptography.RSAKeyPair, helpers.AppError) {
 	return kp, nil
 }
 
-func buildTxtChallenge() string {
-	RID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
-	return fmt.Sprintf("%s=%s", config.Domain.TxtVerificationPrefix, RID)
+func buildChallengeTemplate(domain string, txtChallenge string) string {
+	return fmt.Sprintf(
+		config.Domain.ChallengeTemplate,
+		domain,
+		txtChallenge,
+	)
+}
+
+func buildDKIMRecord(domain string, publicKey string) string {
+	return fmt.Sprintf(
+		config.Domain.DkimTemplate,
+		"default",
+		domain,
+		publicKey,
+	)
+}
+
+func buildIdentity(domain string) string {
+	return fmt.Sprintf(
+		config.Domain.IdentityTemplate,
+		domain,
+	)
 }
