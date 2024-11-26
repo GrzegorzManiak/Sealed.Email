@@ -16,7 +16,7 @@ async function GenerateKeys(passwordHash: Uint8Array): Promise<UserKeys> {
     const curve = GetCurve(CurrentCurve);
     const priv = curve.utils.randomPrivateKey();
     const pub = curve.getPublicKey(priv);
-
+    
     const EncryptedRootKey = await Encrypt(EncodeToBase64(rootKey), passwordHash);
     const EncryptedPrivateKey = await Encrypt(EncodeToBase64(priv), rootKey);
     const EncryptedContactKey = await Encrypt(EncodeToBase64(contactKey), rootKey);

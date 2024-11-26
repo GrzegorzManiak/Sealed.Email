@@ -11,7 +11,9 @@ const config = {
 			"$shadcn": "./src/lib/components/ui",
 			"$shadcn/*": "./src/lib/components/ui/*",
 			"$local": "./src/lib/components/local",
-			"$local/*": "./src/lib/components/local/*"
+			"$local/*": "./src/lib/components/local/*",
+			"$api": "./src/api/*",
+			"$api/*": "./src/api/*"
 		},
 		paths: {
 			base: ''

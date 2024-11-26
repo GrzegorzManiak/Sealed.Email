@@ -10,13 +10,15 @@
     import { Label } from '$shadcn/label';
     import { Checkbox } from '$shadcn/checkbox';
 
+    import * as API from '$api/lib';
+
     let className: string | undefined | null = undefined;
     export { className as class };
     let isLoading = false;
 
     // -- Account Details --
-    let nickname: string = '';
-    let nicknameError: boolean = false;
+    let username: string = '';
+    let usernameError: boolean = false;
 
     let password: string = '';
     let passwordError: boolean = false;
@@ -33,8 +35,8 @@
     function validateDetails() {
         let errorMessages = [];
 
-        nicknameError = nickname.length < 3;
-        if (nicknameError) errorMessages.push('Username must be at least 3 characters long');
+        usernameError = username.length < 3;
+        if (usernameError) errorMessages.push('Username must be at least 3 characters long');
 
         passwordError = password.length < 8;
         if (passwordError) errorMessages.push('Password must be at least 8 characters long');
@@ -45,7 +47,7 @@
         acceptedTermsError = !acceptedTerms;
         if (acceptedTermsError) errorMessages.push('You must accept the terms and conditions');
 
-        const isError = nicknameError || passwordError || acceptedTermsError || confirmPasswordError;
+        const isError = usernameError || passwordError || acceptedTermsError || confirmPasswordError;
         if (isError) throwToast('You have the following errors', errorMessages.join('; '));
         return isError;
     }
@@ -58,29 +60,32 @@
             return;
         }
 
-        console.log({
-            nickname,
-            password,
-            confirmPassword,
-            acceptedTerms,
-            recoveryEmail
-        });
+        async function finish() {
+            const timeEnd = performance.now();
+            const timeTaken = timeEnd - timeStart;
+            await Sleep(1500 - timeTaken);
+            isLoading = false;
+        }
 
-        const timeEnd = performance.now();
-        const timeTaken = timeEnd - timeStart;
-        await Sleep(1500 - timeTaken);
-        isLoading = false;
+        const result = await API.Register.RegisterUser(username, password);
+        if (result instanceof Error) {
+            throwToast('Error', result.message);
+            return await finish();
+        }
+
+        // -- note: We are not calling finish here because we are redirecting to the login page
+        throwToast('Success', 'User registered successfully');
     }
 
     onMount(() => {
         isLoading = false;
-        nickname = '';
+        username = '';
         password = '';
         confirmPassword = '';
         acceptedTerms = false;
         recoveryEmail = '';
 
-        nicknameError = false;
+        usernameError = false;
         passwordError = false;
         confirmPasswordError = false;
         acceptedTermsError = false;
@@ -108,8 +113,8 @@
             <div class='grid gap-1'>
                 <Label class='sr-only' for='username'>Username</Label>
                 <Input
-                        class={cn({ "border-red-500 focus:ring-red-500 focus:border-red-500 bg-red-950 placeholder:text-red-100": nicknameError }, "transition-colors")}
-                        on:focus={() => nicknameError = false}
+                        class={cn({ "border-red-500 focus:ring-red-500 focus:border-red-500 bg-red-950 placeholder:text-red-100": usernameError }, "transition-colors")}
+                        on:focus={() => usernameError = false}
                         id='username'
                         placeholder='Username'
                         type='text'
@@ -117,7 +122,7 @@
                         autocomplete='username'
                         autocorrect='off'
                         disabled={isLoading}
-                        bind:value={nickname}
+                        bind:value={username}
                 />
             </div>
 

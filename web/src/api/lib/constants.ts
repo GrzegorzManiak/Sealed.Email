@@ -1,6 +1,6 @@
 import { SupportedCurves } from "gowl-client-lib";
 
-const ROOT = 'http://localhost:8080';
+const ROOT = 'http://localhost:2095/api';
 const COOKIE_NAME = 'NES-DEV';
 
 const Endpoints = {

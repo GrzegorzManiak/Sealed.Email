@@ -1,15 +1,23 @@
-import argon2 from 'argon2-browser';
 import {BigIntToByteArray, EncodeToBase64, Hash} from "gowl-client-lib";
 import {ServerName} from "./constants";
 
 async function Argon2Hash(username: string, password: string) {
-    return await argon2.hash({
-        pass: password,
-        salt: username,
-        time: 5,
-        mem: 1024 * 128,
-        hashLen: 32
-    });
+
+    // -- TODO -- FIND A LIBRARY THAT SUPPORTS ARGON2ID
+    // import argon2 from 'argon2';
+    // return await argon2.hash({
+    //     pass: password,
+    //     salt: username,
+    //     time: 5,
+    //     mem: 1024 * 128,
+    //     hashLen: 32
+    // });
+    // WILL HAVE TO USE DIFFERENT HASH FOR NOW
+    const hashed = BigIntToByteArray(await Hash(password + username));
+    return {
+        hash: hashed,
+        encoded: EncodeToBase64(hashed)
+    }
 }
 
 async function CalculateIntegrityHash(keys: Array<Uint8Array>): Promise<string> {

@@ -1,8 +1,8 @@
 async function Encrypt(text: string, key: Uint8Array): Promise<{ iv: number[], data: number[] }> {
     const encoder = new TextEncoder();
     const data = encoder.encode(text);
-    const iv = crypto.getRandomValues(new Uint8Array(16)); 
-  
+    const iv = crypto.getRandomValues(new Uint8Array(16));
+
     const cryptoKey = await crypto.subtle.importKey(
         'raw', key, { name: 'AES-GCM' }, false, ['encrypt']);
   
