@@ -107,6 +107,47 @@ async function DeleteDomainRequest(session: Session, domainID: DomainRefID): Pro
     }
 }
 
+type Domain = {
+    domainID: DomainRefID;
+    domain: string;
+    verified: boolean;
+    dateAdded: number;
+    catchAll: boolean;
+    version: number;
+}
+
+type DomainListResponse = {
+    domains: Domain[];
+}
+
+async function GetDomains(session: Session, page: number, perPage: number): Promise<DomainListResponse> {
+    const headers = new Headers();
+    if (session.IsTokenAuthenticated) headers.set("cookie", session.CookieToken);
+
+    const response = await fetch(Endpoints.DOMAIN_LIST[0], {
+        method: Endpoints.DOMAIN_LIST[1],
+        body: JSON.stringify({
+            pagination: {
+                page,
+                perPage
+            }
+        }),
+        headers
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to get domain list:", errorText);
+        throw new ClientError(
+            'Failed to get domain list',
+            'Sorry, we were unable to get the domain list from your account',
+            'DOMAIN-LIST-FAIL'
+        );
+    }
+
+    return await response.json();
+}
+
 async function AddDomain(session: Session, domain: string): Promise<AddDomainResponse> {
     domain = CleanDomain(domain);
     const domainKey = NewKey();
@@ -122,9 +163,15 @@ async function DeleteDomain(session: Session, domainID: DomainRefID): Promise<vo
     await DeleteDomainRequest(session, domainID);
 }
 
+async function GetDomainList(session: Session, page: number, perPage: number): Promise<DomainListResponse> {
+    return await GetDomains(session, page, perPage);
+}
+
 export {
     RefreshDomainVerification,
+    GetDomainList,
     CleanDomain,
     DeleteDomain,
-    AddDomain
+    AddDomain,
+    type Domain
 }

@@ -3,6 +3,7 @@ package domainList
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -20,6 +21,7 @@ func fetchDomainsByUserID(
 		}
 	}
 
+	zap.L().Debug("fetchDomainsByUserID", zap.Any("domains", domains), zap.Any("pagination", pagination), zap.Any("userID", userID))
 	return domains, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	domainAdd "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/add"
 	domainDelete "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/delete"
+	domainList "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/list"
 	domainModify "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/modify"
 	domainRefresh "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/refresh"
 	"github.com/gin-gonic/gin"
@@ -23,5 +24,8 @@ func DomainRoutes(router *gin.Engine, databaseConnection *gorm.DB) {
 	})
 	router.PUT("/domain/refresh", func(ctx *gin.Context) {
 		domainRefresh.ExecuteRoute(ctx, databaseConnection)
+	})
+	router.PUT("/domain/list", func(ctx *gin.Context) {
+		domainList.ExecuteRoute(ctx, databaseConnection)
 	})
 }

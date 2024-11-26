@@ -4,7 +4,7 @@ import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Pagination struct {
 	Page    int `json:"page" validate:"gte=0,lte=100"`
-	PerPage int `json:"perPage" validate:"gte=5,lte=15"`
+	PerPage int `json:"perPage" validate:"gte=3,lte=15"`
 }
 
 type Input struct {
