@@ -22,10 +22,14 @@
         />
 
         <!-- Splash Image -->
-        <div
-                class="absolute inset-0 bg-cover z-0"
-                style="background-image: url('/images/splashColor.png')"
-        />
+        <div>
+            <img src="/images/logos/white.png" alt="Noise Logo" class="absolute w-32 mx-auto z-50" />
+
+            <div
+                    class="absolute inset-1 bg-cover z-0 top-0 left-0 w-full h-full"
+                    style="background-image: url('/images/gradient.png')"
+            />
+        </div>
 
         <!-- Quote -->
         <div class="relative z-20 mt-auto">
