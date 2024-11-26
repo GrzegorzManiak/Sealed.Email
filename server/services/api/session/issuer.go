@@ -9,6 +9,7 @@ import (
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"time"
 )
@@ -42,6 +43,7 @@ func (claims *Claims) Sign(key *ecdsa.PrivateKey) error {
 func CreateSession(user models2.User, group TokenGroup, databaseConnection *gorm.DB) (models2.Session, error) {
 	unix := time.Now().Unix()
 	SessionID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
+
 	session := models2.Session{
 		UserID:    user.ID,
 		SessionID: SessionID,
@@ -72,9 +74,10 @@ func CreateSessionToken(group TokenGroup, content Content, session models2.Sessi
 	claims := Claims{
 		Header:  header,
 		Content: content,
-		Session: session,
+		session: session,
 	}
 
+	zap.L().Debug("CreateSessionToken", zap.Any("claims", claims))
 	err := claims.Sign(&config.Session.PrivateKey)
 	if err != nil {
 		return Claims{}, err
@@ -91,7 +94,7 @@ func IssueSessionToken(user models2.User, group TokenGroup, databaseConnection *
 
 	content := Content{
 		SessionID: session.SessionID,
-		UserID:    user.UID,
+		UserID:    user.ID,
 	}
 
 	claims, err := CreateSessionToken(group, content, session)

@@ -47,14 +47,14 @@ type Header struct {
 
 type Content struct {
 	SessionID string `json:"tid"`
-	UserID    string `json:"uid"`
+	UserID    uint   `json:"uid"`
 }
 
 type Claims struct {
 	Header    Header
 	Content   Content
 	Signature []byte
-	Session   models.Session
+	session   models.Session
 	Token     string
 }
 

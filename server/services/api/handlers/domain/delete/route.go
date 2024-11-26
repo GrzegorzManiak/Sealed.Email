@@ -21,7 +21,7 @@ func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
 		return
 	}
 
-	output, err := handler(input, ctx, data.Session.UserID, databaseConnection)
+	output, err := handler(input, ctx, data.Content.UserID, databaseConnection)
 	if err != nil {
 		zap.L().Debug("Error handler", zap.Error(err), zap.Any("input", input), zap.Any("output", output))
 		helpers.ErrorResponse(ctx, err)

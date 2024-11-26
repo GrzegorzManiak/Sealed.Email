@@ -4,7 +4,9 @@ import "gorm.io/gorm"
 
 type Session struct {
 	gorm.Model
-	UserID    uint   `json:"uid" gorm:"column:uid"`
+	User   User `json:"user" gorm:"foreignKey:UserID"`
+	UserID uint `json:"uid" gorm:"column:uid"`
+
 	SessionID string `json:"sid" orm:"column:sid;uniqueIndex"`
 	ExpiresAt int64  `json:"exp" gorm:"column:exp"`
 	CreatedAt int64  `json:"iat" gorm:"column:iat"`
