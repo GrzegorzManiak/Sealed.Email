@@ -1,6 +1,7 @@
 <script lang="ts">
     import {cn, Sleep} from "$lib/utils";
     import {onMount} from "svelte";
+    import {throwToast} from "$lib/toasts";
 
     import LoaderIcon from 'lucide-svelte/icons/loader-circle';
 
@@ -30,12 +31,23 @@
     let recoveryEmailError: boolean = false;
 
     function validateDetails() {
-        nicknameError = nickname.length < 3;
-        passwordError = password.length < 8;
-        acceptedTermsError = !acceptedTerms;
-        confirmPasswordError = (password !== confirmPassword) || (confirmPassword.length < 8);
+        let errorMessages = [];
 
-        return nicknameError || passwordError || acceptedTermsError || confirmPasswordError;
+        nicknameError = nickname.length < 3;
+        if (nicknameError) errorMessages.push('Username must be at least 3 characters long');
+
+        passwordError = password.length < 8;
+        if (passwordError) errorMessages.push('Password must be at least 8 characters long');
+
+        confirmPasswordError = (password !== confirmPassword) || (confirmPassword.length < 8);
+        if (password !== confirmPassword) errorMessages.push('Passwords do not match');
+
+        acceptedTermsError = !acceptedTerms;
+        if (acceptedTermsError) errorMessages.push('You must accept the terms and conditions');
+
+        const isError = nicknameError || passwordError || acceptedTermsError || confirmPasswordError;
+        if (isError) throwToast('You have the following errors', errorMessages.join('; '));
+        return isError;
     }
 
     async function submitDetails() {
@@ -67,6 +79,12 @@
         confirmPassword = '';
         acceptedTerms = false;
         recoveryEmail = '';
+
+        nicknameError = false;
+        passwordError = false;
+        confirmPasswordError = false;
+        acceptedTermsError = false;
+        recoveryEmailError = false;
     });
 </script>
 

@@ -2,7 +2,7 @@ import { toast } from 'svelte-sonner';
 
 
 
-const throw_toast = (
+const throwToast = (
     message: string,
     description: string
 ) => {
@@ -10,16 +10,12 @@ const throw_toast = (
         dismissable: true,
         description,
         important: true,
-        action: { 
-            label: 'Dismiss',
-            onClick: () => toast.dismiss() 
-        }
     });
 };
 
 
 
-const success_toast = (
+const successToast = (
     message: string,
     description: string
 ) => {
@@ -37,6 +33,6 @@ const success_toast = (
 
 
 export {
-    throw_toast,
-    success_toast
+    throwToast,
+    successToast
 };

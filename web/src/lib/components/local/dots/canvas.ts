@@ -1,4 +1,4 @@
-import { throw_toast } from '$lib/toasts';
+import { throwToast } from '$lib/toasts';
 
 
 
@@ -48,7 +48,7 @@ class CanvasManager {
         // -- Onscreen context
         const ctx = canvas_element.getContext('2d');
         if (ctx === null) {
-            throw_toast('Canvas Manager Error', 'Could not get 2D context from canvas element');
+            throwToast('Canvas Manager Error', 'Could not get 2D context from canvas element');
             throw new Error('Could not get 2D context from canvas element');
         }
         this._ctx = ctx;
@@ -57,7 +57,7 @@ class CanvasManager {
         const osc = new OffscreenCanvas(1, 1);
         const draw_ctx = osc.getContext('2d');
         if (draw_ctx === null) {
-            throw_toast('Canvas Manager Error', 'Could not get 2D context from offscreen canvas');
+            throwToast('Canvas Manager Error', 'Could not get 2D context from offscreen canvas');
             throw new Error('Could not get 2D context from offscreen canvas');
         }
         this._draw_ctx = draw_ctx;

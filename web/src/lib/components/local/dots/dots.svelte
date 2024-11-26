@@ -3,7 +3,7 @@
     import { onMount } from 'svelte';
     import type { HTMLAttributes } from 'svelte/elements';
     import { CanvasManager } from './canvas';
-    import { throw_toast } from '$lib/toasts';
+    import { throwToast } from '$lib/toasts';
     import { generate_text_points } from './text';
     import {DefaultSettings, type Dots, DotsWritable, Large, Medium, Small} from './index';
     import { render_dots } from './dots';
@@ -35,7 +35,7 @@
 
         // -- Ensure that the canvas element exists
         if (!canvas_element) {
-            throw_toast('Canvas element not found', 'Canvas element did not mount properly');
+            throwToast('Canvas element not found', 'Canvas element did not mount properly');
             throw new Error('Canvas element not found');
         }
 
