@@ -6,16 +6,18 @@ import (
 
 type UserInbox struct {
 	gorm.Model
-	UID    string `gorm:"uniqueIndex"`
-	Email  string `gorm:"uniqueIndex"`
-	UserID uint   `gorm:"uniqueIndex"`
-	Domain UserDomain
+	RID    string `gorm:"unique"`
+	User   User   `gorm:"foreignKey:UserID"`
+	UserID uint   `gorm:"index"`
 
-	Version             uint
-	PublicKey           string
-	EncryptedPrivateKey string
-	EncryptedRootKey    string
+	Domain   UserDomain `gorm:"foreignKey:DomainID"`
+	DomainID uint       `gorm:"index"`
 
-	TotalInboundEmails  uint
-	TotalOutboundEmails uint
+	EmailHash string `gorm:"uniqueIndex"`
+
+	AsymmetricPublicKey  string
+	AsymmetricPrivateKey string
+	SymmetricRootKey     string
+
+	Version uint
 }
