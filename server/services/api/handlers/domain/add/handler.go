@@ -29,7 +29,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *m
 	}
 
 	// -- USER CAN RE-VERIFY, NO NEED TO RETURN ERROR
-	err = outsideServices.AddDomainToVerificationQueue(ctx, &domainModel)
+	err = outsideServices.AddDomainToVerificationQueue(ctx, domainModel)
 	sentVerification := true
 	if err != nil {
 		zap.L().Warn("failed to send verification request", zap.Error(err))

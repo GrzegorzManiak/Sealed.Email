@@ -5,7 +5,7 @@ import (
 	domainAdd "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/add"
 	domainDelete "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/delete"
 	domainModify "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/modify"
-	domainVerify "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/verify"
+	domainRefresh "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/refresh"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -21,7 +21,7 @@ func DomainRoutes(router *gin.Engine, databaseConnection *gorm.DB) {
 	router.PUT("/domain/modify", func(ctx *gin.Context) {
 		domainModify.ExecuteRoute(ctx, databaseConnection)
 	})
-	router.PUT("/domain/verify", func(ctx *gin.Context) {
-		domainVerify.ExecuteRoute(ctx, databaseConnection)
+	router.PUT("/domain/refresh", func(ctx *gin.Context) {
+		domainRefresh.ExecuteRoute(ctx, databaseConnection)
 	})
 }

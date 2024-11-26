@@ -17,10 +17,10 @@ func insertDomain(
 	domain string,
 	privateKey string,
 	databaseConnection *gorm.DB,
-) (models.UserDomain, helpers.AppError) {
+) (*models.UserDomain, helpers.AppError) {
 	kp, err := generateDKIMKeyPair()
 	if err != nil {
-		return models.UserDomain{}, err
+		return &models.UserDomain{}, err
 	}
 	RID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
 
@@ -43,13 +43,13 @@ func insertDomain(
 	}
 
 	if err := databaseConnection.Create(&domainModel); err.Error != nil {
-		return models.UserDomain{}, helpers.GenericError{
+		return &models.UserDomain{}, helpers.GenericError{
 			Message: fmt.Sprintf("Error creating domain: %v", err.Error),
 			ErrCode: 500,
 		}
 	}
 
-	return domainModel, nil
+	return &domainModel, nil
 }
 
 func generateDKIMKeyPair() (*cryptography.RSAKeyPair, helpers.AppError) {
