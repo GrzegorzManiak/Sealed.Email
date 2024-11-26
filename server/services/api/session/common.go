@@ -70,7 +70,7 @@ type APIConfiguration struct {
 
 func FindSession(sessionID string, databaseConnection *gorm.DB) (models.Session, error) {
 	session := models.Session{}
-	err := databaseConnection.Where("sid = ?", sessionID).First(&session)
+	err := databaseConnection.Where("session_id = ?", sessionID).First(&session)
 	if err.Error != nil {
 		return models.Session{}, err.Error
 	}
