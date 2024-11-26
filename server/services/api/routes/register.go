@@ -9,7 +9,7 @@ import (
 
 func RegisterRoutes(router *gin.Engine, databaseConnection *gorm.DB) {
 	fmt.Println("Registering routes for: register")
-	router.POST("/register", func(ctx *gin.Context) {
+	router.POST("/api/register", func(ctx *gin.Context) {
 		register.ExecuteRoute(ctx, databaseConnection)
 	})
 }

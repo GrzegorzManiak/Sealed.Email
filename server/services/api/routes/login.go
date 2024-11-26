@@ -10,10 +10,10 @@ import (
 
 func LoginRoutes(router *gin.Engine, databaseConnection *gorm.DB) {
 	fmt.Println("Registering routes for: login")
-	router.PUT("/login/init", func(ctx *gin.Context) {
+	router.PUT("/api/login/init", func(ctx *gin.Context) {
 		loginInit.ExecuteRoute(ctx, databaseConnection)
 	})
-	router.PUT("/login/verify", func(ctx *gin.Context) {
+	router.PUT("/api/login/verify", func(ctx *gin.Context) {
 		loginVerify.ExecuteRoute(ctx, databaseConnection)
 	})
 }

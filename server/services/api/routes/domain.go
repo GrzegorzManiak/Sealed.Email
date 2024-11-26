@@ -13,19 +13,19 @@ import (
 
 func DomainRoutes(router *gin.Engine, databaseConnection *gorm.DB) {
 	fmt.Println("Registering routes for: login")
-	router.POST("/domain/add", func(ctx *gin.Context) {
+	router.POST("/api/domain/add", func(ctx *gin.Context) {
 		domainAdd.ExecuteRoute(ctx, databaseConnection)
 	})
-	router.DELETE("/domain/delete", func(ctx *gin.Context) {
+	router.DELETE("/api/domain/delete", func(ctx *gin.Context) {
 		domainDelete.ExecuteRoute(ctx, databaseConnection)
 	})
-	router.PUT("/domain/modify", func(ctx *gin.Context) {
+	router.PUT("/api/domain/modify", func(ctx *gin.Context) {
 		domainModify.ExecuteRoute(ctx, databaseConnection)
 	})
-	router.PUT("/domain/refresh", func(ctx *gin.Context) {
+	router.PUT("/api/domain/refresh", func(ctx *gin.Context) {
 		domainRefresh.ExecuteRoute(ctx, databaseConnection)
 	})
-	router.PUT("/domain/list", func(ctx *gin.Context) {
+	router.PUT("/api/domain/list", func(ctx *gin.Context) {
 		domainList.ExecuteRoute(ctx, databaseConnection)
 	})
 }

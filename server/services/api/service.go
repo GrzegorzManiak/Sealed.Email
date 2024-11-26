@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
@@ -55,7 +56,7 @@ func Start() {
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
 	ServiceProvider.RegisterCallback("filler", outsideServices.PoolCallback)
 
-	err = router.Run()
+	err = router.Run(fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port))
 	if err != nil {
 		zap.L().Panic("failed to run API service", zap.Error(err))
 	}

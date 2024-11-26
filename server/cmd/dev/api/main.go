@@ -14,6 +14,7 @@ func main() {
 		zap.L().Panic("failed to load config", zap.Error(err))
 	}
 	helpers.RegisterCustomValidators()
+	config.Server.Port = "3500"
 	go APIService.Start()
 	select {}
 }
