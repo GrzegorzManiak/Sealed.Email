@@ -29,5 +29,5 @@
 
 export * as Login from "./auth/login";
 export * as Register from "./auth/register";
-export * as Session from "./session/session";
+export { default as Session } from "./session/session";
 export * as Domain from "./api/domain";

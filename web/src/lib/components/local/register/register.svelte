@@ -74,7 +74,7 @@
         }
 
         // -- note: We are not calling finish here because we are redirecting to the login page
-        throwToast('Success', 'User registered successfully');
+        throwToast('Registered', 'You have been registered successfully!');
     }
 
     onMount(() => {
