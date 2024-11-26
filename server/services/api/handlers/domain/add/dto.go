@@ -25,9 +25,4 @@ var SessionFilter = &session.APIConfiguration{
 	Allow:           []string{"default"},
 	Block:           []string{},
 	SessionRequired: true,
-
-	// -- Effective rate limit of 1 request per 10 seconds
-	RateLimit:  true,
-	BucketSize: 6,
-	RefillRate: 0.1,
 }
