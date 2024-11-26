@@ -7,6 +7,7 @@ import (
 type UserDomain struct {
 	gorm.Model
 	RID    string `gorm:"unique"`
+	User   User   `gorm:"foreignKey:UserID"`
 	UserID uint   `gorm:"index"`
 
 	Domain   string
