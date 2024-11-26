@@ -13,3 +13,4 @@
 9. [ ] DKIM Key encryption at rest.
 10. [x] Implement a proper logging system
 11. [ ] Implement Holds & proper quota system
+12. [ ] CSRF Protection

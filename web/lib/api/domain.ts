@@ -84,6 +84,29 @@ async function RefreshDomainVerificationRequest(session: Session, domainID: Doma
     return await response.json();
 }
 
+async function DeleteDomainRequest(session: Session, domainID: DomainRefID): Promise<void> {
+    const headers = new Headers();
+    if (session.IsTokenAuthenticated) headers.set("cookie", session.CookieToken);
+
+    const response = await fetch(Endpoints.DOMAIN_DELETE[0], {
+        method: Endpoints.DOMAIN_DELETE[1],
+        body: JSON.stringify({
+            domainID
+        }),
+        headers
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to delete domain:", errorText);
+        throw new ClientError(
+            'Failed to delete domain',
+            'Sorry, we were unable to delete the domain from your account',
+            'DOMAIN-DELETE-FAIL'
+        );
+    }
+}
+
 async function AddDomain(session: Session, domain: string): Promise<AddDomainResponse> {
     domain = CleanDomain(domain);
     const domainKey = NewKey();
@@ -95,8 +118,13 @@ async function RefreshDomainVerification(session: Session, domainID: DomainRefID
     await RefreshDomainVerificationRequest(session, domainID);
 }
 
+async function DeleteDomain(session: Session, domainID: DomainRefID): Promise<void> {
+    await DeleteDomainRequest(session, domainID);
+}
+
 export {
     RefreshDomainVerification,
     CleanDomain,
+    DeleteDomain,
     AddDomain
 }

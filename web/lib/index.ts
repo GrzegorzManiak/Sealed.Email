@@ -2,7 +2,7 @@ import { Login } from "./auth/login";
 import { RegisterUser } from "./auth/register";
 import Session from "./session/session";
 import {EncodeToBase64} from "gowl-client-lib";
-import {AddDomain, RefreshDomainVerification} from "./api/domain";
+import {AddDomain, DeleteDomain, RefreshDomainVerification} from "./api/domain";
 
 const username = 'bob1didbob2';
 console.log(`Logging in as ${username}`);
@@ -21,3 +21,5 @@ console.log(domain);
 
 await Bun.sleep(1000);
 await RefreshDomainVerification(session, domain.domainID);
+await Bun.sleep(1000);
+await DeleteDomain(session, domain.domainID);
