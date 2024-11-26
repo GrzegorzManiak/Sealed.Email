@@ -2,7 +2,7 @@ import { Login } from "./auth/login";
 import { RegisterUser } from "./auth/register";
 import Session from "./session/session";
 import {EncodeToBase64} from "gowl-client-lib";
-import {AddDomain} from "./api/domain";
+import {AddDomain, RefreshDomainVerification} from "./api/domain";
 
 const username = 'bob1didbob2';
 console.log(`Logging in as ${username}`);
@@ -15,4 +15,9 @@ await session.DecryptKeys();
 
 
 // console.log("Session token:", session.Token);
-await AddDomain(session, 'test.grzegorz.ie');
+const randomString = Math.random().toString(36).substring(2);
+const domain = await AddDomain(session, randomString + '.grzegorz.ie');
+console.log(domain);
+
+await Bun.sleep(1000);
+await RefreshDomainVerification(session, domain.domainID);

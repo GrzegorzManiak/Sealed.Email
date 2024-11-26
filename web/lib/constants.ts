@@ -12,7 +12,7 @@ const Endpoints = {
     DOMAIN_DELETE:  [`${ROOT}/domain/delete`, 'DELETE'],
     DOMAIN_LIST:    [`${ROOT}/domain/list`, 'GET'],
     DOMAIN_MODIFY:  [`${ROOT}/domain/modify`, 'PUT'],
-    DOMAIN_VERIFY:  [`${ROOT}/domain/verify`, 'PUT'],
+    DOMAIN_REFRESH:  [`${ROOT}/domain/refresh`, 'PUT'],
 };
 
 const ServerName: string = 'NoiseEmailServer>V1.0.0';

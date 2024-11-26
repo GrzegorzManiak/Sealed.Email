@@ -5,6 +5,8 @@ import {ClientError} from "../errors";
 import {GetCurve} from "gowl-client-lib";
 import {NewKey} from "../symetric";
 
+type DomainRefID = string;
+
 function CleanDomain(domain: string): string {
     domain = domain.trim();
     domain = domain.toLowerCase();
@@ -15,7 +17,19 @@ function CleanDomain(domain: string): string {
     throw new Error("Invalid domain");
 }
 
-async function AddDomainRequest(session: Session, domain: string, encRootKey: string): Promise<void> {
+type AddDomainResponse = {
+    domainID: DomainRefID;
+    sentVerification: boolean;
+    dns: {
+        mx: string;
+        dkim: string;
+        verification: string;
+        identity: string;
+        spf: string;
+    }
+}
+
+async function AddDomainRequest(session: Session, domain: string, encRootKey: string): Promise<AddDomainResponse> {
     const headers = new Headers();
     if (session.IsTokenAuthenticated) headers.set("cookie", session.CookieToken);
 
@@ -38,19 +52,51 @@ async function AddDomainRequest(session: Session, domain: string, encRootKey: st
         );
     }
 
-    console.log("Domain added successfully", await response.json());
+    return await response.json();
 }
 
-async function AddDomain(session: Session, domain: string): Promise<void> {
+type RefreshDomainVerificationResponse = {
+    sentVerification: boolean;
+}
+
+async function RefreshDomainVerificationRequest(session: Session, domainID: DomainRefID): Promise<RefreshDomainVerificationResponse> {
+    const headers = new Headers();
+    if (session.IsTokenAuthenticated) headers.set("cookie", session.CookieToken);
+
+    const response = await fetch(Endpoints.DOMAIN_REFRESH[0], {
+        method: Endpoints.DOMAIN_REFRESH[1],
+        body: JSON.stringify({
+            domainID
+        }),
+        headers
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to refresh domain verification:", errorText);
+        throw new ClientError(
+            'Failed to refresh domain verification',
+            'Sorry, we were unable to refresh the domain verification',
+            'DOMAIN-REFRESH-FAIL'
+        );
+    }
+
+    return await response.json();
+}
+
+async function AddDomain(session: Session, domain: string): Promise<AddDomainResponse> {
     domain = CleanDomain(domain);
     const domainKey = NewKey();
     const encRootKey = await session.EncryptKey(domainKey);
+    return await AddDomainRequest(session, domain, encRootKey);
+}
 
-    console.log("Adding domain:", encRootKey);
-    await AddDomainRequest(session, domain, encRootKey);
+async function RefreshDomainVerification(session: Session, domainID: DomainRefID): Promise<void> {
+    await RefreshDomainVerificationRequest(session, domainID);
 }
 
 export {
+    RefreshDomainVerification,
     CleanDomain,
     AddDomain
 }
