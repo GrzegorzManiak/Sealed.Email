@@ -7,7 +7,7 @@ import (
 )
 
 func fetchDomainByID(
-	userID string,
+	userID uint,
 	domainID string,
 	databaseConnection *gorm.DB,
 ) (*models.UserDomain, helpers.AppError) {

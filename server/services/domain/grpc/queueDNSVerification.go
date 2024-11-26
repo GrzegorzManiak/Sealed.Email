@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service.Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSVerificationRequest) (*domain.QueueDNSVerificationResponse, error) {
+func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSVerificationRequest) (*domain.QueueDNSVerificationResponse, error) {
 	cleanDomain, domainErr := helpers.TrimDomain(req.DomainName)
 	if domainErr != nil {
 		return &domain.QueueDNSVerificationResponse{

@@ -8,6 +8,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/domain"
+	"github.com/GrzegorzManiak/NoiseBackend/services/domain/grpc"
 	QueueService "github.com/GrzegorzManiak/NoiseBackend/services/domain/service"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/reflection"
@@ -36,7 +37,7 @@ func Start() {
 		})
 
 	listener, grpcServer, ServiceID := ServiceProvider.CreateGRPCService(config.Certificates.Domain)
-	domain.RegisterDomainServiceServer(grpcServer, &QueueService.Server{
+	domain.RegisterDomainServiceServer(grpcServer, &grpc.Server{
 		QueueDatabaseConnection: queueDatabaseConnection,
 		Queue:                   domainQueue})
 	reflection.Register(grpcServer)

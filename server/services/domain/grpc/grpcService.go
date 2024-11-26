@@ -1,4 +1,4 @@
-package service
+package grpc
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"

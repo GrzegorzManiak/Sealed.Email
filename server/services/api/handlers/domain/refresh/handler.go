@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func handler(data *Input, ctx *gin.Context, userID string, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
+func handler(data *Input, ctx *gin.Context, userID uint, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
 
 	domainModel, err := fetchDomainByID(userID, data.DomainID, databaseConnection)
 	if err != nil {
