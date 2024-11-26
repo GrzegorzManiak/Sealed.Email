@@ -5,6 +5,7 @@
 
     import { Button } from '$shadcn/button';
     import { Input } from '$shadcn/input';
+    import { Register } from "$local/register";
 </script>
 
 <div
@@ -51,6 +52,7 @@
             </div>
 
             <!-- Form -->
+            <Register />
 
             <!-- Terms -->
             <p class="px-8 text-center text-sm text-muted-foreground">
