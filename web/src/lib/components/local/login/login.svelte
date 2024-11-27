@@ -142,6 +142,13 @@
             </Button>
 
             <slot/>
+
+            <!-- Prompt text -->
+            <div class='flex flex-col space-y-2 text-center'>
+                <p class='text-sm text-muted-foreground'>
+                    Lost your password? <a href='/authentication/reset-password' class='underline hover:text-primary'>Click here to reset it.</a>
+                </p>
+            </div>
         </div>
     </form>
 
