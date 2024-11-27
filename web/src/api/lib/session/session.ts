@@ -110,6 +110,10 @@ class Session {
         return EncodeToBase64(encryptedKey);
     }
 
+    public static ClearSessionCookie() {
+        document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    }
+
     public get Statistics(): Statistics { return this._statistics; }
     public get SessionEstablished(): boolean { return this._sessionEstablished; }
     public get SessionKey(): Uint8Array { return this._sessionKey; }

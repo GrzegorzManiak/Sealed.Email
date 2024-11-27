@@ -53,6 +53,7 @@
         }
 
         try {
+            API.Session.ClearSessionCookie();
             const result = await API.Login.Login(username, password);
             const session = new API.Session(result);
             await session.DecryptKeys();

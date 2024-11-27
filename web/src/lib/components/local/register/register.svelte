@@ -69,6 +69,7 @@
         }
 
         try {
+            API.Session.ClearSessionCookie();
             await API.Register.RegisterUser(username, password);
             return await redirect('/authentication/login', {
                 delay: 1500,
