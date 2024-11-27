@@ -109,7 +109,7 @@ func SetSessionCookie(ctx *gin.Context, claims Claims) {
 	ctx.SetCookie(
 		config.Session.CookieName,
 		claims.Token,
-		-1,
+		config.Session.CookieMaxAge,
 		config.Session.CookiePath,
 		config.Session.CookieDomain,
 		config.Session.CookieSecure,

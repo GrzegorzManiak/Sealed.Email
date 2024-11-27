@@ -8,6 +8,7 @@ session:
   cookieDomain: 'localhost'
   cookieName: 'NES-DEV'
   cookieSecure: false
+  cookieMaxAge: 2592000
 
 auth:
   maxVerifyTimeWindow: 300

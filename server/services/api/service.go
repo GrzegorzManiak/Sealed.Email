@@ -31,6 +31,7 @@ func Start() {
 	routes.RegisterRoutes(router, databaseConnection)
 	routes.LoginRoutes(router, databaseConnection)
 	routes.DomainRoutes(router, databaseConnection)
+	routes.DevRoutes(router, databaseConnection)
 
 	serviceUUID, err := uuid.NewUUID()
 	if err != nil {

@@ -21,6 +21,7 @@ type RawSessionConfig struct {
 	CookieDomain string `yaml:"cookieDomain"`
 	CookieName   string `yaml:"cookieName"`
 	CookieSecure bool   `yaml:"cookieSecure"`
+	CookieMaxAge int    `yaml:"cookieMaxAge"`
 }
 
 type ParsedSessionConfig struct {
@@ -30,6 +31,7 @@ type ParsedSessionConfig struct {
 	CookieDomain string `yaml:"cookieDomain"`
 	CookieName   string `yaml:"cookieName"`
 	CookieSecure bool   `yaml:"cookieSecure"`
+	CookieMaxAge int    `yaml:"cookieMaxAge"`
 }
 
 func (s *RawSessionConfig) Parse() (*ParsedSessionConfig, error) {
@@ -45,5 +47,6 @@ func (s *RawSessionConfig) Parse() (*ParsedSessionConfig, error) {
 		CookieDomain: s.CookieDomain,
 		CookieName:   s.CookieName,
 		CookieSecure: s.CookieSecure,
+		CookieMaxAge: s.CookieMaxAge,
 	}, nil
 }
