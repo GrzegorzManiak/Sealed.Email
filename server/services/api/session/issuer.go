@@ -126,3 +126,15 @@ func IssueAndSetSessionToken(ctx *gin.Context, user models2.User, databaseConnec
 	SetSessionCookie(ctx, claims)
 	return claims, nil
 }
+
+func ClearCTXSession(ctx *gin.Context) {
+	ctx.SetCookie(
+		config.Session.CookieName,
+		"",
+		-1,
+		config.Session.CookiePath,
+		config.Session.CookieDomain,
+		config.Session.CookieSecure,
+		true,
+	)
+}

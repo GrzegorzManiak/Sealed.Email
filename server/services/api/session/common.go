@@ -22,12 +22,14 @@ var (
 	DefaultTokenGroup = TokenGroup{
 		Group:      "default",
 		Ver:        CurVer,
-		DefaultEAT: 60 * 60 * 24 * 7,
+		DefaultEAT: 60 * 60 * 24 * 8, // -- 8 days
+		DefaultRAT: 60 * 5,           // -- 5 minutes
 	}
 	SecureTokenGroup = TokenGroup{
 		Group:      "secure",
 		Ver:        CurVer,
-		DefaultEAT: 60 * 30,
+		DefaultEAT: 60 * 30, // -- 30 minutes
+		DefaultRAT: 60 * 5,  // -- 5 minutes
 	}
 )
 

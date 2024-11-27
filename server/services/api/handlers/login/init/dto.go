@@ -26,8 +26,8 @@ type Output struct {
 }
 
 var SessionFilter = &session.APIConfiguration{
-	Allow:           []string{},
-	Block:           []string{"default", "secure"},
+	Allow:           []string{"default"},
+	Block:           []string{},
 	SessionRequired: false,
 
 	// -- Effective rate limit of 1 request per 4 seconds

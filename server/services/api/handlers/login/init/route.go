@@ -11,6 +11,7 @@ import (
 func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
 	_, sessionErr := midlewares.SessionManagerMiddleware(ctx, SessionFilter, databaseConnection)
 	if sessionErr != nil {
+		zap.L().Debug("Error SessionManagerMiddleware", zap.Error(sessionErr))
 		helpers.ErrorResponse(ctx, sessionErr)
 		return
 	}
