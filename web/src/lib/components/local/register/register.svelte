@@ -11,6 +11,7 @@
     import { Checkbox } from '$shadcn/checkbox';
 
     import * as API from '$api/lib';
+    import {redirect, redirectIfLoggedIn} from "$lib/redirect";
 
     let className: string | undefined | null = undefined;
     export { className as class };
@@ -68,17 +69,18 @@
         }
 
         try {
-            const result = await API.Register.RegisterUser(username, password);
+            await API.Register.RegisterUser(username, password);
+            return await redirect('/authentication/login', {
+                delay: 1500,
+                title: 'You have been registered successfully!',
+                message: 'You will be redirected to the login page shortly.'
+            });
         }
 
         catch (error) {
             API.GenericError.fromUnknown(error).toast();
-            await finish();
-            return;
+            return await finish();
         }
-
-        // -- note: We are not calling finish here because we are redirecting to the login page
-        throwToast('Registered', 'You have been registered successfully!');
     }
 
     onMount(() => {

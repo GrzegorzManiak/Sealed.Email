@@ -60,7 +60,7 @@ async function UserCryptoSetup(username: string, password: string) {
     return { keys, proof, usernameHash, passwordHash };
 }
 
-async function RegisterUser(username: string, password: string): Promise<ClientError | UserKeys> {
+async function RegisterUser(username: string, password: string): Promise<UserKeys> {
     // -- Generate user keys
     const { keys, proof, usernameHash, passwordHash } = await UserCryptoSetup(username, password);
 

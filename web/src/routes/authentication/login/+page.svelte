@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { goto } from '$app/navigation';
-    import { get } from 'svelte/store';
     import { onMount } from 'svelte';
-
-    import { Button } from '$shadcn/button';
-    import { Input } from '$shadcn/input';
     import { Login } from "$local/login";
+    import {redirectIfLoggedIn} from "$lib/redirect";
+
+    onMount(() => {
+        redirectIfLoggedIn('/inbox');
+    });
 </script>
 
 <div
