@@ -38,10 +38,7 @@ func registerUser(
 
 	dbInsert := databaseConnection.Create(user)
 	if dbInsert.Error != nil {
-		return nil, helpers.GenericError{
-			Message: dbInsert.Error.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewServerError("Error inserting user into database", "Oops! Something went wrong")
 	}
 
 	return user, nil

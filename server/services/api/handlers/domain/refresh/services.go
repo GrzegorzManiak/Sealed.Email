@@ -14,10 +14,7 @@ func fetchDomainByID(
 	domain := &models.UserDomain{}
 	dbQuery := databaseConnection.Where("user_id = ? AND r_id = ?", userID, domainID).First(domain)
 	if dbQuery.Error != nil {
-		return nil, helpers.GenericError{
-			Message: dbQuery.Error.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewServerError("The requested domain could not be found.", "Domain not found!")
 	}
 
 	return domain, nil

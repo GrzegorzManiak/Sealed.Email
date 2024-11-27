@@ -25,10 +25,7 @@ func prepareClientAuthInit(data *Input) (*owl.ClientAuthInitRequestPayload, help
 	}
 
 	if clientAuthInit.X1 == nil || clientAuthInit.X2 == nil || clientAuthInit.PI1 == nil || clientAuthInit.PI2 == nil {
-		return nil, helpers.GenericError{
-			Message: "clientAuthInit fields are not properly initialized",
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Your request is missing some data. Please try again.", "Missing data")
 	}
 
 	return clientAuthInit, nil
@@ -36,17 +33,11 @@ func prepareClientAuthInit(data *Input) (*owl.ClientAuthInitRequestPayload, help
 
 func parseRegisteredUser(fetchedUser *models2.User) (*owl.RegistrationResponse, helpers.AppError) {
 	if fetchedUser == nil {
-		return nil, helpers.GenericError{
-			Message: "fetchedUser is nil",
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	if fetchedUser.X3 == "" || fetchedUser.PI3_V == "" || fetchedUser.PI3_R == "" {
-		return nil, helpers.GenericError{
-			Message: "fetchedUser fields are not properly initialized",
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Your request is missing some data. Please try again.", "Missing data")
 	}
 
 	return &owl.RegistrationResponse{
@@ -86,10 +77,7 @@ func insertVerifyData(
 	})
 
 	if newUserVerify.Error != nil {
-		return "", helpers.GenericError{
-			Message: newUserVerify.Error.Error(),
-			ErrCode: 400,
-		}
+		return "", helpers.NewServerError("Failed to create verification data. Please try again.", "Failed to create verification data")
 	}
 
 	return RID, nil

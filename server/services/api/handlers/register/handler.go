@@ -1,6 +1,7 @@
 package register
 
 import (
+	"fmt"
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
@@ -17,17 +18,11 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 	publicKey, err := cryptography.ByteArrToECDSAPublicKey(config.CURVE, crypto.B64DecodeBytes(data.PublicKey))
 	if err != nil {
 
-		return nil, helpers.GenericError{
-			Message: err.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewServerError(fmt.Sprintf("Error converting public key: %v", err), "Oops! Something went wrong")
 	}
 
 	if !cryptography.VerifyMessage(publicKey, data.User, proof) {
-		return nil, helpers.GenericError{
-			Message: "Invalid proof",
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Uh oh! Looks like your proof is invalid. Please try again.", "Invalid key proof")
 	}
 
 	owlServer, err := owl.ServerInit("NoiseEmailServer>V1.0.0", config.CURVE, &owl.RegistrationRequestPayload{
@@ -37,10 +32,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 	})
 
 	if err != nil {
-		return nil, helpers.GenericError{
-			Message: err.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewServerError(fmt.Sprintf("Error initializing server: %v", err), "Oops! Something went wrong")
 	}
 
 	registeredUser := owlServer.RegisterUser()
@@ -51,10 +43,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 
 	_, err = session.IssueAndSetSessionToken(ctx, *newUser, databaseConnection)
 	if err != nil {
-		return nil, helpers.GenericError{
-			Message: err.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewServerError(fmt.Sprintf("Error issuing session token: %v", err), "Oops! Something went wrong")
 	}
 
 	return &Output{

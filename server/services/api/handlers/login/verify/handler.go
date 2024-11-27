@@ -16,26 +16,17 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 	userVerify := models2.UserVerify{}
 	dbErr := databaseConnection.Where("r_id = ?", data.RID).First(&userVerify)
 	if dbErr.Error != nil {
-		return nil, helpers.GenericError{
-			Message: "User Verify not found",
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	if userVerify.CreatedAt.Unix() < time.Now().Add(-time.Second*config.Auth.MaxVerifyTimeWindow).Unix() {
-		return nil, helpers.GenericError{
-			Message: "User Verify expired",
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! Your verification window has expired. Please try again.", "Verification window expired")
 	}
 
 	user := models2.User{}
 	dbErr = databaseConnection.Where("id = ?", userVerify.UserID).First(&user)
 	if dbErr.Error != nil {
-		return nil, helpers.GenericError{
-			Message: "User not found",
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	owlServer, err := owl.ServerInit(user.ServerName, config.CURVE, &owl.RegistrationRequestPayload{
@@ -44,50 +35,32 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 		PI: crypto.B64DecodeBigInt(user.PI),
 	})
 	if err != nil {
-		return nil, helpers.GenericError{
-			Message: "User Verify, " + err.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	clientValidate, err := parseClientValidate(data)
 	if err != nil {
-		return nil, helpers.GenericError{
-			Message: err.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	clientAuthInit, err := parseClientAuthInit(&userVerify, &user)
 	if err != nil {
-		return nil, helpers.GenericError{
-			Message: err.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	serverAuthInit, err := parseServerAuthInit(&userVerify, &user)
 	if err != nil {
-		return nil, helpers.GenericError{
-			Message: err.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	serverAuthValidate, err := owlServer.AuthValidate(clientAuthInit, clientValidate, serverAuthInit)
 	if err != nil {
-		return nil, helpers.GenericError{
-			Message: err.Error(),
-			ErrCode: 401,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	_, err = session.IssueAndSetSessionToken(ctx, user, databaseConnection)
 	if err != nil {
-		return nil, helpers.GenericError{
-			Message: err.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	return &Output{

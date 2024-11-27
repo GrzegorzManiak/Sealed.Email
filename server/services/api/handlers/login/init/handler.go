@@ -15,10 +15,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 	fetchedUser := models.User{}
 	dbErr := databaseConnection.Where("uid = ?", data.User).First(&fetchedUser)
 	if dbErr.Error != nil {
-		return nil, helpers.GenericError{
-			Message: "User not found",
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	owlServer, err := owl.ServerInit(fetchedUser.ServerName, config.CURVE, &owl.RegistrationRequestPayload{
@@ -27,10 +24,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 		PI: crypto.B64DecodeBigInt(fetchedUser.PI),
 	})
 	if err != nil {
-		return nil, helpers.GenericError{
-			Message: "User Init, " + err.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	clientAuthInit, prepError := prepareClientAuthInit(data)
@@ -45,10 +39,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 
 	serverAuthInit, err := owlServer.AuthInit(registeredUser, clientAuthInit)
 	if err != nil {
-		return nil, helpers.GenericError{
-			Message: err.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	RID, verifyError := insertVerifyData(&fetchedUser, serverAuthInit, clientAuthInit, databaseConnection)

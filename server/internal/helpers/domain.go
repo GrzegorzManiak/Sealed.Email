@@ -6,20 +6,14 @@ import (
 	"strings"
 )
 
-func TrimDomain(domain string) (string, AppError) {
+func TrimDomain(domain string) (string, error) {
 	domain = strings.Trim(domain, " ")
 	if domain == "" {
-		return "", GenericError{
-			Message: "Domain is empty",
-			ErrCode: 400,
-		}
+		return "", fmt.Errorf("domain name is empty")
 	}
 
 	if !strings.Contains(domain, ".") {
-		return "", GenericError{
-			Message: "Invalid domain name",
-			ErrCode: 400,
-		}
+		return "", fmt.Errorf("invalid domain name")
 	}
 
 	if domain[len(domain)-1] != '.' {

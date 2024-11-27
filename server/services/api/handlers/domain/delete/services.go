@@ -3,6 +3,7 @@ package domainDelete
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -14,18 +15,14 @@ func deleteDomain(
 	domain := &models.UserDomain{}
 	dbQuery := databaseConnection.Where("user_id = ? AND r_id = ?", userID, domainID).First(domain)
 	if dbQuery.Error != nil {
-		return helpers.GenericError{
-			Message: dbQuery.Error.Error(),
-			ErrCode: 400,
-		}
+		zap.L().Debug("Error querying domain", zap.Error(dbQuery.Error), zap.Any("domain", domain))
+		return helpers.NewServerError("The requested domain could not be found.", "Domain not found!")
 	}
 
 	dbDelete := databaseConnection.Delete(domain)
 	if dbDelete.Error != nil {
-		return helpers.GenericError{
-			Message: dbDelete.Error.Error(),
-			ErrCode: 400,
-		}
+		zap.L().Debug("Error deleting domain", zap.Error(dbDelete.Error), zap.Any("domain", domain))
+		return helpers.NewServerError("The requested domain could not be deleted.", "Failed to delete domain!")
 	}
 
 	return nil

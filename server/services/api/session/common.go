@@ -113,10 +113,7 @@ func (claims *Claims) FetchUser(databaseConnection *gorm.DB) (models.User, helpe
 	user := models.User{}
 	err := databaseConnection.Where("uid = ?", claims.Content.UserID).First(&user)
 	if err.Error != nil {
-		return models.User{}, helpers.GenericError{
-			Message: "User not found",
-			ErrCode: 400,
-		}
+		return models.User{}, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 	return user, nil
 }

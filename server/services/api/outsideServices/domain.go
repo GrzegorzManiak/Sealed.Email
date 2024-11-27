@@ -2,7 +2,6 @@ package outsideServices
 
 import (
 	"context"
-	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	domainService "github.com/GrzegorzManiak/NoiseBackend/proto/domain"
@@ -11,7 +10,7 @@ import (
 func AddDomainToVerificationQueue(ctx context.Context, domainModel *models.UserDomain) helpers.AppError {
 	domainClient := getDomainClient()
 	if domainClient == nil {
-		return helpers.GenericError{Message: "Failed to get domain client", ErrCode: 500}
+		return helpers.NewServerError("Sorry! We are unable to process your request at the moment. Please try again later.", "Failed to get domain client!")
 	}
 
 	stub := domainService.NewDomainServiceClient(domainClient.Conn)
@@ -25,7 +24,7 @@ func AddDomainToVerificationQueue(ctx context.Context, domainModel *models.UserD
 	})
 
 	if err != nil {
-		return helpers.GenericError{Message: fmt.Sprintf("Failed to queue DNS verification: %s", err.Error()), ErrCode: 500}
+		return helpers.NewServerError(err.Error(), "Failed to queue DNS verification!")
 	}
 
 	return nil

@@ -15,10 +15,7 @@ func fetchDomainsByUserID(
 	domains := make([]*models.UserDomain, 0)
 	dbQuery := databaseConnection.Where("user_id = ?", userID).Limit(pagination.PerPage).Offset(pagination.PerPage * pagination.Page).Find(&domains)
 	if dbQuery.Error != nil {
-		return nil, helpers.GenericError{
-			Message: dbQuery.Error.Error(),
-			ErrCode: 400,
-		}
+		return nil, helpers.NewServerError("The requested domains could not be found.", "Domains not found!")
 	}
 
 	zap.L().Debug("fetchDomainsByUserID", zap.Any("domains", domains), zap.Any("pagination", pagination), zap.Any("userID", userID))
