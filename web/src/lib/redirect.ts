@@ -4,6 +4,8 @@ import { get } from 'svelte/store';
 import {Sleep} from "$lib/utils";
 import {throwToast} from "$lib/toasts";
 
+const DEV_MODE = true;
+
 type DelayedRedirect = {
     delay: number;
     title?: string;
@@ -17,7 +19,7 @@ async function redirect(to: string, delayed?: DelayedRedirect) {
     }
 
     console.log('[REDIRECT] Redirecting to', to);
-    goto(to);
+    if (!DEV_MODE) goto(to);
 }
 
 async function redirectIfLoggedIn(to: string, delayed?: DelayedRedirect) {
