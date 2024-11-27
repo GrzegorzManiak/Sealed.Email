@@ -83,7 +83,7 @@ class Session {
         }
 
         catch (UnknownError) {
-            return CryptoGenericError.from_unknown(UnknownError, new CryptoGenericError(
+            return CryptoGenericError.fromUnknown(UnknownError, new CryptoGenericError(
                 'Failed to decrypt keys'
             ));
         }
@@ -95,7 +95,7 @@ class Session {
         }
 
         catch (UnknownError) {
-            return CryptoGenericError.from_unknown(UnknownError, new CryptoGenericError(
+            return CryptoGenericError.fromUnknown(UnknownError, new CryptoGenericError(
                 'Failed to verify integrity hash'
             ));
         }

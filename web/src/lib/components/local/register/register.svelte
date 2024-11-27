@@ -67,10 +67,14 @@
             isLoading = false;
         }
 
-        const result = await API.Register.RegisterUser(username, password);
-        if (result instanceof Error) {
-            throwToast('Error', result.message);
-            return await finish();
+        try {
+            const result = await API.Register.RegisterUser(username, password);
+        }
+
+        catch (error) {
+            API.GenericError.fromUnknown(error).toast();
+            await finish();
+            return;
         }
 
         // -- note: We are not calling finish here because we are redirecting to the login page

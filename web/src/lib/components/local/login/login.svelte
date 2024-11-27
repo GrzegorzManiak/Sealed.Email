@@ -8,9 +8,7 @@
     import { Button } from '$shadcn/button';
     import { Input } from '$shadcn/input';
     import { Label } from '$shadcn/label';
-    import { Checkbox } from '$shadcn/checkbox';
     import * as API from "$api/lib";
-    import {GenericError} from "$api/lib/errors";
 
     let className: string | undefined | null = undefined;
     export { className as class };
@@ -58,9 +56,8 @@
             await session.DecryptKeys();
         }
 
-        catch (unknownError) {
-            const error = GenericError.from_unknown(unknownError);
-            throwToast(error.title, error.message);
+        catch (error) {
+            API.GenericError.fromUnknown(error).toast();
             await finish();
             return;
         }

@@ -17,7 +17,7 @@ async function LoginInit(client: Client): Promise<ServerAuthInit & RefID> {
         body: JSON.stringify(payload)
     });
 
-    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+    if (!response.ok) throw GenericError.fromServerString(await response.text(), new ClientError(
         'Failed to login',
         'Sorry, we were unable to log you into your account',
         'LOGIN-REQ-FAIL-1'
@@ -42,7 +42,7 @@ async function LoginVerify(client: Client, data: ServerAuthInit & RefID): Promis
         })
     });
 
-    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+    if (!response.ok) throw GenericError.fromServerString(await response.text(), new ClientError(
         'Failed to login',
         'Sorry, we were unable to log you into your account',
         'LOGIN-REQ-FAIL-2'

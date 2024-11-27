@@ -42,7 +42,7 @@ async function AddDomainRequest(session: Session, domain: string, encRootKey: st
         headers
     });
 
-    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+    if (!response.ok) throw GenericError.fromServerString(await response.text(), new ClientError(
         'Failed to add domain',
         'Sorry, we were unable to add the domain to your account',
         'DOMAIN-ADD-FAIL'
@@ -67,7 +67,7 @@ async function RefreshDomainVerificationRequest(session: Session, domainID: Doma
         headers
     });
 
-    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+    if (!response.ok) throw GenericError.fromServerString(await response.text(), new ClientError(
         'Failed to refresh domain verification',
         'Sorry, we were unable to refresh the domain verification',
         'DOMAIN-REFRESH-FAIL'
@@ -88,7 +88,7 @@ async function DeleteDomainRequest(session: Session, domainID: DomainRefID): Pro
         headers
     });
 
-    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+    if (!response.ok) throw GenericError.fromServerString(await response.text(), new ClientError(
         'Failed to delete domain',
         'Sorry, we were unable to delete the domain from your account',
         'DOMAIN-DELETE-FAIL'
@@ -123,7 +123,7 @@ async function GetDomains(session: Session, page: number, perPage: number): Prom
         headers
     });
 
-    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+    if (!response.ok) throw GenericError.fromServerString(await response.text(), new ClientError(
         'Failed to get domain list',
         'Sorry, we were unable to get the domain list from your account',
         'DOMAIN-LIST-FAIL'

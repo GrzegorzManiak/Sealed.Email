@@ -89,7 +89,7 @@ async function RegisterUser(username: string, password: string): Promise<ClientE
         })
     });
 
-    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+    if (!response.ok) throw GenericError.fromServerString(await response.text(), new ClientError(
         'Failed to register user',
         'Sorry, we were unable to register your account',
         'REG-REQ-FAIL'

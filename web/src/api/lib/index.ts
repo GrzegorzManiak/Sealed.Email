@@ -31,3 +31,4 @@ export * as Login from "./auth/login";
 export * as Register from "./auth/register";
 export { default as Session } from "./session/session";
 export * as Domain from "./api/domain";
+export { default as GenericError } from "./errors";
