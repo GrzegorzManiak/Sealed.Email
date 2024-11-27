@@ -13,7 +13,7 @@
     const sidebarNavItems = [
         {
             title: "Account",
-            href: "/settings",
+            href: "/settings/account",
         },
         {
             title: "Security",

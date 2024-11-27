@@ -1,13 +1,6 @@
 <script lang='ts'>
+    import {onMount} from "svelte";
+    import {redirect} from "$lib/redirect";
 
-
-import {Button} from "@/ui/button";
+    onMount(() => redirect('/settings/account'));
 </script>
-
-
-
-<!-- Content -->
-<div class='space-y-6'>
-    <Button>Click me</Button>
-
-</div>
