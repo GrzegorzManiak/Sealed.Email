@@ -11,5 +11,5 @@ type Output struct {
 var SessionFilter = &session.APIConfiguration{
 	Allow:           []string{"default"},
 	Block:           []string{},
-	SessionRequired: false,
+	SessionRequired: true,
 }
