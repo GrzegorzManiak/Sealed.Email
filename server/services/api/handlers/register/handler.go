@@ -36,15 +36,11 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 	}
 
 	registeredUser := owlServer.RegisterUser()
-	newUser, dbErr := registerUser(data, registeredUser, databaseConnection)
+	_, dbErr := registerUser(data, registeredUser, databaseConnection)
 	if dbErr != nil {
 		return nil, dbErr
 	}
-
-	_, err = session.IssueAndSetSessionToken(ctx, *newUser, databaseConnection)
-	if err != nil {
-		return nil, helpers.NewServerError(fmt.Sprintf("Error issuing session token: %v", err), "Oops! Something went wrong")
-	}
+	session.ClearCTXSession(ctx)
 
 	return &Output{
 		Message: "User registered successfully",
