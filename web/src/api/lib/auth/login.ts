@@ -17,18 +17,14 @@ async function LoginInit(client: Client): Promise<ServerAuthInit & RefID> {
         body: JSON.stringify(payload)
     });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Login verification failed:', errorText);
-        throw new ClientError(
-            'Failed to login', 
-            'Sorry, we were unable to log you into your account', 
-            'LOGIN-REQ-FAIL-1'
-        );
-    }
+    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+        'Failed to login',
+        'Sorry, we were unable to log you into your account',
+        'LOGIN-REQ-FAIL-1'
+    ));
 
     return await response.json();
-};
+}
 
 async function LoginVerify(client: Client, data: ServerAuthInit & RefID): Promise<ServerAuthVerify & ReturnedVerifyData> {
     const payload = await client.AuthVerify(data);
@@ -46,54 +42,36 @@ async function LoginVerify(client: Client, data: ServerAuthInit & RefID): Promis
         })
     });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Login verification failed:', errorText);
-        throw new ClientError(
-            'Failed to login', 
-            'Sorry, we were unable to log you into your account', 
-            'LOGIN-REQ-FAIL-2'
-        );
-    }
+    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+        'Failed to login',
+        'Sorry, we were unable to log you into your account',
+        'LOGIN-REQ-FAIL-2'
+    ));
 
     return {
         ...await response.json(),
         _headers: response.headers
     };
-};
+}
 
-async function Login(username: string, password: string): Promise<{ client: Client, passwordHash: Uint8Array, usernameHash: string, verify: ReturnedVerifyData } | ClientError> {
-    try {
-        const { usernameHash, passwordHash } = await ProcessDetails(username, password);
-        const client = new Client(usernameHash, passwordHash.encoded, ServerName, CurrentCurve);
+async function Login(username: string, password: string): Promise<{ client: Client, passwordHash: Uint8Array, usernameHash: string, verify: ReturnedVerifyData }> {
+    const { usernameHash, passwordHash } = await ProcessDetails(username, password);
+    const client = new Client(usernameHash, passwordHash.encoded, ServerName, CurrentCurve);
+    const init = await LoginInit(client);
+    const verify = await LoginVerify(client, init);
 
-        const init = await LoginInit(client);
-        if (init instanceof Error) throw init;
-    
-        const verify = await LoginVerify(client, init);
-        if (verify instanceof Error) throw verify;
+    if (await client.ValidateServer(verify) instanceof Error) throw new ClientError(
+        'Possible MITM Attack - Server Verification Failed',
+        'Sorry, the server did not respond correctly!',
+        'LOGIN-FAIL-SV'
+    );
 
-        if (client.ValidateServer(verify) instanceof Error) throw new ClientError(
-            'Possible MITM Attack - Server Verification Failed', 
-            'Sorry, the server did not respond correctly!', 
-            'LOGIN-FAIL-SV'
-        );
-
-        return {
-            client,
-            passwordHash: passwordHash.hash,
-            usernameHash: usernameHash,
-            verify
-        };
-    }   
-
-    catch (UnknownError) {
-        return ClientError.from_unknown(UnknownError, new ClientError(
-            'Failed to login', 
-            'Sorry, we were unable to login to your account',
-            'LOGIN-CATCH'
-        ));
-    }
+    return {
+        client,
+        passwordHash: passwordHash.hash,
+        usernameHash: usernameHash,
+        verify
+    };
 };
 
 export {

@@ -6,11 +6,9 @@ type SerializedGenericError = {
     hint?: string,
     code: number,
     data: object,
-    type: string,
+    title: string,
     errors: Array<SerializedGenericError>
-};
-
-
+}
 
 class GenericError extends Error {
     private _other_errors: Map<string, GenericError> = new Map();
@@ -18,19 +16,19 @@ class GenericError extends Error {
     protected readonly _id: string = uuidv4();
     protected readonly _message: string;
     protected readonly _code: number;
-    protected readonly _type: string = this.constructor.name;
+    protected readonly _title: string = this.constructor.name;
     protected _data: object = {};
     protected _hint: string = '';
 
     public constructor(
         message: string,
         code: number,
-        type?: string
+        title: string
     ) {
         super(message);
         this._message = message;
         this._code = code;
-        if (type) this._type = type;
+        if (title) this._title = title;
     }
 
     // -- Function that should be overridden by child classes
@@ -41,7 +39,7 @@ class GenericError extends Error {
             code: this._code,
             data: this._data,
             hint: this._hint,
-            type: this._type,
+            title: this._title,
             errors: this.errors.map((error) => error.serialize())
         };
     };  
@@ -78,7 +76,7 @@ class GenericError extends Error {
     public get id(): string { return this._id; }
     public get message(): string { return this._message; }
     public get code(): number { return this._code; }
-    public get type(): string { return this._type; }
+    public get title(): string { return this._title; }
 
 
     public add_error = (error: GenericError): void => {
@@ -100,65 +98,87 @@ class GenericError extends Error {
         return (
             error instanceof GenericError || 
             error instanceof Error ||
-            ['id', 'message', 'code', 'type', 'data'].every((key) => key in error)
+            ['id', 'message', 'code', 'title', 'data'].every((key) => key in error)
         );
     };
 
 
     
     public static from_error = (error: Error): GenericError => {
-        return new GenericError(error.message, 500);
+        return new GenericError(error.message, 500, 'Error');
     };
 
 
 
     public static from_unknown = (
         error: unknown,
-        else_error: GenericError = new GenericError('An unknown error occurred', 500),
+        else_error: GenericError = new GenericError("Sorry, we were unable to process your request", 500, "Oops! An unknown error occurred"),
         hint?: string
     ): GenericError => {
         let return_error = else_error;
         
         if (error instanceof GenericError) return_error = error;
         else if (error instanceof Error) return_error = GenericError.from_error(error);
-        else if (typeof error === 'string') return_error = new GenericError(error, 500);
+        else if (typeof error === 'string') return_error = new GenericError(error, 500, 'Oops! An unknown error occurred');
         if (hint) return_error.hint = hint;
 
         return return_error;
     };
-};
+
+    public static from_server = (
+        obj: { msg: string, title: string, code: number, error: boolean },
+        backup_error: GenericError = new GenericError("Sorry, we were unable to process your request", 500, "Oops! An unknown error occurred"),
+    ): GenericError => {
+        if (typeof obj !== 'object' || obj === null) return backup_error;
+        const requiredProps = ['msg', 'title', 'fault', 'error'];
+        if (requiredProps.every((key) => key in obj)) return new GenericError(obj.msg, 400, obj.title);
+        return backup_error;
+    };
+
+    public static from_server_string = (
+        str: string,
+        backup_error: GenericError = new GenericError("Sorry, we were unable to process your request", 500, "Oops! An unknown error occurred"),
+    ): GenericError => {
+        try {
+            const obj = JSON.parse(str);
+            return GenericError.from_server(obj, backup_error);
+        } catch {
+            return backup_error;
+        }
+    }
+}
 
 class DeserializedGenericError extends GenericError {
     protected readonly _id: string;
     protected readonly _message: string;
     protected readonly _code: number;
-    protected readonly _type: string;
+    protected readonly _title: string;
     protected _data: object;
     protected _hint: string;
 
     public constructor(serialized: SerializedGenericError) {
-        super(serialized.message, serialized.code, serialized.type);
+        super(serialized.message, serialized.code, serialized.title);
         this._id = serialized.id;
         this._message = serialized.message;
         this._code = serialized.code;
         this._data = serialized.data;
         this._hint = serialized.hint || '';
-        this._type = serialized.type;
+        this._title = serialized.title;
         serialized.errors.forEach((error) => 
             this.add_error(new DeserializedGenericError(error)));
     }
-};
+}
 
 class ClientError extends GenericError {
     public constructor(title: string, message: string, code: string) {
         super(message, 400, title);
         this._hint = code;
     }
-};
+}
 
 class CryptoGenericError extends GenericError {
     public constructor(message: string) {
-        super(message, 400, 'CryptoGenericError');
+        super(message, 400, 'Failure in cryptographic operation');
     }
 }
 

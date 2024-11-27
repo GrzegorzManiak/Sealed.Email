@@ -27,7 +27,6 @@ class Session {
     private _statistics: Statistics;
 
     public constructor(awaitedLogin: Awaited<ReturnType<typeof Login>>, captureCookie: boolean = false) {
-        if (awaitedLogin instanceof Error) throw awaitedLogin;
         const { verify, passwordHash, client } = awaitedLogin;
         this._passwordHash = passwordHash;
 

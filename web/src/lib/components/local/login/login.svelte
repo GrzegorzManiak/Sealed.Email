@@ -10,6 +10,7 @@
     import { Label } from '$shadcn/label';
     import { Checkbox } from '$shadcn/checkbox';
     import * as API from "$api/lib";
+    import {GenericError} from "$api/lib/errors";
 
     let className: string | undefined | null = undefined;
     export { className as class };
@@ -47,18 +48,22 @@
         async function finish() {
             const timeEnd = performance.now();
             const timeTaken = timeEnd - timeStart;
-            await Sleep(1500 - timeTaken);
+            await Sleep(1 - timeTaken);
             isLoading = false;
         }
 
-        const result = await API.Login.Login(username, password);
-        if (result instanceof Error) {
-            throwToast('Error', result.message);
-            return await finish();
+        try {
+            const result = await API.Login.Login(username, password);
+            const session = new API.Session(result);
+            await session.DecryptKeys();
         }
 
-        const session = new API.Session(result);
-        await session.DecryptKeys();
+        catch (unknownError) {
+            const error = GenericError.from_unknown(unknownError);
+            throwToast(error.title, error.message);
+            await finish();
+            return;
+        }
 
         // -- note: We are not calling finish here because we are redirecting to the login page
         throwToast('Logged in', 'You have been logged in successfully!');

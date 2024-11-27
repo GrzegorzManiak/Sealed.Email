@@ -1,7 +1,7 @@
 import { parseDomain, ParseResultType } from "parse-domain";
 import Session from "../session/session";
 import {CurrentCurve, Endpoints} from "../constants";
-import {ClientError} from "../errors";
+import {ClientError, GenericError} from "../errors";
 import {GetCurve} from "gowl-client-lib";
 import {NewKey} from "../symetric";
 
@@ -42,15 +42,11 @@ async function AddDomainRequest(session: Session, domain: string, encRootKey: st
         headers
     });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Failed to add domain:", errorText);
-        throw new ClientError(
-            'Failed to add domain',
-            'Sorry, we were unable to add the domain to your account',
-            'DOMAIN-ADD-FAIL'
-        );
-    }
+    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+        'Failed to add domain',
+        'Sorry, we were unable to add the domain to your account',
+        'DOMAIN-ADD-FAIL'
+    ));
 
     return await response.json();
 }
@@ -71,15 +67,11 @@ async function RefreshDomainVerificationRequest(session: Session, domainID: Doma
         headers
     });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Failed to refresh domain verification:", errorText);
-        throw new ClientError(
-            'Failed to refresh domain verification',
-            'Sorry, we were unable to refresh the domain verification',
-            'DOMAIN-REFRESH-FAIL'
-        );
-    }
+    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+        'Failed to refresh domain verification',
+        'Sorry, we were unable to refresh the domain verification',
+        'DOMAIN-REFRESH-FAIL'
+    ));
 
     return await response.json();
 }
@@ -96,15 +88,11 @@ async function DeleteDomainRequest(session: Session, domainID: DomainRefID): Pro
         headers
     });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Failed to delete domain:", errorText);
-        throw new ClientError(
-            'Failed to delete domain',
-            'Sorry, we were unable to delete the domain from your account',
-            'DOMAIN-DELETE-FAIL'
-        );
-    }
+    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+        'Failed to delete domain',
+        'Sorry, we were unable to delete the domain from your account',
+        'DOMAIN-DELETE-FAIL'
+    ));
 }
 
 type Domain = {
@@ -135,15 +123,11 @@ async function GetDomains(session: Session, page: number, perPage: number): Prom
         headers
     });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Failed to get domain list:", errorText);
-        throw new ClientError(
-            'Failed to get domain list',
-            'Sorry, we were unable to get the domain list from your account',
-            'DOMAIN-LIST-FAIL'
-        );
-    }
+    if (!response.ok) throw GenericError.from_server_string(await response.text(), new ClientError(
+        'Failed to get domain list',
+        'Sorry, we were unable to get the domain list from your account',
+        'DOMAIN-LIST-FAIL'
+    ));
 
     return await response.json();
 }
