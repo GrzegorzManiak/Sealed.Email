@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import {redirectIfLoggedIn} from "$lib/redirect";
+    import {Button} from "@/ui/button";
 
     onMount(() => {
         redirectIfLoggedIn('/inbox');
@@ -22,7 +23,9 @@
 
         <!-- Splash Image -->
         <div>
-            <img src="/images/logos/white.png" alt="Noise Logo" class="absolute w-32 mx-auto z-50" />
+            <div class="absolute z-50 flex flex-col">
+                <img src="/images/logos/white.png" alt="Noise Logo" class="w-32 mx-auto mr-1" />
+            </div>
 
             <div
                     class="absolute inset-1 bg-cover z-0 top-0 left-0 w-full h-full"
@@ -40,6 +43,12 @@
                 <footer class="text-sm">Read the blog: <a href="/blog" class="underline hover:text-primary">noise.email/blog</a></footer>
             </blockquote>
 
+        </div>
+    </div>
+
+    <div class='absolute top-0 right-0'>
+        <div class="p-5">
+            <Button href="/" variant="ghost" class="w-24">Go back</Button>
         </div>
     </div>
 

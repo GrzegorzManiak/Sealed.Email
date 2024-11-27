@@ -9,17 +9,20 @@
     <!-- Prompt text -->
     <div class="flex flex-col space-y-2 text-center">
         <h1 class="text-2xl font-semibold tracking-tight">What would you like to do?</h1>
-        <p class="text-sm text-muted-foreground">
-            Lost your password? <a href="/authentication/reset-password" class="underline hover:text-primary">Click here to reset it.</a>
-        </p>
+
     </div>
 
-    <div class="mx-auto flex w-full justify-center gap-2 sm:w-[350px]">
-        <Button class="w-32 h-24" variant="outline" href="/authentication/register"
-        >Register</Button>
+    <div class="flex flex-col space-y-2 text-center">
+        <div class="mx-auto flex w-full justify-center gap-2 sm:w-[350px]">
+            <Button class="w-full h-24" variant="outline" href="/authentication/register"
+            >Register</Button>
 
-        <Button class="w-32 h-24" variant="outline" href="/authentication/login"
-        >Login</Button>
+            <Button class="w-full h-24" variant="outline" href="/authentication/login"
+            >Login</Button>
+        </div>
+
+        <Button class="w-full h-14" variant="outline" href="/authentication/recovery"
+        >Account Recovery</Button>
     </div>
 
     <!-- Terms -->
