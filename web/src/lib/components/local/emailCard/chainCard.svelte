@@ -43,7 +43,7 @@
     $: highlighted = mouseOver || selectMode || isClicked;
     $: highlightedColor =
         highlighted && (isClicked || isSelected) ? 'bg-[#0f1524]' :
-        highlighted ? 'bg-[#171312]' : ''
+        highlighted ? 'bg-[#01040d]' : ''
 
     // -- Email actions
     let read = props.read;
@@ -77,9 +77,6 @@
     manger.context.subscribe((value) => {
         context = value;
         selectMode = context.selectMode;
-        // isSelected = value.grouped.has(props.id);
-        // if (!value.grouped.has(parentID)) return
-        // else isSelected = true;
     });
 
     parentManger.context.subscribe((value) => {

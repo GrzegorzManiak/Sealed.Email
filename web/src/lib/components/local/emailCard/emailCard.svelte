@@ -44,7 +44,7 @@
     $: highlighted = mouseOver || selectMode || isSelected || isClicked;
     $: highlightedColor =
         highlighted && (isClicked || isSelected) ? 'bg-[#0f1524]' :
-        highlighted ? 'bg-[#171312]' : ''
+        highlighted ? 'bg-[#01040d]' : ''
 
     // -- Email actions
     const chainInbox = new InboxManager('chain', 'chain');
@@ -85,7 +85,7 @@
     let name = props.name || props.email;
     let date = PrettyPrintTime(new Date(props.date));
     let subject = TrimText(props.subject, 50);
-    let body = TrimText(props.body, 50);
+    let body = TrimText(props.body, 150);
     let color = RandomHEXColor();
     let avatar = props.avatar;
     let showAttachment = !!props.showcaseAttachment;
@@ -105,13 +105,13 @@
 <div {...$$restProps}
      class={cn(
         className,
-        "bg-background flex-col items-stretch justify-between gap-0 select-none cursor-default transition-colors duration-200 relative w-min",
+        "bg-background flex-col items-stretch justify-between gap-0 select-none cursor-default transition-colors duration-200 relative w-full",
     )}
 >
 
     <div
         class={cn(
-        "bg-background flex items-stretch justify-between gap-2 select-none cursor-default transition-colors duration-200 relative",
+        "bg-background flex items-stretch justify-start gap-2 select-none cursor-default transition-colors duration-200 relative",
         highlightedColor
     )}
         on:mouseenter={() => (mouseOver = true)}
@@ -136,8 +136,11 @@
                     {#if chainVisible} <ChevronDown class="text-gray-400 hover:text-blue-300 transition-colors duration-200" size="18"/>
                     {:else} <ChevronRight class="text-gray-400 hover:text-blue-300 transition-colors duration-200" size="18"/> {/if}
                 </div>
+            {:else}
+                <div class="h-[40px]">
+                    <ChevronDown class="text-gray-400 opacity-0" size="18"/>
+                </div>
             {/if}
-
         </div>
 
         <!-- Left section -->
@@ -193,18 +196,17 @@
             on:keydown={(e) => e.key === "Enter" && ToggleSelected()}
             role="button"
             tabindex="0"
-            style="max-width: {sizes.middleSectionWidth}; min-width: {sizes.middleSectionWidth}"
-            class="flex flex-col py-4"
+            class="flex flex-col py-4 w-full"
         >
             <div class="flex items-center justify-between">
-                <div class="flex items-start justify-between w-full">
+                <div class="flex items-start justify-between w-max">
                     <span class="font-bold text-white text-[{sizes.contactFontSize}]">{name}</span>
                     <span class="text-sm text-gray-300 text-[{sizes.subjectFontSize}]">{date}</span>
                 </div>
             </div>
 
             <div class="flex flex-col items-start overflow-clip">
-                <span class="text-nowrap w-full truncate max-w-full flex justify-between  {read ? 'text-gray-300' : 'font-bold text-blue-300'}">
+                <span class="text-nowrap truncate  flex justify-between  {read ? 'text-gray-300' : 'font-bold text-blue-300'}">
                     {subject}
                     {#if chainVisible}
                         <!-- Read icon -->
@@ -226,8 +228,9 @@
                         </Tooltip.Root>
                     {/if}
                 </span>
+
                 {#if !chainVisible}
-                <span class="text-nowrap truncate max-w-full text-gray-400 text-sm text-[{sizes.bodyFontSize}]">{body}</span>
+                    <span class="text-nowrap truncate w-max text-gray-400 text-sm text-[{sizes.bodyFontSize}]">{body}</span>
                 {/if}
             </div>
 
