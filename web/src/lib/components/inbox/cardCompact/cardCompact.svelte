@@ -14,11 +14,10 @@
     import Star from "lucide-svelte/icons/star";
     import {PrettyPrintTime} from "$lib/time";
     import {Checkbox} from "@/ui/checkbox";
+    import {GetIcon} from "$lib/icons";
+    import {Button} from "@/ui/button";
 
     export let data: Email;
-
-    data.read = false;
-    data.chain = [{}];
 
     let chainVisible = false;
     let favorite = false;
@@ -47,6 +46,7 @@
 
     const avatar = "https://api.dicebear.com/9.x/lorelei/svg?seed=noise.email&options[mood][]=happy";
     let maxWidth = 0;
+    let heightOffset = 0;
     let isHovered = false;
 </script>
 
@@ -136,9 +136,22 @@
 
     <!-- Email Content -->
     <div class="max-w-full flex-grow relative mr-2">
-        <div class="w-full h-0" bind:clientWidth={maxWidth}/>
+        <div class="w-full h-0" bind:clientWidth={maxWidth} style="height: {heightOffset}px"/>
 
-        <div class="absolute left-0 top-0 flex-col justify-start align-baseline max-w-full flex-grow w-full">
+        {#if data.showcaseAttachment && !chainVisible}
+            <div class="flex items-center justify-start gap-2 my-1 max-w-full overflow-clip mb-2">
+                <Button variant="secondary" size="sm" class="text-sm h-7 max-w-[90%]">
+                    <img src={GetIcon(data.showcaseAttachment.type)} alt={data.showcaseAttachment.type} class="text-gray-400 max-w-3" />
+                    <p class="m-0 ml-1 text-nowrap truncate max-w-full">{data.showcaseAttachment.filename}</p>
+                </Button>
+
+                {#if (data.totalAttachments ?? 0) > 1}
+                    <span class="text-xs text-gray-400">+{data.totalAttachments - 1}</span>
+                {/if}
+            </div>
+        {/if}
+
+        <div class="absolute left-0 top-0 flex-col justify-start align-baseline max-w-full flex-grow w-full" bind:offsetHeight={heightOffset}>
 
             <!-- Email Sender & Date -->
             <div class="flex items-center justify-between mt-2 w-full">

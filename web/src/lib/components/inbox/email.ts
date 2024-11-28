@@ -1,9 +1,7 @@
 type Attachment = {
     id: string;
     filename: string;
-    size: number;
     type: string;
-    data: string;
 }
 
 type Email = {

@@ -29,7 +29,12 @@
                 pinned: false,
                 starred: false,
 
-                totalAttachments: 0
+                showcaseAttachment: {
+                    id: '1',
+                    filename: 'noise-email-welcome.pdf',
+                    type: 'pdf',
+                },
+                totalAttachments: 5
             }}/>
         </Resizable.Pane>
 
