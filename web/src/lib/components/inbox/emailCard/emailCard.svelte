@@ -22,6 +22,8 @@
     import {RandomHEXColor} from "$lib/common";
     import {TrimText} from "$lib/text";
 
+    import { cubicInOut } from "svelte/easing";
+
     export let data: Email;
     export let isChain: boolean = false;
 
@@ -155,6 +157,19 @@
         if (isSelected) return $selectedStore = "";
         $selectedStore = data.id;
     }
+
+    const easeHeight = (node: HTMLElement, { duration: duration = 250, easing: easing = cubicInOut }) => {
+        const initialHeight = parseFloat(getComputedStyle(node).height) || 0;
+
+        return {
+            duration,
+            easing,
+            css: (t: number) => {
+                const interpolatedHeight = t * initialHeight;
+                return `height: ${interpolatedHeight}px; overflow: hidden;`;
+            },
+        };
+    };
 
     groupCounter.subscribe((v) => {
         isGroupSelected = $groupSelectStore.has(data.id);
@@ -371,7 +386,7 @@
 </div>
 
 {#if data.chain && chainVisible && !isChain}
-    <div class="flex flex-col">
+    <div class="flex flex-col overflow-clip transition-transform" transition:easeHeight={{ duration: 500, easing: cubicInOut }}>
 
         <!-- Chain emails -->
         {#each data.chain as email}
