@@ -82,19 +82,14 @@
 
     <!-- Chain Indicator & Profile picture & favorite-->
     <div class="flex-col pb-2">
+
         <!-- Chain Indicator & Profile picture -->
         <div class="flex-col w-min">
 
             <div class="flex items-center justify-end gap-2 p-2 w-min">
                 <!-- Chain Indicator -->
                 {#if data.chain && data.chain.length > 0}
-                    <div
-                        on:click={ToggleChain}
-                        on:keydown={(e) => e.key === "Enter" && ToggleChain(e)}
-                        role="button"
-                        tabindex="0"
-                        class="cursor-pointer h-[40px] flex items-center"
-                    >
+                    <div on:click={ToggleChain} on:keydown={(e) => e.key === "Enter" && ToggleChain(e)} role="button" tabindex="0" class="cursor-pointer h-[40px] flex items-center">
                         {#if chainVisible} <ChevronDown class="text-gray-400 hover:text-blue-300 transition-colors duration-200" size="18"/>
                         {:else} <ChevronRight class="text-gray-400 hover:text-blue-300 transition-colors duration-200" size="18"/> {/if}
                     </div>
@@ -119,12 +114,7 @@
                     </div>
 
                     <!-- Checkbox (Select Mode) -->
-                    <div
-                        on:click={(e) => GroupSelect(e)}
-                        on:keydown={(e) => e.key === "Enter" && GroupSelect(e)}
-                        role="button"
-                        tabindex="0"
-                        class={cn("absolute bottom-0 right-0 w-full h-full flex justify-center items-center transition-opacity", { 'opacity-0': !isHovered && !(isSelected || isGroupSelected) })}>
+                    <div on:click={(e) => GroupSelect(e)} on:keydown={(e) => e.key === "Enter" && GroupSelect(e)} role="button" tabindex="0" class={cn("absolute bottom-0 right-0 w-full h-full flex justify-center items-center transition-opacity", { 'opacity-0': !isHovered && !(isSelected || isGroupSelected) })}>
                         <Checkbox checked={isGroupSelected} aria-label="Select email"/>
                     </div>
                 </Avatar.Root>
@@ -136,10 +126,10 @@
                     {#if !chainVisible}
                         <Tooltip.Root>
                             <Tooltip.Trigger>
-                            <span on:click={(e) => ToggleFavorite(e)} on:keydown={(e) => e.key === "Enter" && ToggleFavorite(e)} role="button" tabindex="0" class="cursor-pointer">
-                                {#if favorite} <Star class="text-yellow-500 fill-yellow-500 hover:text-yellow-700 hover:fill-yellow-700 transition-colors duration-200" size="18"/>
-                                {:else} <Star class="text-gray-500 hover:text-yellow-300 transition-colors duration-200" size="18" /> {/if}
-                            </span>
+                                <span on:click={(e) => ToggleFavorite(e)} on:keydown={(e) => e.key === "Enter" && ToggleFavorite(e)} role="button" tabindex="0" class="cursor-pointer">
+                                    {#if favorite} <Star class="text-yellow-500 fill-yellow-500 hover:text-yellow-700 hover:fill-yellow-700 transition-colors duration-200" size="18"/>
+                                    {:else} <Star class="text-gray-500 hover:text-yellow-300 transition-colors duration-200" size="18" /> {/if}
+                                </span>
                             </Tooltip.Trigger>
 
                             <Tooltip.Content>
@@ -153,9 +143,11 @@
         </div>
     </div>
 
+
     <!-- Email Content -->
     <div class="max-w-full flex-grow relative mr-2">
         <div class="w-full h-0" style="height: {heightOffset}px"/>
+
 
         <!-- Showcase Attachment -->
         {#if data.showcaseAttachment && !chainVisible}
@@ -171,6 +163,7 @@
             </div>
         {/if}
 
+
         <!-- Email Sender & Date -->
         <div class="absolute left-0 top-0 flex-col justify-start align-baseline max-w-full flex-grow w-full" bind:offsetHeight={heightOffset}>
             <div class="flex items-center justify-between mt-2 w-full">
@@ -180,8 +173,9 @@
 
                 <!-- Email actions -->
                 <div class="flex items-center gap-2">
+
+                    <!-- Read icon -->
                     {#if isHovered}
-                        <!-- Read icon -->
                         <Tooltip.Root>
                             <Tooltip.Trigger>
                                 <span on:click={(e) => ToggleRead(e)} on:keydown={e => e.key === "Enter" && ToggleRead(e)} role="button" tabindex="0" class="cursor-pointer">
@@ -193,9 +187,9 @@
                         </Tooltip.Root>
                     {/if}
 
+                    <!-- Pin icon -->
                     {#if isHovered || data.pinned}
                         <div class="flex items-center gap-2">
-                            <!-- Pin icon -->
                             <Tooltip.Root>
                                 <Tooltip.Trigger>
                                 <span on:click={(e) => TogglePinned(e)} on:keydown={(e) => e.key === "Enter" && TogglePinned(e)} role="button" tabindex="0" class="cursor-pointer">
@@ -210,11 +204,15 @@
                 </div>
             </div>
 
+
             <!-- Email Subject & body -->
             <div class="flex-col items-center justify-between w-full">
-                <!-- Email Subject & Date -->
+
                 <div class="flex items-center justify-between w-full gap-2">
+                    <!-- Email Subject -->
                     <p class={cn({"text-gray-300": data.read, "font-bold text-blue-300": !data.read}, "truncate")}>{data.subject}</p>
+
+                    <!-- Email Date -->
                     <p class="text-gray-400 text-sm break-keep whitespace-nowrap">{date}</p>
                 </div>
 

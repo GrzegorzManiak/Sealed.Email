@@ -29,6 +29,79 @@
                 pinned: false,
                 starred: false,
 
+                chain: [
+                    {
+                id: '11',
+                date: 'Sat Sep 28 2024 20:27:32 GMT+0100 (Irish Standard Time)',
+
+                fromEmail: 'bob@dylan.com',
+                fromName: 'Bob Dylan',
+
+                toEmail: 'me@grzegorz.ie',
+                toName: 'Greg',
+
+                subject: 'Re: Welcome to Noise Email!',
+                body: 'Thank you for your email. I will get back to you as soon as possible.',
+
+                read: false,
+                pinned: false,
+                starred: false,
+
+                showcaseAttachment: {
+                    id: '1',
+                    filename: 'noise-email-welcome.pdf',
+                    type: 'pdf',
+                },
+                totalAttachments: 5
+            },{
+                id: '12',
+                date: 'Sat Sep 28 2024 20:27:32 GMT+0100 (Irish Standard Time)',
+
+                fromEmail: 'bob@dylan.com',
+                fromName: 'Bob Dylan',
+
+                toEmail: 'me@grzegorz.ie',
+                toName: 'Greg',
+
+                subject: 'Re: Welcome to Noise Email!',
+                body: 'Thank you for your email. I will get back to you as soon as possible.',
+
+                read: false,
+                pinned: false,
+                starred: false,
+
+                showcaseAttachment: {
+                    id: '1',
+                    filename: 'noise-email-welcome.pdf',
+                    type: 'pdf',
+                },
+                totalAttachments: 5
+            },{
+                id: '13',
+                date: 'Sat Sep 28 2024 20:27:32 GMT+0100 (Irish Standard Time)',
+
+                fromEmail: 'bob@dylan.com',
+                fromName: 'Bob Dylan',
+
+                toEmail: 'me@grzegorz.ie',
+                toName: 'Greg',
+
+                subject: 'Re: Welcome to Noise Email!',
+                body: 'Thank you for your email. I will get back to you as soon as possible.',
+
+                read: false,
+                pinned: false,
+                starred: false,
+
+                showcaseAttachment: {
+                    id: '1',
+                    filename: 'noise-email-welcome.pdf',
+                    type: 'pdf',
+                },
+                totalAttachments: 5
+            }
+                ],
+
                 showcaseAttachment: {
                     id: '1',
                     filename: 'noise-email-welcome.pdf',
