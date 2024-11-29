@@ -1,5 +1,5 @@
 <script lang='ts'>
-    import {type Attachment, ChainGroupSelect, colors, type Email} from "@/inbox/email";
+    import {ChainGroupSelect, colors, type Email} from "@/inbox/email";
     import { EmailCard } from "@/inbox/emailCard/index";
     import {cn} from "$lib/utils";
     import * as Avatar from "$shadcn/avatar";
@@ -35,43 +35,55 @@
     let isSelected = false;
     $: isSelected = $selectedStore === data.id;
 
+    function groupSelectThis() {
+        if ($groupSelectStore.has(data.id)) return;
+        $groupSelectStore.add(data.id);
+        $groupCounter += 1;
+    }
+
+    function groupUnselectThis() {
+        if (!$groupSelectStore.has(data.id)) return;
+        $groupSelectStore.delete(data.id);
+        $groupCounter -= 1;
+    }
+
+    function chainSelectAll() {
+        for (const email of data.chain ?? []) {
+            if ($groupSelectStore.has(email.id)) continue;
+            $groupSelectStore.add(email.id);
+            $groupCounter += 1;
+        }
+    }
+
+    function chainUnselectAll(): boolean {
+        let hadSelected = false;
+        for (const email of data.chain ?? []) {
+            if (!$groupSelectStore.has(email.id)) continue;
+            hadSelected = true;
+            $groupSelectStore.delete(email.id);
+            $groupCounter -= 1;
+        }
+        return hadSelected;
+    }
+
+    function isPartial(): [boolean, boolean] {
+        let isPartial = false;
+        let first = $groupSelectStore.has(data.id);
+
+        for (const email of data.chain ?? []) {
+            if ($groupSelectStore.has(email.id) === first) continue;
+            isPartial = true;
+            break;
+        }
+
+        return [isPartial, first];
+    }
+
     function ToggleChain(e: MouseEvent | KeyboardEvent) {
         e.stopPropagation();
         chainVisible = !chainVisible;
-
-        if (!chainVisible) {
-            let wasSelected = false;
-            for (const email of data.chain ?? []) {
-                if ($groupSelectStore.has(email.id)) {
-                    wasSelected = true;
-                    $groupSelectStore.delete(email.id);
-                    $groupCounter -= 1;
-                }
-            }
-
-            if (wasSelected) {
-                if (!$groupSelectStore.has(data.id)) {
-                    $groupSelectStore.add(data.id);
-                    $groupCounter += 1;
-                }
-            }
-        }
-
-        else {
-            if (isGroupSelected) {
-                for (const email of data.chain ?? []) {
-                    if (!$groupSelectStore.has(email.id)) {
-                        $groupSelectStore.add(email.id);
-                        $groupCounter += 1;
-                    }
-                }
-
-                if (!$groupSelectStore.has(data.id)) {
-                    $groupSelectStore.add(data.id);
-                    $groupCounter += 1;
-                }
-            }
-        }
+        if (!chainVisible && chainUnselectAll()) groupSelectThis();
+        else if (isGroupSelected) { chainSelectAll(); groupSelectThis(); }
     }
 
     function ToggleFavorite(e: MouseEvent | KeyboardEvent) {
@@ -102,58 +114,25 @@
     }
 
     function ChainParent(e: MouseEvent | KeyboardEvent) {
-        let isPartial = false;
-        let first = $groupSelectStore.has(data.id);
-
-        for (const email of data.chain ?? []) {
-            if ($groupSelectStore.has(email.id) === first) continue;
-            isPartial = true;
-            break;
-        }
-
-        if (isPartial) chainGroupMode = ChainGroupSelect.PARTIAL;
+        if (isPartial()[0]) chainGroupMode = ChainGroupSelect.PARTIAL;
 
         switch (chainGroupMode) {
             case ChainGroupSelect.NONE:
                 chainGroupMode = ChainGroupSelect.FULL;
-                for (const email of data.chain ?? []) {
-                    if ($groupSelectStore.has(email.id)) continue;
-                    $groupSelectStore.add(email.id);
-                    $groupCounter += 1;
-                }
-
-                if (!first) {
-                    $groupSelectStore.add(data.id);
-                    $groupCounter += 1;
-                }
+                chainSelectAll();
+                groupSelectThis()
                 break;
 
             case ChainGroupSelect.PARTIAL:
                 chainGroupMode = ChainGroupSelect.NONE;
-                for (const email of data.chain ?? []) {
-                    if (!$groupSelectStore.has(email.id)) continue;
-                    $groupSelectStore.delete(email.id);
-                    $groupCounter -= 1;
-                }
-
-                if ($groupSelectStore.has(data.id)) {
-                    $groupSelectStore.delete(data.id);
-                    $groupCounter -= 1;
-                }
+                chainUnselectAll();
+                groupUnselectThis();
                 break;
 
             case ChainGroupSelect.FULL:
                 chainGroupMode = ChainGroupSelect.NONE;
-                for (const email of data.chain ?? []) {
-                    if (!$groupSelectStore.has(email.id)) continue;
-                    $groupSelectStore.delete(email.id);
-                    $groupCounter -= 1;
-                }
-
-                if ($groupSelectStore.has(data.id)) {
-                    $groupSelectStore.delete(data.id);
-                    $groupCounter -= 1;
-                }
+                chainUnselectAll();
+                groupUnselectThis();
                 break;
         }
     }
@@ -174,19 +153,9 @@
     groupCounter.subscribe((v) => {
         isGroupSelected = $groupSelectStore.has(data.id);
         isGroupMode = v > 0;
-
         if (!chainVisible) return;
-
-        let isPartial = false;
-        let first = $groupSelectStore.has(data.id);
-
-        for (const email of data.chain ?? []) {
-            if ($groupSelectStore.has(email.id) === first) continue;
-            isPartial = true;
-            break;
-        }
-
-        chainGroupMode = isPartial ? ChainGroupSelect.PARTIAL : first ? ChainGroupSelect.FULL : ChainGroupSelect.NONE;
+        const [partial, first] = isPartial();
+        chainGroupMode = partial ? ChainGroupSelect.PARTIAL : first ? ChainGroupSelect.FULL : ChainGroupSelect.NONE;
     });
 
     $: combinedIsSelected = isSelected || isGroupSelected || isGroupMode;
@@ -391,11 +360,8 @@
                 </span>
             </Tooltip.Trigger>
             <Tooltip.Content>
-                {#if chainVisible}
-                    <p>Delete chain</p>
-                {:else}
-                    <p>Delete email</p>
-                {/if}
+                {#if chainVisible}<p>Delete chain</p>
+                {:else}<p>Delete email</p>{/if}
             </Tooltip.Content>
         </Tooltip.Root>
     </div>
@@ -413,5 +379,6 @@
         <div class="border-b">
             <EmailCard selectedStore={selectedStore} groupSelectStore={groupSelectStore} data={data} isChain={true} groupCounter={groupCounter}/>
         </div>
+
     </div>
 {/if}

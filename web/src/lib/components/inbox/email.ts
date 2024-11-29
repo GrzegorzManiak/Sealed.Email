@@ -41,6 +41,7 @@ enum ChainGroupSelect {
     NONE
 }
 
+function isPartial(data)
 export type {
     Email,
     Attachment
