@@ -21,6 +21,7 @@ type Email = {
     starred: boolean;
     pinned: boolean;
 
+    avatar?: string;
     totalAttachments: number;
     showcaseAttachment?: Attachment;
 

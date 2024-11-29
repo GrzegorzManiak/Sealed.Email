@@ -19,6 +19,8 @@
     import {Button} from "@/ui/button";
     import type {Writable} from "svelte/store";
     import {onMount} from "svelte";
+    import {RandomHEXColor} from "$lib/common";
+    import {TrimText} from "$lib/text";
 
     export let data: Email;
     export let isChain: boolean = false;
@@ -34,6 +36,16 @@
     let chainGroupMode = ChainGroupSelect.NONE;
     let isSelected = false;
     $: isSelected = $selectedStore === data.id;
+
+    let heightOffset = 0;
+    let isHovered = false;
+    let color = RandomHEXColor();
+    let subject = TrimText(data.subject, 50);
+    let body = TrimText(data.body, 150);
+    let date = PrettyPrintTime(new Date(data.date));
+
+    const normalColor = isChain ? colors.chain : colors.normal;
+    const avatar = data.avatar ?? `https://api.dicebear.com/9.x/lorelei/svg?seed=${data.id}&options[mood][]=happy`;
 
     function groupSelectThis() {
         if ($groupSelectStore.has(data.id)) return;
@@ -144,12 +156,6 @@
         $selectedStore = data.id;
     }
 
-    const avatar = "https://api.dicebear.com/9.x/lorelei/svg?seed=noise.email&options[mood][]=happy";
-    let heightOffset = 0;
-    let isHovered = false;
-    let date = PrettyPrintTime(new Date(data.date));
-    const normalColor = isChain ? colors.chain : colors.normal;
-
     groupCounter.subscribe((v) => {
         isGroupSelected = $groupSelectStore.has(data.id);
         isGroupMode = v > 0;
@@ -212,9 +218,9 @@
                 <Avatar.Root class={cn("transition-colors duration-200 grid grid-cols-1 grid-rows-1 relative w-10 h-10", theme)}>
 
                     <!-- Avatar -->
-                    <div class={cn("transition-opacity", { 'opacity-0': isHovered || combinedIsSelected || chainVisible })}>
-                        <Avatar.Image class="select-none" src={avatar} alt={data.fromName}/>
-                        <Avatar.Fallback>{data.fromName}</Avatar.Fallback>
+                    <div class={cn("transition-opacity n", { 'opacity-0': isHovered || combinedIsSelected || chainVisible })}>
+                        <Avatar.Image style="background-color: {color}" class="select-none" src={avatar} alt={data.fromName}/>
+                        <Avatar.Fallback style="background-color: {color}">{data.fromName}</Avatar.Fallback>
                     </div>
 
                     {#if !chainVisible}
@@ -327,7 +333,7 @@
             {#if isChain}
                 <div class="flex items-center justify-between w-full gap-2">
                     <!-- Email Body -->
-                    <p class="text-gray-400 truncate text-sm">{data.body}</p>
+                    <p class="text-gray-400 truncate text-sm">{body}</p>
 
                     <!-- Email Date -->
                     <p class="text-gray-400 text-sm break-keep whitespace-nowrap">{date}</p>
@@ -337,14 +343,14 @@
 
                     <div class="flex items-center justify-between w-full gap-2">
                         <!-- Email Subject -->
-                        <p class={cn({"text-gray-300": data.read, "font-bold text-blue-300": !data.read}, "truncate")}>{data.subject}</p>
+                        <p class={cn({"text-gray-300": data.read, "font-bold text-blue-300": !data.read}, "truncate")}>{subject}</p>
 
                         <!-- Email Date -->
                         <p class="text-gray-400 text-sm break-keep whitespace-nowrap">{date}</p>
                     </div>
 
                     <!-- Email Body -->
-                    {#if !chainVisible}<p class="text-gray-400 truncate text-sm">{data.body}</p>{/if}
+                    {#if !chainVisible}<p class="text-gray-400 truncate text-sm">{body}</p>{/if}
                 </div>
             {/if}
         </div>
