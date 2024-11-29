@@ -270,23 +270,7 @@
 
     <!-- Email Content -->
     <div class="max-w-full flex-grow relative mr-2">
-        <div class="w-full h-0" style="height: {heightOffset}px"/>
-
-
-        <!-- Showcase Attachment -->
-        {#if data.showcaseAttachment && !chainVisible}
-            <div class="flex items-center justify-start gap-2 my-1 max-w-full overflow-clip mb-2">
-                <Button variant="secondary" size="sm" class="text-sm h-7 max-w-[90%]">
-                    <img src={GetIcon(data.showcaseAttachment.type)} alt={data.showcaseAttachment.type} class="text-gray-400 max-w-3" />
-                    <p class="m-0 ml-1 text-nowrap truncate max-w-full">{data.showcaseAttachment.filename}</p>
-                </Button>
-
-                {#if (data.totalAttachments ?? 0) > 1}
-                    <span class="text-xs text-gray-400">+{data.totalAttachments - 1}</span>
-                {/if}
-            </div>
-        {/if}
-
+        <div class="w-full h-full min-h-max" style="height: {heightOffset}px"/>
 
         <!-- Email Sender & Date -->
         <div class="absolute left-0 top-0 flex-col justify-start align-baseline max-w-full flex-grow w-full" bind:offsetHeight={heightOffset}>
@@ -328,7 +312,6 @@
                 </div>
             </div>
 
-
             <!-- Email Subject & body -->
             {#if isChain}
                 <div class="flex items-center justify-between w-full gap-2">
@@ -351,6 +334,20 @@
 
                     <!-- Email Body -->
                     {#if !chainVisible}<p class="text-gray-400 truncate text-sm">{body}</p>{/if}
+                </div>
+            {/if}
+
+            <!-- Showcase Attachment -->
+            {#if data.showcaseAttachment && !chainVisible}
+                <div class="flex items-center justify-start gap-2 my-1 max-w-full overflow-clip mb-2">
+                    <Button variant="secondary" size="sm" class="text-sm h-7 max-w-[90%]">
+                        <img src={GetIcon(data.showcaseAttachment.type)} alt={data.showcaseAttachment.type} class="text-gray-400 max-w-3" />
+                        <p class="m-0 ml-1 text-nowrap truncate max-w-full">{data.showcaseAttachment.filename}</p>
+                    </Button>
+
+                    {#if (data.totalAttachments ?? 0) > 1}
+                        <span class="text-xs text-gray-400">+{data.totalAttachments - 1}</span>
+                    {/if}
                 </div>
             {/if}
         </div>
