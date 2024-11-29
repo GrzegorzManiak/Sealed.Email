@@ -1,1 +1,0 @@
-export { default as CardCompact } from './cardCompact.svelte';

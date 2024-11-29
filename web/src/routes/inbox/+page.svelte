@@ -1,18 +1,25 @@
 <script lang='ts'>
-    import {EmailCard} from '$local/emailCard';
     import {writable} from "svelte/store";
     import {InboxManager} from "$lib/inboxManager";
     const manger = new InboxManager('1', 'Inbox');
 
     import * as Resizable from '$shadcn/resizable';
-    import {CardCompact} from "@/inbox/cardCompact/index.js";
+    import {EmailCard} from "@/inbox/emailCard";
+
+    const groupSelectStore = writable(new Set<string>());
+    const groupSelectMode = writable(false);
+    const selectedStore = writable<string>();
 </script>
 
 <div class="max-h-screen h-screen w-screen flex flex-col">
     <Resizable.PaneGroup direction="horizontal" class="h-full">
         <Resizable.Pane class="flex-shrink-0 h-full">
             <!-- Fixed height pane content -->
-            <CardCompact data={{
+            <EmailCard
+                    groupSelectMode={groupSelectMode}
+                    selectedStore={selectedStore}
+                    groupSelectStore={groupSelectStore}
+                    data={{
                 id: '1',
                 date: 'Sat Sep 28 2024 20:27:32 GMT+0100 (Irish Standard Time)',
 
@@ -100,6 +107,31 @@
                 },
                 totalAttachments: 5
             }}/>
+            <EmailCard
+                    groupSelectMode={groupSelectMode}
+                    selectedStore={selectedStore}
+                    groupSelectStore={groupSelectStore}
+                    data={
+                {
+                    id: '2f',
+                    date: 'Sat Sep 28 2024 20:27:32 GMT+0100 (Irish Standard Time)',
+
+                    fromEmail: 'TOS@Noise.email',
+                    fromName: 'Noise Email',
+
+                    toEmail: 'Unknown',
+                    toName: 'Unknown',
+
+                    subject: 'Terms of Service Update',
+                    body: 'We have updated our terms of service. Please review them at your earliest convenience.',
+
+                    read: true,
+                    pinned: true,
+                    starred: false,
+
+                    totalAttachments: 0
+                    }
+            }/>
         </Resizable.Pane>
 
         <Resizable.Handle withHandle />

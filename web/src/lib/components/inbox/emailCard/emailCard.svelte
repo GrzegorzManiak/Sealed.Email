@@ -1,6 +1,6 @@
 <script lang='ts'>
     import {type Attachment, colors, type Email} from "@/inbox/email";
-    import { CardCompact } from "@/inbox/cardCompact/index";
+    import { EmailCard } from "@/inbox/emailCard/index";
     import {cn} from "$lib/utils";
     import * as Avatar from "$shadcn/avatar";
     import * as Tooltip from "$shadcn/tooltip";
@@ -17,15 +17,20 @@
     import {Checkbox} from "@/ui/checkbox";
     import {GetIcon} from "$lib/icons";
     import {Button} from "@/ui/button";
+    import type {Writable} from "svelte/store";
 
     export let data: Email;
     export let isChain: boolean = false;
+    export let groupSelectStore: Writable<Set<string>>;
+    export let groupSelectMode: Writable<boolean>;
+    export let selectedStore: Writable<string>;
 
     let chainVisible = false;
     let favorite = false;
     let isGroupSelected = false;
+
     let isSelected = false;
-    let date = PrettyPrintTime(new Date(data.date));
+    $: isSelected = $selectedStore === data.id;
 
     function ToggleChain(e: MouseEvent | KeyboardEvent) {
         e.stopPropagation();
@@ -45,7 +50,12 @@
     function GroupSelect(e: MouseEvent | KeyboardEvent) {
         e.stopPropagation();
         isGroupSelected = !isGroupSelected;
-        if (!isGroupSelected) isSelected = false;
+        if (!isGroupSelected) {
+            if ($groupSelectStore.size <= 1) $groupSelectMode = false;
+            return $groupSelectStore.delete(data.id);
+        }
+        $groupSelectStore.add(data.id);
+        $groupSelectMode = true;
     }
 
     function TogglePinned(e: MouseEvent | KeyboardEvent) {
@@ -56,12 +66,22 @@
     function ToggleSelected(e: MouseEvent | KeyboardEvent) {
         isSelected = !isSelected;
         data.read = true;
+        if (!isSelected) return $selectedStore = "";
+        $selectedStore = data.id;
     }
-
 
     const avatar = "https://api.dicebear.com/9.x/lorelei/svg?seed=noise.email&options[mood][]=happy";
     let heightOffset = 0;
     let isHovered = false;
+    let date = PrettyPrintTime(new Date(data.date));
+    const normalColor = isChain ? colors.chain : colors.normal;
+
+    $: combinedIsSelected = isSelected || isGroupSelected || $groupSelectMode;
+    $: theme = {
+        [colors.selected]: combinedIsSelected,
+        [colors.hovered]: isHovered && !combinedIsSelected,
+        [normalColor]: !isHovered && !combinedIsSelected
+    };
 </script>
 
 
@@ -72,12 +92,7 @@
     on:keydown={(e) => e.key === "Enter" && ToggleSelected(e)}
     role="button"
     tabindex="0"
-    class={cn("bg-background flex items-stretch justify-between gap-0 select-none cursor-default transition-colors duration-200 w-full flex-grow relative", {
-        "border-b border-border": !isChain && chainVisible,
-        [colors.selected]: isSelected || isGroupSelected,
-        [colors.hovered]: isHovered && !(isSelected || isGroupSelected),
-        [colors.normal]: !isHovered && !(isSelected || isGroupSelected)
-    })}>
+    class={cn("bg-background flex items-stretch justify-between gap-0 select-none cursor-default transition-colors duration-200 w-full flex-grow relative", { "border-b border-border": !isChain && chainVisible }, theme)}>
 
     <!-- Read Indicator & spacer -->
     <div class={cn("w-1", { "w-5": isChain })}/>
@@ -108,20 +123,16 @@
                 {/if}
 
                 <!-- Avatar / Checkbox -->
-                <Avatar.Root class={cn("transition-colors duration-200 grid grid-cols-1 grid-rows-1 relative w-10 h-10", {
-                        [colors.selected]: isSelected || isGroupSelected,
-                        [colors.hovered]: isHovered && !(isSelected || isGroupSelected),
-                        [colors.normal]: !isHovered && !(isSelected || isGroupSelected)
-                    })}>
+                <Avatar.Root class={cn("transition-colors duration-200 grid grid-cols-1 grid-rows-1 relative w-10 h-10", theme)}>
 
                     <!-- Avatar -->
-                    <div class={cn("transition-opacity", { 'opacity-0': isHovered || (isSelected || isGroupSelected) })}>
+                    <div class={cn("transition-opacity", { 'opacity-0': isHovered || combinedIsSelected })}>
                         <Avatar.Image class="select-none" src={avatar} alt={data.fromName}/>
                         <Avatar.Fallback>{data.fromName}</Avatar.Fallback>
                     </div>
 
                     <!-- Checkbox (Select Mode) -->
-                    <div on:click={(e) => GroupSelect(e)} on:keydown={(e) => e.key === "Enter" && GroupSelect(e)} role="button" tabindex="0" class={cn("absolute bottom-0 right-0 w-full h-full flex justify-center items-center transition-opacity", { 'opacity-0': !isHovered && !(isSelected || isGroupSelected) })}>
+                    <div on:click={(e) => GroupSelect(e)} on:keydown={(e) => e.key === "Enter" && GroupSelect(e)} role="button" tabindex="0" class={cn("absolute bottom-0 right-0 w-full h-full flex justify-center items-center transition-opacity", { 'opacity-0': !isHovered && !combinedIsSelected })}>
                         <Checkbox checked={isGroupSelected} aria-label="Select email"/>
                     </div>
                 </Avatar.Root>
@@ -258,13 +269,10 @@
 {#if data.chain && chainVisible && !isChain}
     <div class="flex flex-col">
         <!-- Chain emails -->
-        {#each data.chain as email}
-            <CardCompact data={email} isChain={true}/>
+        {#each data.chain as email, i}
+            <div class={cn({ 'border-b': i === data.chain.length - 1 })}>
+                <EmailCard selectedStore={selectedStore} groupSelectStore={groupSelectStore} data={email} isChain={true} groupSelectMode={groupSelectMode}/>
+            </div>
         {/each}
-
-        <!-- This email -->
-        <div class="border-b">
-            <CardCompact data={data} isChain={true}/>
-        </div>
     </div>
 {/if}

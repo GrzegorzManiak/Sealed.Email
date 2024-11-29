@@ -1,0 +1,1 @@
+export { default as EmailCard } from './emailCard.svelte';
