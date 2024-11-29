@@ -21,31 +21,43 @@
 
     let chainVisible = false;
     let favorite = false;
+    let isGroupSelected = false;
     let isSelected = false;
     let date = PrettyPrintTime(new Date(data.date));
 
-    function ToggleChain() {
+    function ToggleChain(e: MouseEvent | KeyboardEvent) {
+        e.stopPropagation();
         chainVisible = !chainVisible;
     }
 
-    function ToggleFavorite() {
+    function ToggleFavorite(e: MouseEvent | KeyboardEvent) {
+        e.stopPropagation();
         favorite = !favorite;
     }
 
-    function ToggleRead() {
+    function ToggleRead(e: MouseEvent | KeyboardEvent) {
+        e.stopPropagation();
         data.read = !data.read;
     }
 
-    function Selected() {
-        isSelected = !isSelected;
+    function GroupSelect(e: MouseEvent | KeyboardEvent) {
+        e.stopPropagation();
+        isGroupSelected = !isGroupSelected;
+        if (!isGroupSelected) isSelected = false;
     }
 
-    function TogglePinned() {
+    function TogglePinned(e: MouseEvent | KeyboardEvent) {
+        e.stopPropagation();
         data.pinned = !data.pinned;
     }
 
+    function ToggleSelected(e: MouseEvent | KeyboardEvent) {
+        isSelected = !isSelected;
+        data.read = true;
+    }
+
+
     const avatar = "https://api.dicebear.com/9.x/lorelei/svg?seed=noise.email&options[mood][]=happy";
-    let maxWidth = 0;
     let heightOffset = 0;
     let isHovered = false;
 </script>
@@ -54,12 +66,14 @@
 <div
     on:mouseenter={() => isHovered = true}
     on:mouseleave={() => isHovered = false}
+    on:click={ToggleSelected}
+    on:keydown={(e) => e.key === "Enter" && ToggleSelected(e)}
     role="button"
     tabindex="0"
     class={cn("bg-background flex items-stretch justify-between gap-0 select-none cursor-default transition-colors duration-200 w-full flex-grow relative", {
-        [colors.selected]: isSelected,
-        [colors.hovered]: isHovered && !isSelected,
-        [colors.normal]: !isHovered && !isSelected
+        [colors.selected]: isSelected || isGroupSelected,
+        [colors.hovered]: isHovered && !(isSelected || isGroupSelected),
+        [colors.normal]: !isHovered && !(isSelected || isGroupSelected)
     })}>
 
     <!-- Read Indicator & spacer -->
@@ -75,8 +89,8 @@
                 <!-- Chain Indicator -->
                 {#if data.chain && data.chain.length > 0}
                     <div
-                        on:click={() => ToggleChain()}
-                        on:keydown={(e) => e.key === "Enter" && ToggleChain()}
+                        on:click={ToggleChain}
+                        on:keydown={(e) => e.key === "Enter" && ToggleChain(e)}
                         role="button"
                         tabindex="0"
                         class="cursor-pointer h-[40px] flex items-center"
@@ -93,20 +107,25 @@
 
                 <!-- Avatar / Checkbox -->
                 <Avatar.Root class={cn("transition-colors duration-200 grid grid-cols-1 grid-rows-1 relative w-10 h-10", {
-                    [colors.selected]: isSelected,
-                    [colors.hovered]: isHovered && !isSelected,
-                    [colors.normal]: !isHovered && !isSelected
-                })}>
+                        [colors.selected]: isSelected || isGroupSelected,
+                        [colors.hovered]: isHovered && !(isSelected || isGroupSelected),
+                        [colors.normal]: !isHovered && !(isSelected || isGroupSelected)
+                    })}>
 
                     <!-- Avatar -->
-                    <div class={cn("transition-opacity", { 'opacity-0': isHovered || isSelected })}>
+                    <div class={cn("transition-opacity", { 'opacity-0': isHovered || (isSelected || isGroupSelected) })}>
                         <Avatar.Image class="select-none" src={avatar} alt={data.fromName}/>
                         <Avatar.Fallback>{data.fromName}</Avatar.Fallback>
                     </div>
 
                     <!-- Checkbox (Select Mode) -->
-                    <div class={cn("absolute bottom-0 right-0 w-full h-full flex justify-center items-center transition-opacity", { 'opacity-0': !isHovered && !isSelected })}>
-                        <Checkbox bind:checked={isSelected} on:click={() => Selected()} aria-label="Select email"/>
+                    <div
+                        on:click={(e) => GroupSelect(e)}
+                        on:keydown={(e) => e.key === "Enter" && GroupSelect(e)}
+                        role="button"
+                        tabindex="0"
+                        class={cn("absolute bottom-0 right-0 w-full h-full flex justify-center items-center transition-opacity", { 'opacity-0': !isHovered && !(isSelected || isGroupSelected) })}>
+                        <Checkbox checked={isGroupSelected} aria-label="Select email"/>
                     </div>
                 </Avatar.Root>
             </div>
@@ -117,7 +136,7 @@
                     {#if !chainVisible}
                         <Tooltip.Root>
                             <Tooltip.Trigger>
-                            <span on:click={() => ToggleFavorite()} on:keydown={(e) => e.key === "Enter" && ToggleFavorite()} role="button" tabindex="0" class="cursor-pointer">
+                            <span on:click={(e) => ToggleFavorite(e)} on:keydown={(e) => e.key === "Enter" && ToggleFavorite(e)} role="button" tabindex="0" class="cursor-pointer">
                                 {#if favorite} <Star class="text-yellow-500 fill-yellow-500 hover:text-yellow-700 hover:fill-yellow-700 transition-colors duration-200" size="18"/>
                                 {:else} <Star class="text-gray-500 hover:text-yellow-300 transition-colors duration-200" size="18" /> {/if}
                             </span>
@@ -136,8 +155,9 @@
 
     <!-- Email Content -->
     <div class="max-w-full flex-grow relative mr-2">
-        <div class="w-full h-0" bind:clientWidth={maxWidth} style="height: {heightOffset}px"/>
+        <div class="w-full h-0" style="height: {heightOffset}px"/>
 
+        <!-- Showcase Attachment -->
         {#if data.showcaseAttachment && !chainVisible}
             <div class="flex items-center justify-start gap-2 my-1 max-w-full overflow-clip mb-2">
                 <Button variant="secondary" size="sm" class="text-sm h-7 max-w-[90%]">
@@ -151,18 +171,20 @@
             </div>
         {/if}
 
+        <!-- Email Sender & Date -->
         <div class="absolute left-0 top-0 flex-col justify-start align-baseline max-w-full flex-grow w-full" bind:offsetHeight={heightOffset}>
-
-            <!-- Email Sender & Date -->
             <div class="flex items-center justify-between mt-2 w-full">
+
+                <!-- Email Sender -->
                 <p class="truncate font-bold text-white">{data.fromName} <span class="truncate font-normal text-sm text-gray-300">&lt;{data.fromEmail}&gt;</span></p>
 
+                <!-- Email actions -->
                 <div class="flex items-center gap-2">
                     {#if isHovered}
                         <!-- Read icon -->
                         <Tooltip.Root>
                             <Tooltip.Trigger>
-                                <span on:click={() => ToggleRead()} on:keydown={e => e.key === "Enter" && ToggleRead()} role="button" tabindex="0" class="cursor-pointer">
+                                <span on:click={(e) => ToggleRead(e)} on:keydown={e => e.key === "Enter" && ToggleRead(e)} role="button" tabindex="0" class="cursor-pointer">
                                     {#if data.read} <MailOpen class="text-gray-400 transition-opacity duration-200" size="18"/>
                                     {:else} <MailClosed class="text-gray-400 transition-opacity duration-200" size="18"/> {/if}
                                 </span>
@@ -176,7 +198,7 @@
                             <!-- Pin icon -->
                             <Tooltip.Root>
                                 <Tooltip.Trigger>
-                                <span on:click={() => TogglePinned()} on:keydown={(e) => e.key === "Enter" && TogglePinned()} role="button" tabindex="0" class="cursor-pointer">
+                                <span on:click={(e) => TogglePinned(e)} on:keydown={(e) => e.key === "Enter" && TogglePinned(e)} role="button" tabindex="0" class="cursor-pointer">
                                     {#if data.pinned}<Pin class="text-blue-500 fill-blue-500" size="18" />
                                     {:else}<Pin class="text-gray-400 hover:text-blue-300 transition-colors duration-200" size="18"/> {/if}
                                 </span>
