@@ -47,12 +47,7 @@
                 pinned: false,
                 starred: false,
 
-                showcaseAttachment: {
-                    id: '1',
-                    filename: 'noise-email-welcome.pdf',
-                    type: 'pdf',
-                },
-                totalAttachments: 5
+                totalAttachments: 0
             },{
                 id: '12',
                 date: 'Sat Sep 28 2024 20:27:32 GMT+0100 (Irish Standard Time)',
@@ -70,12 +65,8 @@
                 pinned: false,
                 starred: false,
 
-                showcaseAttachment: {
-                    id: '1',
-                    filename: 'noise-email-welcome.pdf',
-                    type: 'pdf',
-                },
-                totalAttachments: 5
+
+                totalAttachments: 0
             },{
                 id: '13',
                 date: 'Sat Sep 28 2024 20:27:32 GMT+0100 (Irish Standard Time)',

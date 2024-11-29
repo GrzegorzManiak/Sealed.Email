@@ -1,5 +1,6 @@
 <script lang='ts'>
     import {type Attachment, colors, type Email} from "@/inbox/email";
+    import { CardCompact } from "@/inbox/cardCompact/index";
     import {cn} from "$lib/utils";
     import * as Avatar from "$shadcn/avatar";
     import * as Tooltip from "$shadcn/tooltip";
@@ -18,6 +19,7 @@
     import {Button} from "@/ui/button";
 
     export let data: Email;
+    export let isChain: boolean = false;
 
     let chainVisible = false;
     let favorite = false;
@@ -71,14 +73,19 @@
     role="button"
     tabindex="0"
     class={cn("bg-background flex items-stretch justify-between gap-0 select-none cursor-default transition-colors duration-200 w-full flex-grow relative", {
+        "border-b border-border": !isChain && chainVisible,
         [colors.selected]: isSelected || isGroupSelected,
         [colors.hovered]: isHovered && !(isSelected || isGroupSelected),
         [colors.normal]: !isHovered && !(isSelected || isGroupSelected)
     })}>
 
     <!-- Read Indicator & spacer -->
-    <div class="w-1"/>
-    <div class={cn({ "bg-blue-500": !data.read }, "absolute h-full transition-colors duration-200 w-1")}/>
+    <div class={cn("w-1", { "w-5": isChain })}/>
+    <div class={cn({
+        "bg-blue-500": !data.read,
+        "w-2": isChain || chainVisible,
+        "w-1": !isChain && !chainVisible
+   }, "absolute h-full transition-colors duration-200")}/>
 
     <!-- Chain Indicator & Profile picture & favorite-->
     <div class="flex-col pb-2">
@@ -88,7 +95,7 @@
 
             <div class="flex items-center justify-end gap-2 p-2 w-min">
                 <!-- Chain Indicator -->
-                {#if data.chain && data.chain.length > 0}
+                {#if data.chain && data.chain.length > 0 && !isChain}
                     <div on:click={ToggleChain} on:keydown={(e) => e.key === "Enter" && ToggleChain(e)} role="button" tabindex="0" class="cursor-pointer h-[40px] flex items-center">
                         {#if chainVisible} <ChevronDown class="text-gray-400 hover:text-blue-300 transition-colors duration-200" size="18"/>
                         {:else} <ChevronRight class="text-gray-400 hover:text-blue-300 transition-colors duration-200" size="18"/> {/if}
@@ -121,24 +128,26 @@
             </div>
 
             <!-- Favorite -->
-            <div class="flex justify-end pr-2">
-                <div class="w-10 flex justify-center">
-                    {#if !chainVisible}
-                        <Tooltip.Root>
-                            <Tooltip.Trigger>
+            {#if !isChain}
+                <div class="flex justify-end pr-2">
+                    <div class="w-10 flex justify-center">
+                        {#if !chainVisible}
+                            <Tooltip.Root>
+                                <Tooltip.Trigger>
                                 <span on:click={(e) => ToggleFavorite(e)} on:keydown={(e) => e.key === "Enter" && ToggleFavorite(e)} role="button" tabindex="0" class="cursor-pointer">
                                     {#if favorite} <Star class="text-yellow-500 fill-yellow-500 hover:text-yellow-700 hover:fill-yellow-700 transition-colors duration-200" size="18"/>
                                     {:else} <Star class="text-gray-500 hover:text-yellow-300 transition-colors duration-200" size="18" /> {/if}
                                 </span>
-                            </Tooltip.Trigger>
+                                </Tooltip.Trigger>
 
-                            <Tooltip.Content>
-                                <p>{favorite ? "Remove from favorites" : "Add to favorites"}</p>
-                            </Tooltip.Content>
-                        </Tooltip.Root>
-                    {/if}
+                                <Tooltip.Content>
+                                    <p>{favorite ? "Remove from favorites" : "Add to favorites"}</p>
+                                </Tooltip.Content>
+                            </Tooltip.Root>
+                        {/if}
+                    </div>
                 </div>
-            </div>
+            {/if}
 
         </div>
     </div>
@@ -206,19 +215,29 @@
 
 
             <!-- Email Subject & body -->
-            <div class="flex-col items-center justify-between w-full">
-
+            {#if isChain}
                 <div class="flex items-center justify-between w-full gap-2">
-                    <!-- Email Subject -->
-                    <p class={cn({"text-gray-300": data.read, "font-bold text-blue-300": !data.read}, "truncate")}>{data.subject}</p>
+                    <!-- Email Body -->
+                    <p class="text-gray-400 truncate text-sm">{data.body}</p>
 
                     <!-- Email Date -->
                     <p class="text-gray-400 text-sm break-keep whitespace-nowrap">{date}</p>
                 </div>
+            {:else}
+                <div class="flex-col items-center justify-between w-full">
 
-                <!-- Email Body -->
-                {#if !chainVisible}<p class="text-gray-400 truncate text-sm">{data.body}</p>{/if}
-            </div>
+                    <div class="flex items-center justify-between w-full gap-2">
+                        <!-- Email Subject -->
+                        <p class={cn({"text-gray-300": data.read, "font-bold text-blue-300": !data.read}, "truncate")}>{data.subject}</p>
+
+                        <!-- Email Date -->
+                        <p class="text-gray-400 text-sm break-keep whitespace-nowrap">{date}</p>
+                    </div>
+
+                    <!-- Email Body -->
+                    {#if !chainVisible}<p class="text-gray-400 truncate text-sm">{data.body}</p>{/if}
+                </div>
+            {/if}
         </div>
     </div>
 
@@ -235,3 +254,17 @@
         </Tooltip.Root>
     </div>
 </div>
+
+{#if data.chain && chainVisible && !isChain}
+    <div class="flex flex-col">
+        <!-- Chain emails -->
+        {#each data.chain as email}
+            <CardCompact data={email} isChain={true}/>
+        {/each}
+
+        <!-- This email -->
+        <div class="border-b">
+            <CardCompact data={data} isChain={true}/>
+        </div>
+    </div>
+{/if}
