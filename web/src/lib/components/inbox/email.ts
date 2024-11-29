@@ -35,11 +35,18 @@ const colors = {
     selected: "bg-slate-900",
 }
 
+enum ChainGroupSelect {
+    FULL,
+    PARTIAL,
+    NONE
+}
+
 export type {
     Email,
     Attachment
 }
 
 export {
-    colors
+    colors,
+    ChainGroupSelect
 }

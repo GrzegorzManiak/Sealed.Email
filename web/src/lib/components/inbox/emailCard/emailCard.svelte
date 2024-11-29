@@ -1,5 +1,5 @@
 <script lang='ts'>
-    import {type Attachment, colors, type Email} from "@/inbox/email";
+    import {type Attachment, ChainGroupSelect, colors, type Email} from "@/inbox/email";
     import { EmailCard } from "@/inbox/emailCard/index";
     import {cn} from "$lib/utils";
     import * as Avatar from "$shadcn/avatar";
@@ -18,23 +18,60 @@
     import {GetIcon} from "$lib/icons";
     import {Button} from "@/ui/button";
     import type {Writable} from "svelte/store";
+    import {onMount} from "svelte";
 
     export let data: Email;
     export let isChain: boolean = false;
+
+    export let groupCounter: Writable<number>;
     export let groupSelectStore: Writable<Set<string>>;
-    export let groupSelectMode: Writable<boolean>;
     export let selectedStore: Writable<string>;
 
     let chainVisible = false;
     let favorite = false;
     let isGroupSelected = false;
-
+    let isGroupMode = false;
+    let chainGroupMode = ChainGroupSelect.NONE;
     let isSelected = false;
     $: isSelected = $selectedStore === data.id;
 
     function ToggleChain(e: MouseEvent | KeyboardEvent) {
         e.stopPropagation();
         chainVisible = !chainVisible;
+
+        if (!chainVisible) {
+            let wasSelected = false;
+            for (const email of data.chain ?? []) {
+                if ($groupSelectStore.has(email.id)) {
+                    wasSelected = true;
+                    $groupSelectStore.delete(email.id);
+                    $groupCounter -= 1;
+                }
+            }
+
+            if (wasSelected) {
+                if (!$groupSelectStore.has(data.id)) {
+                    $groupSelectStore.add(data.id);
+                    $groupCounter += 1;
+                }
+            }
+        }
+
+        else {
+            if (isGroupSelected) {
+                for (const email of data.chain ?? []) {
+                    if (!$groupSelectStore.has(email.id)) {
+                        $groupSelectStore.add(email.id);
+                        $groupCounter += 1;
+                    }
+                }
+
+                if (!$groupSelectStore.has(data.id)) {
+                    $groupSelectStore.add(data.id);
+                    $groupCounter += 1;
+                }
+            }
+        }
     }
 
     function ToggleFavorite(e: MouseEvent | KeyboardEvent) {
@@ -47,26 +84,84 @@
         data.read = !data.read;
     }
 
-    function GroupSelect(e: MouseEvent | KeyboardEvent) {
-        e.stopPropagation();
-        isGroupSelected = !isGroupSelected;
-        if (!isGroupSelected) {
-            if ($groupSelectStore.size <= 1) $groupSelectMode = false;
-            return $groupSelectStore.delete(data.id);
-        }
-        $groupSelectStore.add(data.id);
-        $groupSelectMode = true;
-    }
-
     function TogglePinned(e: MouseEvent | KeyboardEvent) {
         e.stopPropagation();
         data.pinned = !data.pinned;
     }
 
+    function GroupSelect(e: MouseEvent | KeyboardEvent) {
+        e.stopPropagation();
+
+        if ($groupSelectStore.has(data.id)) {
+            $groupSelectStore.delete(data.id);
+            return $groupCounter -= 1;
+        }
+
+        $groupSelectStore.add(data.id);
+        $groupCounter += 1;
+    }
+
+    function ChainParent(e: MouseEvent | KeyboardEvent) {
+        let isPartial = false;
+        let first = $groupSelectStore.has(data.id);
+
+        for (const email of data.chain ?? []) {
+            if ($groupSelectStore.has(email.id) === first) continue;
+            isPartial = true;
+            break;
+        }
+
+        if (isPartial) chainGroupMode = ChainGroupSelect.PARTIAL;
+
+        switch (chainGroupMode) {
+            case ChainGroupSelect.NONE:
+                chainGroupMode = ChainGroupSelect.FULL;
+                for (const email of data.chain ?? []) {
+                    if ($groupSelectStore.has(email.id)) continue;
+                    $groupSelectStore.add(email.id);
+                    $groupCounter += 1;
+                }
+
+                if (!first) {
+                    $groupSelectStore.add(data.id);
+                    $groupCounter += 1;
+                }
+                break;
+
+            case ChainGroupSelect.PARTIAL:
+                chainGroupMode = ChainGroupSelect.NONE;
+                for (const email of data.chain ?? []) {
+                    if (!$groupSelectStore.has(email.id)) continue;
+                    $groupSelectStore.delete(email.id);
+                    $groupCounter -= 1;
+                }
+
+                if ($groupSelectStore.has(data.id)) {
+                    $groupSelectStore.delete(data.id);
+                    $groupCounter -= 1;
+                }
+                break;
+
+            case ChainGroupSelect.FULL:
+                chainGroupMode = ChainGroupSelect.NONE;
+                for (const email of data.chain ?? []) {
+                    if (!$groupSelectStore.has(email.id)) continue;
+                    $groupSelectStore.delete(email.id);
+                    $groupCounter -= 1;
+                }
+
+                if ($groupSelectStore.has(data.id)) {
+                    $groupSelectStore.delete(data.id);
+                    $groupCounter -= 1;
+                }
+                break;
+        }
+    }
+
     function ToggleSelected(e: MouseEvent | KeyboardEvent) {
-        isSelected = !isSelected;
+        if (chainVisible) return;
         data.read = true;
-        if (!isSelected) return $selectedStore = "";
+        if (isSelected) return $selectedStore = "";
         $selectedStore = data.id;
     }
 
@@ -76,12 +171,34 @@
     let date = PrettyPrintTime(new Date(data.date));
     const normalColor = isChain ? colors.chain : colors.normal;
 
-    $: combinedIsSelected = isSelected || isGroupSelected || $groupSelectMode;
+    groupCounter.subscribe((v) => {
+        isGroupSelected = $groupSelectStore.has(data.id);
+        isGroupMode = v > 0;
+
+        if (!chainVisible) return;
+
+        let isPartial = false;
+        let first = $groupSelectStore.has(data.id);
+
+        for (const email of data.chain ?? []) {
+            if ($groupSelectStore.has(email.id) === first) continue;
+            isPartial = true;
+            break;
+        }
+
+        chainGroupMode = isPartial ? ChainGroupSelect.PARTIAL : first ? ChainGroupSelect.FULL : ChainGroupSelect.NONE;
+    });
+
+    $: combinedIsSelected = isSelected || isGroupSelected || isGroupMode;
     $: theme = {
-        [colors.selected]: combinedIsSelected,
+        [colors.selected]: combinedIsSelected && !chainVisible,
         [colors.hovered]: isHovered && !combinedIsSelected,
         [normalColor]: !isHovered && !combinedIsSelected
     };
+
+    onMount(() => {
+        heightOffset = 0;
+    });
 </script>
 
 
@@ -126,15 +243,27 @@
                 <Avatar.Root class={cn("transition-colors duration-200 grid grid-cols-1 grid-rows-1 relative w-10 h-10", theme)}>
 
                     <!-- Avatar -->
-                    <div class={cn("transition-opacity", { 'opacity-0': isHovered || combinedIsSelected })}>
+                    <div class={cn("transition-opacity", { 'opacity-0': isHovered || combinedIsSelected || chainVisible })}>
                         <Avatar.Image class="select-none" src={avatar} alt={data.fromName}/>
                         <Avatar.Fallback>{data.fromName}</Avatar.Fallback>
                     </div>
 
-                    <!-- Checkbox (Select Mode) -->
-                    <div on:click={(e) => GroupSelect(e)} on:keydown={(e) => e.key === "Enter" && GroupSelect(e)} role="button" tabindex="0" class={cn("absolute bottom-0 right-0 w-full h-full flex justify-center items-center transition-opacity", { 'opacity-0': !isHovered && !combinedIsSelected })}>
-                        <Checkbox checked={isGroupSelected} aria-label="Select email"/>
-                    </div>
+                    {#if !chainVisible}
+                        <!-- Checkbox (Select Mode) -->
+                        <div on:click={(e) => GroupSelect(e)} on:keydown={(e) => e.key === "Enter" && GroupSelect(e)} role="button" tabindex="0" class={cn("absolute bottom-0 right-0 w-full h-full flex justify-center items-center transition-opacity", { 'opacity-0': !(isHovered || combinedIsSelected) })}>
+                            <Checkbox checked={isGroupSelected} aria-label="Select email"/>
+                        </div>
+
+                    {:else}
+                        <!-- Checkbox (Chain Mode) -->
+                        <div on:click={(e) => ChainParent(e)} on:keydown={(e) => e.key === "Enter" && ChainParent(e)} role="button" tabindex="0" class={cn("absolute bottom-0 right-0 w-full h-full flex justify-center items-center")}>
+                            {#if chainGroupMode === ChainGroupSelect.FULL} <Checkbox checked={true} aria-label="Select email"/>
+                            {:else if chainGroupMode === ChainGroupSelect.PARTIAL} <div class="ring-offset-background w-[18px] h-[18px] border border-primary bg-white rounded-sm flex items-center justify-center">
+                                <div class="w-3 h-[1px] {normalColor}"></div>
+                            </div>
+                            {:else} <Checkbox checked={false} aria-label="Select email"/> {/if}
+                        </div>
+                    {/if}
                 </Avatar.Root>
             </div>
 
@@ -195,7 +324,7 @@
                 <div class="flex items-center gap-2">
 
                     <!-- Read icon -->
-                    {#if isHovered}
+                    {#if isHovered && !chainVisible}
                         <Tooltip.Root>
                             <Tooltip.Trigger>
                                 <span on:click={(e) => ToggleRead(e)} on:keydown={e => e.key === "Enter" && ToggleRead(e)} role="button" tabindex="0" class="cursor-pointer">
@@ -261,18 +390,28 @@
                     <Trash class="text-inherit transition-colors duration-200" size="18"/>
                 </span>
             </Tooltip.Trigger>
-            <Tooltip.Content> <p>Delete</p> </Tooltip.Content>
+            <Tooltip.Content>
+                {#if chainVisible}
+                    <p>Delete chain</p>
+                {:else}
+                    <p>Delete email</p>
+                {/if}
+            </Tooltip.Content>
         </Tooltip.Root>
     </div>
 </div>
 
 {#if data.chain && chainVisible && !isChain}
     <div class="flex flex-col">
+
         <!-- Chain emails -->
-        {#each data.chain as email, i}
-            <div class={cn({ 'border-b': i === data.chain.length - 1 })}>
-                <EmailCard selectedStore={selectedStore} groupSelectStore={groupSelectStore} data={email} isChain={true} groupSelectMode={groupSelectMode}/>
-            </div>
+        {#each data.chain as email}
+            <EmailCard selectedStore={selectedStore} groupSelectStore={groupSelectStore} data={email} isChain={true} groupCounter={groupCounter}/>
         {/each}
+
+        <!-- This email -->
+        <div class="border-b">
+            <EmailCard selectedStore={selectedStore} groupSelectStore={groupSelectStore} data={data} isChain={true} groupCounter={groupCounter}/>
+        </div>
     </div>
 {/if}

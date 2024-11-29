@@ -6,8 +6,8 @@
     import * as Resizable from '$shadcn/resizable';
     import {EmailCard} from "@/inbox/emailCard";
 
+    const groupCounter = writable(0);
     const groupSelectStore = writable(new Set<string>());
-    const groupSelectMode = writable(false);
     const selectedStore = writable<string>();
 </script>
 
@@ -16,7 +16,7 @@
         <Resizable.Pane class="flex-shrink-0 h-full">
             <!-- Fixed height pane content -->
             <EmailCard
-                    groupSelectMode={groupSelectMode}
+                    groupCounter={groupCounter}
                     selectedStore={selectedStore}
                     groupSelectStore={groupSelectStore}
                     data={{
@@ -108,7 +108,7 @@
                 totalAttachments: 5
             }}/>
             <EmailCard
-                    groupSelectMode={groupSelectMode}
+                    groupCounter={groupCounter}
                     selectedStore={selectedStore}
                     groupSelectStore={groupSelectStore}
                     data={
