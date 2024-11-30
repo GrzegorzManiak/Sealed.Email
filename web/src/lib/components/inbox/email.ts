@@ -29,11 +29,10 @@ type Email = {
 }
 
 const colors = {
-    normal: "bg-[#020817]",
-    chain: "bg-[#020611]",
-
-    hovered: "bg-gray-950",
-    selected: "bg-slate-900",
+    normal: "bg-background",
+    chain: "bg-muted bg-opacity-20",
+    hovered: "bg-muted bg-opacity-10",
+    selected: "bg-muted bg-opacity-50",
 }
 
 enum ChainGroupSelect {
@@ -42,7 +41,6 @@ enum ChainGroupSelect {
     NONE
 }
 
-function isPartial(data)
 export type {
     Email,
     Attachment

@@ -5,7 +5,7 @@
 
     import { page } from "$app/stores";
     import { Separator } from '@/ui/separator';
-    import { Button } from '$shadcn/button';
+    import { Button } from '@/ui/button';
 
     import { cubicInOut } from "svelte/easing";
     import { crossfade } from "svelte/transition";
@@ -56,9 +56,9 @@
             <Separator class="mt-2"/>
         </div>
 
-        <div class='w-full h-full flex justify-between items-center'>
+        <div class='w-full h-full flex justify-between items-center mt-2 gap-2'>
 
-            <nav class='flex flex-col gap-2 max-w-[15rem] w-full h-full border-r'>
+            <nav class='flex flex-col gap-2 max-w-[15rem] w-full h-full'>
                 {#each sidebarNavItems as item}
                     {@const isActive = $page.url.pathname === item.href}
 
@@ -71,8 +71,8 @@
 
                         {#if isActive}
                             <div
-                                    class='absolute inset-0 rounded-none bg-muted'
-                                    in:send={{ key: 'active-sidebar-tab' }}
+                                    class='absolute inset-0 rounded-md bg-muted'
+                                     in:send={{ key: 'active-sidebar-tab' }}
                                     out:receive={{ key: 'active-sidebar-tab' }}
                             />
                         {/if}
@@ -84,7 +84,7 @@
                 {/each}
             </nav>
 
-            <div class='flex-1 p-2 w-full h-full'>
+            <div class='flex-1 w-full h-full'>
                 <slot />
             </div>
         </div>

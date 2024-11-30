@@ -285,14 +285,14 @@
 
     <!-- Email Content -->
     <div class="max-w-full flex-grow relative mr-2">
-        <div class="w-full h-full min-h-max" style="height: {heightOffset}px"/>
+        <div class="w-full h-full min-h-max" style="height: {heightOffset}px" />
 
         <!-- Email Sender & Date -->
         <div class="absolute left-0 top-0 flex-col justify-start align-baseline max-w-full flex-grow w-full" bind:offsetHeight={heightOffset}>
             <div class="flex items-center justify-between mt-2 w-full">
 
                 <!-- Email Sender -->
-                <p class="truncate font-bold text-white">{data.fromName} <span class="truncate font-normal text-sm text-gray-300">&lt;{data.fromEmail}&gt;</span></p>
+                <p class="truncate font-bold text-muted-foreground">{data.fromName} <span class="truncate font-normal text-sm text-muted-foreground">&lt;{data.fromEmail}&gt;</span></p>
 
                 <!-- Email actions -->
                 <div class="flex items-center gap-2">
@@ -341,7 +341,7 @@
 
                     <div class="flex items-center justify-between w-full gap-2">
                         <!-- Email Subject -->
-                        <p class={cn({"text-gray-300": data.read, "font-bold text-blue-300": !data.read}, "truncate")}>{subject}</p>
+                        <p class={cn({"text-foreground text-opacity-85": data.read, "font-bold text-blue-300": !data.read}, "truncate")}>{subject}</p>
 
                         <!-- Email Date -->
                         <p class="text-gray-400 text-sm break-keep whitespace-nowrap">{date}</p>
