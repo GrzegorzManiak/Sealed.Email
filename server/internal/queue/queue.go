@@ -2,7 +2,6 @@ package queue
 
 import (
 	"fmt"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"strings"
 	"sync"
@@ -42,7 +41,6 @@ func (q *Queue) GetBatch() (error error) {
 	}
 
 	if q.database == nil {
-		zap.L().Error("database is not initialized", zap.String("queue", q.Name))
 		return fmt.Errorf("database is not initialized")
 	}
 
@@ -55,7 +53,6 @@ func (q *Queue) GetBatch() (error error) {
 		Error
 
 	if err != nil {
-		zap.L().Error("failed to fetch entries", zap.Error(err))
 		return fmt.Errorf("failed to fetch entries: %w", err)
 	}
 
@@ -66,7 +63,6 @@ func (q *Queue) GetBatch() (error error) {
 	if len(entries) > 0 {
 		err = q.database.Save(entries).Error
 		if err != nil {
-			zap.L().Error("failed to update entries", zap.Error(err))
 			return fmt.Errorf("failed to update entries: %w", err)
 		}
 	}
@@ -85,7 +81,6 @@ func (q *Queue) BatchUpdate() (error error) {
 
 	err := q.database.Save(*q.ready).Error
 	if err != nil {
-		zap.L().Error("failed to update entries", zap.Error(err))
 		return fmt.Errorf("failed to update entries: %w", err)
 	}
 
@@ -103,7 +98,6 @@ func (q *Queue) FlushQueue() (error error) {
 
 	err := q.database.Create(*q.queue).Error
 	if err != nil {
-		zap.L().Error("failed to flush queue", zap.Error(err))
 		return fmt.Errorf("failed to flush queue: %w", err)
 	}
 

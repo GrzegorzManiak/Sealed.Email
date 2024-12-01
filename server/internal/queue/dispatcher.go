@@ -41,9 +41,7 @@ func refreshPool(
 		default:
 			// -- Check if the database connection is still alive
 			if databaseConnection.Error != nil {
-				zap.L().Error("failed to get table", zap.Error(databaseConnection.Error))
-				panic(databaseConnection.Error)
-				return
+				zap.L().Panic("failed to get table", zap.Error(databaseConnection.Error))
 			}
 
 			// -- Get the next entries

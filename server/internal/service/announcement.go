@@ -64,13 +64,11 @@ func KeepServiceAnnouncementAlive(ctx context.Context, serviceAnnouncement Annou
 					err = EnsureEtcdConnection(serviceAnnouncement.Service)
 					if err != nil {
 						zap.L().Panic("failed to ensure etcd connection", zap.Error(err))
-						return
 					}
 
 					client := GetEtcdClient()
 					if client == nil {
 						zap.L().Panic("failed to get etcd client")
-						return
 					}
 
 					leaseID, err = AnnounceService(ctx, client, serviceAnnouncement, marshaledService)

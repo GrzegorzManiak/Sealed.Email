@@ -61,7 +61,7 @@
 <div class="flex flex-row ">
 
     <!-- Left Sidebar -->
-    <div class="border-r h-screen flex flex-col gap-1 min-w-[13rem] bg-muted">
+    <div class="border-r h-screen flex flex-col gap-1 min-w-[15rem] bg-muted">
 
         <div class="flex items-center p-2 py-4 gap-2 border-b border-background border-opacity-25">
             <img src="/images/logos/white.png" alt="Noise Logo" class="w-10 mr-1" />

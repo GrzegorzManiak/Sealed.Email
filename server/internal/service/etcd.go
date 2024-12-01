@@ -76,7 +76,6 @@ func EnsureEtcdConnection(service structs.ServiceConfig) error {
 		if err := CheckClientConnection(); err == nil {
 			return nil
 		} else {
-			zap.L().Warn("etcd client connection failed, reconnecting", zap.Error(err))
 			if err := DestroyEtcdClient(client); err != nil {
 				return fmt.Errorf("failed to destroy etcd client: %w", err)
 			}
@@ -85,7 +84,6 @@ func EnsureEtcdConnection(service structs.ServiceConfig) error {
 	}
 
 	if err := InstantiateEtcdClient(service); err != nil {
-		zap.L().Error("failed to ensure etcd connection", zap.Error(err))
 		return fmt.Errorf("failed to ensure etcd connection: %w", err)
 	}
 
@@ -95,7 +93,6 @@ func EnsureEtcdConnection(service structs.ServiceConfig) error {
 func GetAllKeys(ctx context.Context, client *clientv3.Client) ([]*mvccpb.KeyValue, error) {
 	resp, err := client.Get(ctx, Prefix, clientv3.WithPrefix())
 	if err != nil {
-		zap.L().Error("failed to retrieve keys", zap.Error(err))
 		return nil, fmt.Errorf("failed to retrieve keys with prefix %s: %w", Prefix, err)
 	}
 	return resp.Kvs, nil
