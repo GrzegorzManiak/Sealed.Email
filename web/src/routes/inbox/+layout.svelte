@@ -58,7 +58,7 @@
 
 </script>
 
-<div class="flex flex-row ">
+<div class="flex flex-row bun run ">
 
     <!-- Left Sidebar -->
     <div class="border-r h-screen flex flex-col gap-1 min-w-[15rem] bg-muted">

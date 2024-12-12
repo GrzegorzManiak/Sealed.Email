@@ -10,7 +10,7 @@ type UserDomain struct {
 	User   User   `gorm:"foreignKey:UserID"`
 	UserID uint   `gorm:"index"`
 
-	Domain   string
+	Domain   string `gorm:"index"`
 	Verified bool
 
 	CatchAll                    bool
