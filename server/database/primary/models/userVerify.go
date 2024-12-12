@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type UserVerify struct {
 	gorm.Model
-	RID    string `gorm:"uniqueIndex"`
+	PID    string `gorm:"uniqueIndex"`
 	UserID uint
 
 	// -- ClientAuthInitRequestPayload

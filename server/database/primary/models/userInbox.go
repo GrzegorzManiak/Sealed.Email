@@ -6,7 +6,7 @@ import (
 
 type UserInbox struct {
 	gorm.Model
-	RID    string `gorm:"unique"`
+	PID    string `gorm:"uniqueIndex"`
 	User   User   `gorm:"foreignKey:UserID"`
 	UserID uint   `gorm:"index"`
 

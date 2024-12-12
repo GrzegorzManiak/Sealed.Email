@@ -6,7 +6,7 @@ import (
 
 type UserDomain struct {
 	gorm.Model
-	RID    string `gorm:"unique"`
+	PID    string `gorm:"uniqueIndex"`
 	User   User   `gorm:"foreignKey:UserID"`
 	UserID uint   `gorm:"index"`
 
@@ -23,5 +23,5 @@ type UserDomain struct {
 	TxtChallenge      string
 
 	Version          uint
-	EncryptedRootKey string
+	SymmetricRootKey string
 }
