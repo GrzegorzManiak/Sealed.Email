@@ -28,7 +28,7 @@ func parseDomainList(
 	domainList := make([]Domain, 0)
 	for _, domain := range domains {
 		domainList = append(domainList, Domain{
-			DomainID:  domain.RID,
+			DomainID:  domain.PID,
 			Domain:    domain.Domain,
 			Verified:  domain.Verified,
 			DateAdded: domain.CreatedAt.Unix(),

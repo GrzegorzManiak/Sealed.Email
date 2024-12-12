@@ -12,7 +12,7 @@ func fetchDomainByID(
 	databaseConnection *gorm.DB,
 ) (*models.UserDomain, helpers.AppError) {
 	domain := &models.UserDomain{}
-	dbQuery := databaseConnection.Where("user_id = ? AND r_id = ?", userID, domainID).First(domain)
+	dbQuery := databaseConnection.Where("user_id = ? AND p_id = ?", userID, domainID).First(domain)
 	if dbQuery.Error != nil {
 		return nil, helpers.NewServerError("The requested domain could not be found.", "Domain not found!")
 	}

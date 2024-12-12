@@ -13,7 +13,7 @@ func deleteDomain(
 	databaseConnection *gorm.DB,
 ) helpers.AppError {
 	domain := &models.UserDomain{}
-	dbQuery := databaseConnection.Where("user_id = ? AND r_id = ?", userID, domainID).First(domain)
+	dbQuery := databaseConnection.Where("user_id = ? AND p_id = ?", userID, domainID).First(domain)
 	if dbQuery.Error != nil {
 		zap.L().Debug("Error querying domain", zap.Error(dbQuery.Error), zap.Any("domain", domain))
 		return helpers.NewServerError("The requested domain could not be found.", "Domain not found!")

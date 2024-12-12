@@ -21,15 +21,14 @@ func insertDomain(
 	if err != nil {
 		return &models.UserDomain{}, err
 	}
-	RID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
+	PID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
 
 	domainModel := models.UserDomain{
-		RID:    RID,
+		PID:    PID,
 		UserID: user.ID,
 
 		Domain:   domain,
 		Verified: false,
-
 		CatchAll: false,
 
 		DKIMKeysCreatedAt: time.Now().Unix(),
@@ -38,11 +37,14 @@ func insertDomain(
 		TxtChallenge:      config.Domain.ChallengePrefix + "=" + crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N)),
 
 		Version:          1,
-		EncryptedRootKey: privateKey,
+		SymmetricRootKey: privateKey,
 	}
 
 	if err := databaseConnection.Create(&domainModel); err.Error != nil {
-		return &models.UserDomain{}, helpers.NewServerError("Domain could not be added. Please contact support if this issue persists.", "Failed to add domain!")
+		return &models.UserDomain{}, helpers.NewServerError(
+			"Domain could not be added. Please contact support if this issue persists.",
+			"Failed to add domain!",
+		)
 	}
 
 	return &domainModel, nil
@@ -50,19 +52,29 @@ func insertDomain(
 
 func generateDKIMKeyPair() (*cryptography.RSAKeyPair, helpers.AppError) {
 	kp, err := cryptography.GenerateRSAKeyPair(config.Domain.DKIMKeySize)
+
 	if err != nil {
 		zap.L().Error("Error generating RSA key pair", zap.Error(err))
-		return &cryptography.RSAKeyPair{}, helpers.NewServerError("There was an error generating the DKIM key pair. Please contact support if this issue persists.", "Failed to generate DKIM key pair!")
+		return &cryptography.RSAKeyPair{}, helpers.NewServerError(
+			"There was an error generating the DKIM key pair. Please contact support if this issue persists.",
+			"Failed to generate DKIM key pair!",
+		)
 	}
+
 	return kp, nil
 }
 
 func domainAlreadyAdded(domain string, userID uint, databaseConnection *gorm.DB) bool {
 	var count int64
-	err := databaseConnection.Model(&models.UserDomain{}).Where("domain = ? AND user_id = ?", domain, userID).Count(&count)
+	err := databaseConnection.
+		Model(&models.UserDomain{}).
+		Where("domain = ? AND user_id = ?", domain, userID).
+		Count(&count)
+
 	if err.Error != nil {
 		zap.L().Error("Error checking if domain already added", zap.Error(err.Error))
 		return true
 	}
+
 	return count > 0
 }

@@ -57,9 +57,9 @@ func insertVerifyData(
 	clientAuthInit *owl.ClientAuthInitRequestPayload,
 	databaseConnection *gorm.DB,
 ) (string, helpers.AppError) {
-	RID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
+	PID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
 	newUserVerify := databaseConnection.Create(&models2.UserVerify{
-		RID:      RID,
+		PID:      PID,
 		UserID:   fetchedUser.ID,
 		XPub4:    crypto.B64Encode(serverAuthInit.Xx4),
 		XPri4:    crypto.B64Encode(serverAuthInit.Payload.X4),
@@ -80,12 +80,12 @@ func insertVerifyData(
 		return "", helpers.NewServerError("Failed to create verification data. Please try again.", "Failed to create verification data")
 	}
 
-	return RID, nil
+	return PID, nil
 }
 
-func encodeOutput(RID string, serverAuthInit *owl.ServerAuthInitResponse) *Output {
+func encodeOutput(PID string, serverAuthInit *owl.ServerAuthInitResponse) *Output {
 	return &Output{
-		RID:      RID,
+		PID:      PID,
 		X3:       crypto.B64Encode(serverAuthInit.Payload.X3),
 		X4:       crypto.B64Encode(serverAuthInit.Payload.X4),
 		Beta:     crypto.B64Encode(serverAuthInit.Payload.Beta),
