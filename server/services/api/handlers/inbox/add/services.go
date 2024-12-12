@@ -13,7 +13,7 @@ func getDomain(
 ) (*models.UserDomain, helpers.AppError) {
 	var domain models.UserDomain
 	result := databaseConnection.
-		Where("id = ? AND user_id = ?", domainID, user.ID).
+		Where("p_id = ? AND user_id = ?", domainID, user.ID).
 		First(&domain)
 
 	if result.Error != nil {
