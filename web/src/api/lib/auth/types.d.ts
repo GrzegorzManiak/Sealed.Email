@@ -10,7 +10,7 @@ type UserKeys = {
 };
 
 type RefID = {
-    RID: string,
+    PID: string,
 };
 
 type ReturnedVerifyData = {

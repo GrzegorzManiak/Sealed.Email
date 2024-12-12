@@ -38,7 +38,7 @@ async function LoginVerify(client: Client, data: ServerAuthInit & RefID): Promis
         },
         body: JSON.stringify({
             ...payload,
-            RID: data.RID
+            PID: data.PID
         })
     });
 

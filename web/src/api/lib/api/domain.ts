@@ -29,7 +29,7 @@ type AddDomainResponse = {
     }
 }
 
-async function AddDomainRequest(session: Session, domain: string, encRootKey: string): Promise<AddDomainResponse> {
+async function AddDomainRequest(session: Session, domain: string, symmetricRootKey: string): Promise<AddDomainResponse> {
     const headers = new Headers();
     if (session.IsTokenAuthenticated) headers.set("cookie", session.CookieToken);
 
@@ -37,7 +37,7 @@ async function AddDomainRequest(session: Session, domain: string, encRootKey: st
         method: Endpoints.DOMAIN_ADD[1],
         body: JSON.stringify({
             domain,
-            encRootKey
+            symmetricRootKey
         }),
         headers
     });
@@ -135,8 +135,8 @@ async function GetDomains(session: Session, page: number, perPage: number): Prom
 async function AddDomain(session: Session, domain: string): Promise<AddDomainResponse> {
     domain = CleanDomain(domain);
     const domainKey = NewKey();
-    const encRootKey = await session.EncryptKey(domainKey);
-    return await AddDomainRequest(session, domain, encRootKey);
+    const symmetricRootKey = await session.EncryptKey(domainKey);
+    return await AddDomainRequest(session, domain, symmetricRootKey);
 }
 
 async function RefreshDomainVerification(session: Session, domainID: DomainRefID): Promise<void> {
