@@ -111,9 +111,16 @@ func (claims *Claims) Filter(filter *APIConfiguration) bool {
 
 func (claims *Claims) FetchUser(databaseConnection *gorm.DB) (models.User, helpers.AppError) {
 	user := models.User{}
-	err := databaseConnection.Where("uid = ?", claims.Content.UserID).First(&user)
+	err := databaseConnection.
+		Where("id = ?", claims.Content.UserID).
+		First(&user)
+
 	if err.Error != nil {
-		return models.User{}, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
+		return models.User{}, helpers.NewUserError(
+			"Sorry! We couldn't find your account. Please try again.",
+			"User not found",
+		)
 	}
+
 	return user, nil
 }

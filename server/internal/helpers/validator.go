@@ -37,6 +37,9 @@ var (
 
 	EncryptedKeyValidator    = "required,base64,gte=102,lte=106"
 	EncryptedKeyValidatorTag = "Encrypted-B64-Key"
+
+	PublicIDValidator    = "required,base64,gte=42,lte=46"
+	PublicIDValidatorTag = "PublicID"
 )
 
 func p256KeyValidation(fl validator.FieldLevel) bool {
@@ -54,6 +57,11 @@ func encryptedKeyValidation(fl validator.FieldLevel) bool {
 	return rules == nil
 }
 
+func randomIDValidation(fl validator.FieldLevel) bool {
+	rules := validate.Var(fl.Field().String(), PublicIDValidator)
+	return rules == nil
+}
+
 func RegisterCustomValidators() {
 	err := validate.RegisterValidation(P256KeyValidatorTag, p256KeyValidation)
 	if err != nil {
@@ -66,6 +74,11 @@ func RegisterCustomValidators() {
 	}
 
 	err = validate.RegisterValidation(GenericKeyValidatorTag, genericKeyValidation)
+	if err != nil {
+		zap.L().Panic("failed to register custom validator", zap.Error(err))
+	}
+
+	err = validate.RegisterValidation(PublicIDValidatorTag, randomIDValidation)
 	if err != nil {
 		zap.L().Panic("failed to register custom validator", zap.Error(err))
 	}

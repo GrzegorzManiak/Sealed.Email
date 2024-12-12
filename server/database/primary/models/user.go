@@ -7,7 +7,7 @@ type User struct {
 
 	// UID: The user's unique identifier (The user can hash their id before sending it to the server)
 	// RecoveryEmail: The user's recovery email, it is hashed with the user's UID on the client side
-	UID string `gorm:"unique"`
+	UID string `gorm:"uniqueIndex"`
 	//RecoveryEmail string `gorm:"unique"`
 
 	// GOWL: GOWL Specific Fields

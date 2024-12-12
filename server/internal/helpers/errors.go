@@ -50,9 +50,14 @@ func NewBaseError(message string, title string, fault string, code int) BaseErro
 	}
 }
 
+//
+// -- Common errors
+//
+
 func NewUserError(message string, title string) BaseError {
 	return NewBaseError(message, title, "user", 400)
 }
+
 func NewNoAccessError(message string) BaseError {
 	return NewBaseError(message, "You are not allowed to access this resource", "access", 401)
 }
@@ -61,9 +66,17 @@ func NewServerError(message string, title string) BaseError {
 	return NewBaseError(message, title, "server", 500)
 }
 
+func NewNotFoundError(message string, title string) BaseError {
+	return NewBaseError(message, title, "user", 404)
+}
+
 func DataValidationError(message string) BaseError {
 	return NewBaseError(message, "Data validation error", "data", 400)
 }
+
+//
+// -- Common responses
+//
 
 func ErrorResponse(ctx *gin.Context, err AppError) {
 	ctx.JSON(err.Code(), gin.H{
