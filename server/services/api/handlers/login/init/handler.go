@@ -42,11 +42,11 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
-	RID, verifyError := insertVerifyData(&fetchedUser, serverAuthInit, clientAuthInit, databaseConnection)
+	PID, verifyError := insertVerifyData(&fetchedUser, serverAuthInit, clientAuthInit, databaseConnection)
 	if verifyError != nil {
 		return nil, verifyError
 	}
 
 	session.ClearCTXSession(ctx)
-	return encodeOutput(RID, serverAuthInit), nil
+	return encodeOutput(PID, serverAuthInit), nil
 }

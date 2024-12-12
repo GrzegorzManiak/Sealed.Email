@@ -13,7 +13,7 @@ type Input struct {
 }
 
 type Output struct {
-	RID      string `json:"RID" validate:"Generic-B64-Key"`
+	PID      string `json:"PID" validate:"Generic-B64-Key"`
 	X3       string `json:"X3" validate:"P256-B64-Key"`
 	X4       string `json:"X4" validate:"P256-B64-Key"`
 	PI3_V    string `json:"PI3_V" validate:"P256-B64-Key"`

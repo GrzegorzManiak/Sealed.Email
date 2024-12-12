@@ -20,7 +20,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *m
 		return nil, helpers.NewUserError("You already added this domain.", "Domain already added!")
 	}
 
-	domainModel, err := insertDomain(user, domain, data.EncryptedRootKey, databaseConnection)
+	domainModel, err := insertDomain(user, domain, data.SymmetricRootKey, databaseConnection)
 	if err != nil {
 		return nil, helpers.NewServerError("Domain could not be added. Please contact support if this issue persists.", "Failed to add domain!")
 	}
@@ -34,7 +34,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *m
 	}
 
 	return &Output{
-		DomainID:         domainModel.RID,
+		DomainID:         domainModel.PID,
 		SentVerification: sentVerification,
 		DNS: &DNSRecords{
 			DKIM:         helpers.BuildDKIMRecord(domain, domainModel.DKIMPublicKey),

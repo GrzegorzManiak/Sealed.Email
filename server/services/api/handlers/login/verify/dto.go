@@ -3,7 +3,7 @@ package loginVerify
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
-	RID         string `json:"RID" validate:"Generic-B64-Key"`
+	PID         string `json:"PID" validate:"Generic-B64-Key"`
 	ClientKCTag string `json:"ClientKCTag" validate:"P256-B64-Key"`
 	Alpha       string `json:"Alpha" validate:"P256-B64-Key"`
 	PIAlpha_V   string `json:"PIAlpha_V" validate:"P256-B64-Key"`

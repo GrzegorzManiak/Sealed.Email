@@ -14,7 +14,7 @@ import (
 
 func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
 	userVerify := models2.UserVerify{}
-	dbErr := databaseConnection.Where("r_id = ?", data.RID).First(&userVerify)
+	dbErr := databaseConnection.Where("p_id = ?", data.PID).First(&userVerify)
 	if dbErr.Error != nil {
 		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
