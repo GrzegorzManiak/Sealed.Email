@@ -9,10 +9,16 @@ const Endpoints = {
     LOGIN_VERIFY:   [`${ROOT}/login/verify`, 'PUT'],
 
     DOMAIN_ADD:     [`${ROOT}/domain/add`, 'POST'],
+    DOMAIN_GET:     [`${ROOT}/domain/get`, 'PUT'],
     DOMAIN_DELETE:  [`${ROOT}/domain/delete`, 'DELETE'],
     DOMAIN_LIST:    [`${ROOT}/domain/list`, 'PUT'],
     DOMAIN_MODIFY:  [`${ROOT}/domain/modify`, 'PUT'],
     DOMAIN_REFRESH:  [`${ROOT}/domain/refresh`, 'PUT'],
+
+    INBOX_ADD:      [`${ROOT}/inbox/add`, 'POST'],
+    INBOX_DELETE:   [`${ROOT}/inbox/delete`, 'DELETE'],
+    INBOX_LIST:     [`${ROOT}/inbox/list`, 'PUT'],
+    INBOX_MODIFY:   [`${ROOT}/inbox/modify`, 'PUT'],
 };
 
 const ServerName: string = 'NoiseEmailServer>V1.0.0';
