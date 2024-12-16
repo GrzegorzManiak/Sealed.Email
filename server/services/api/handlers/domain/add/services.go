@@ -1,7 +1,6 @@
 package domainAdd
 
 import (
-	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
@@ -21,7 +20,7 @@ func insertDomain(
 	if err != nil {
 		return &models.UserDomain{}, err
 	}
-	PID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
+	PID := helpers.GeneratePublicId()
 
 	domainModel := models.UserDomain{
 		PID:    PID,
@@ -34,7 +33,7 @@ func insertDomain(
 		DKIMKeysCreatedAt: time.Now().Unix(),
 		DKIMPublicKey:     kp.EncodePublicKey(),
 		DKIMPrivateKey:    kp.EncodePrivateKey(),
-		TxtChallenge:      config.Domain.ChallengePrefix + "=" + crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N)),
+		TxtChallenge:      config.Domain.ChallengePrefix + "=" + helpers.GeneratePublicId(),
 
 		Version:          1,
 		SymmetricRootKey: privateKey,

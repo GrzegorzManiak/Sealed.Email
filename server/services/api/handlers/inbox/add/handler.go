@@ -1,4 +1,4 @@
-package add
+package inboxAdd
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"

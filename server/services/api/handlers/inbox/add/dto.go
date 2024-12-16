@@ -1,10 +1,10 @@
-package add
+package inboxAdd
 
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
 	DomainID  string `json:"domainID" validate:"PublicID"`
-	EmailHash string `json:"emailHash" validate:"Encrypted-B64-Key"`
+	EmailHash string `json:"emailHash" validate:"Generic-B64-Key"`
 
 	SymmetricRootKey     string `json:"symmetricRootKey" validate:"Encrypted-B64-Key"`
 	AsymmetricPublicKey  string `json:"asymmetricPublicKey" validate:"P256-B64-Key"`

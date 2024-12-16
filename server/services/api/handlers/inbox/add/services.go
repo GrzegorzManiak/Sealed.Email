@@ -1,4 +1,4 @@
-package add
+package inboxAdd
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
@@ -33,6 +33,7 @@ func createInbox(
 	databaseConnection *gorm.DB,
 ) (*models.UserInbox, helpers.AppError) {
 	inbox := models.UserInbox{
+		PID:       helpers.GeneratePublicId(),
 		UserID:    user.ID,
 		DomainID:  domain.ID,
 		EmailHash: input.EmailHash,
