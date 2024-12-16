@@ -20,6 +20,17 @@ type InboxKeys = {
     encryptedInboxName: string;
 }
 
+type InboxShort = {
+    inboxID: InboxRefID;
+    inboxName: string;
+    dateAdded: number;
+    version: number;
+}
+
+type InboxListResponse = {
+    inboxes: InboxShort[];
+}
+
 //
 // -- Requests
 //
@@ -28,7 +39,10 @@ const AddInbox = async (session: Session, domainService: DomainService, inboxNam
     const inboxKeys = await domainService.CreateInboxKeys(inboxName);
     await HandleRequest<void>({
         session,
-        body: inboxKeys,
+        body: {
+            ...inboxKeys,
+            domainID: domainService.DomainID,
+        },
         endpoint: Endpoints.INBOX_ADD,
         fallbackError: new ClientError(
             'Failed to add inbox',
@@ -39,9 +53,20 @@ const AddInbox = async (session: Session, domainService: DomainService, inboxNam
     return InboxService.Decrypt(domainService, inboxKeys);
 }
 
+const ListInboxes = async (session: Session, domainID: DomainRefID, page: number, perPage: number): Promise<InboxListResponse> => HandleRequest<InboxListResponse>({
+    session,
+    query: { domainID, page, perPage },
+    endpoint: Endpoints.INBOX_LIST,
+    fallbackError: new ClientError(
+        'Failed to list inboxes',
+        'Sorry, we were unable to list the inboxes from your account',
+        'INBOX-LIST-FAIL'
+    ),
+});
 
 export {
     AddInbox,
+    ListInboxes,
 
     type InboxRefID,
     type InboxKeys
