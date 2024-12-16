@@ -1,11 +1,56 @@
 import { parseDomain, ParseResultType } from "parse-domain";
 import Session from "../session/session";
-import {CurrentCurve, Endpoints} from "../constants";
+import {Endpoints} from "../constants";
 import {ClientError, GenericError} from "../errors";
-import {GetCurve} from "gowl-client-lib";
 import {NewKey} from "../symetric";
+import {EncodeToBase64} from "gowl-client-lib";
+
+//
+// -- Types
+//
 
 type DomainRefID = string;
+
+type DomainDnsData = {
+    mx: string;
+    dkim: string;
+    verification: string;
+    identity: string;
+    spf: string;
+}
+
+type AddDomainResponse = {
+    domainID: DomainRefID;
+    sentVerification: boolean;
+    dns: DomainDnsData;
+}
+
+type RefreshDomainVerificationResponse = {
+    sentVerification: boolean;
+}
+
+type DomainBrief = {
+    domainID: DomainRefID;
+    domain: string;
+    verified: boolean;
+    dateAdded: number;
+    catchAll: boolean;
+    version: number;
+}
+
+type DomainFull = {
+    domainID: DomainRefID;
+    dns: DomainDnsData;
+    symmetricRootKey: string;
+} & DomainBrief;
+
+type DomainListResponse = {
+    domains: DomainBrief[];
+}
+
+//
+// -- Helpers
+//
 
 function CleanDomain(domain: string): string {
     domain = domain.trim();
@@ -17,17 +62,9 @@ function CleanDomain(domain: string): string {
     throw new Error("Invalid domain");
 }
 
-type AddDomainResponse = {
-    domainID: DomainRefID;
-    sentVerification: boolean;
-    dns: {
-        mx: string;
-        dkim: string;
-        verification: string;
-        identity: string;
-        spf: string;
-    }
-}
+//
+// -- Requests
+//
 
 async function AddDomainRequest(session: Session, domain: string, symmetricRootKey: string): Promise<AddDomainResponse> {
     const headers = new Headers();
@@ -51,8 +88,25 @@ async function AddDomainRequest(session: Session, domain: string, symmetricRootK
     return await response.json();
 }
 
-type RefreshDomainVerificationResponse = {
-    sentVerification: boolean;
+async function GetDomainRequest(session: Session, domainID: DomainRefID): Promise<DomainFull> {
+    const headers = new Headers();
+    if (session.IsTokenAuthenticated) headers.set("cookie", session.CookieToken);
+
+    const response = await fetch(Endpoints.DOMAIN_GET[0], {
+        method: Endpoints.DOMAIN_GET[1],
+        body: JSON.stringify({
+            domainID
+        }),
+        headers
+    });
+
+    if (!response.ok) throw GenericError.fromServerString(await response.text(), new ClientError(
+        'Failed to get domain',
+        'Sorry, we were unable to get the domain from your account',
+        'DOMAIN-GET-FAIL'
+    ));
+
+    return await response.json();
 }
 
 async function RefreshDomainVerificationRequest(session: Session, domainID: DomainRefID): Promise<RefreshDomainVerificationResponse> {
@@ -95,19 +149,6 @@ async function DeleteDomainRequest(session: Session, domainID: DomainRefID): Pro
     ));
 }
 
-type Domain = {
-    domainID: DomainRefID;
-    domain: string;
-    verified: boolean;
-    dateAdded: number;
-    catchAll: boolean;
-    version: number;
-}
-
-type DomainListResponse = {
-    domains: Domain[];
-}
-
 async function GetDomains(session: Session, page: number, perPage: number): Promise<DomainListResponse> {
     const headers = new Headers();
     if (session.IsTokenAuthenticated) headers.set("cookie", session.CookieToken);
@@ -132,11 +173,19 @@ async function GetDomains(session: Session, page: number, perPage: number): Prom
     return await response.json();
 }
 
+//
+// -- Exports
+//
+
 async function AddDomain(session: Session, domain: string): Promise<AddDomainResponse> {
     domain = CleanDomain(domain);
     const domainKey = NewKey();
     const symmetricRootKey = await session.EncryptKey(domainKey);
     return await AddDomainRequest(session, domain, symmetricRootKey);
+}
+
+async function GetDomain(session: Session, domainID: DomainRefID): Promise<DomainFull> {
+    return await GetDomainRequest(session, domainID);
 }
 
 async function RefreshDomainVerification(session: Session, domainID: DomainRefID): Promise<void> {
@@ -151,11 +200,29 @@ async function GetDomainList(session: Session, page: number, perPage: number): P
     return await GetDomains(session, page, perPage);
 }
 
+const Requests = {
+    AddDomainRequest,
+    RefreshDomainVerificationRequest,
+    DeleteDomainRequest,
+    GetDomains,
+    GetDomainRequest
+};
+
 export {
     RefreshDomainVerification,
     GetDomainList,
     CleanDomain,
     DeleteDomain,
     AddDomain,
-    type Domain
+    GetDomain,
+
+    Requests,
+
+    type DomainBrief,
+    type DomainFull,
+    type DomainListResponse,
+    type AddDomainResponse,
+    type DomainRefID,
+    type DomainDnsData,
+    type RefreshDomainVerificationResponse
 }
