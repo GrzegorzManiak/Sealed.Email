@@ -110,6 +110,12 @@ class Session {
         return EncodeToBase64(encryptedKey);
     }
 
+    public async DecryptKey(key: Uint8Array | string): Promise<string> {
+        if (typeof key !== 'string') key = EncodeToBase64(key);
+        const decompressedKey = Decompress(DecodeFromBase64(key));
+        return await Decrypt(decompressedKey, this._rootKey);
+    }
+
     public static ClearSessionCookie() {
         document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     }
