@@ -3,7 +3,7 @@ import { SupportedCurves } from "gowl-client-lib";
 const ROOT = 'http://localhost:2095/api';
 const COOKIE_NAME = 'NES-DEV';
 
-const Endpoints = {
+const Endpoints: { [key: string]: [string, string] } = {
     REGISTER:       [`${ROOT}/register`, 'POST'],
     LOGIN_INIT:     [`${ROOT}/login/init`, 'PUT'],
     LOGIN_VERIFY:   [`${ROOT}/login/verify`, 'PUT'],
