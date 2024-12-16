@@ -13,7 +13,7 @@ type UserInbox struct {
 	Domain   UserDomain `gorm:"foreignKey:DomainID"`
 	DomainID uint       `gorm:"index"`
 
-	EmailHash string `gorm:"index"`
+	EmailHash string `gorm:"uniqueIndex"`
 
 	AsymmetricPublicKey  string
 	AsymmetricPrivateKey string
