@@ -2,6 +2,7 @@ import * as API from '../lib';
 
 const username = '1234';
 const password = 'Test';
+const domain = 'hello';
 const randomString = Math.random().toString(36).substring(2);
 
 const register = false;
@@ -44,16 +45,24 @@ if (domainSweep) API.Domain.AddDomain(session, randomString + 'test.grzegorz.ie'
     domains.domains.forEach(domain => console.log('-', domain.domain));
 });
 
-if (inboxSweep) API.Domain.AddDomain(session, randomString + 'test.grzegorz.ie').then(async(domain) => {
+if (inboxSweep) {
+    let domains = await API.Domain.GetDomainList(session, 0, 10);
+    const firstDomain = domains.domains[0];
+
+    console.log('PID', firstDomain.domainID)
+
     // -- Build Domain service
     const domainService = await API.DomainService.Decrypt(
         session,
-        await API.Domain.GetDomain(session, domain.domainID)
+        await API.Domain.GetDomain(session, firstDomain.domainID)
     );
 
     // -- Create inbox
-    const userInbox = "hello";
+    const userInbox = "hello" + randomString;
     const inbox = await API.Inbox.AddInbox(session, domainService, userInbox);
     console.log(inbox.InboxName);
 
-});
+    // -- List inboxes
+    const inboxes = await API.Inbox.ListInboxes(session, firstDomain.domainID, 0, 10);
+    inboxes.inboxes.forEach(inbox => console.log('-', inbox.inboxName));
+}

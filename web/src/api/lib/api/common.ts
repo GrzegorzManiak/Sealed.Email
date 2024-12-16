@@ -16,15 +16,23 @@ type HeaderOptions = {
     headers?: Headers;
 };
 
-type Options = RequiredOptions & BodyOptions & HeaderOptions;
+type QueryOptions = {
+    query?: Record<string, string | number | boolean | undefined | null>;
+};
+
+type Options = RequiredOptions & BodyOptions & HeaderOptions & QueryOptions;
 
 async function HandleRequest<T>(options: Options): Promise<T> {
-    const { session, endpoint, fallbackError, body, headers: customHeaders } = options;
+    const { session, endpoint, fallbackError, query, body, headers: customHeaders } = options;
 
     const headers = customHeaders ?? new Headers();
     if (session.IsTokenAuthenticated) headers.set("cookie", session.CookieToken);
 
-    const response = await fetch(endpoint[0], {
+    const parsedQuery = new URLSearchParams();
+    for (const [key, value] of Object.entries(query ?? {})) parsedQuery.append(key, (value ?? '').toString());
+    const endpointWithQuery = query ? `${endpoint[0]}?${parsedQuery}` : endpoint[0];
+
+    const response = await fetch(endpointWithQuery, {
         method: endpoint[1],
         body: body ? JSON.stringify(body) : undefined,
         headers,

@@ -55,6 +55,9 @@ class Domain {
     }
 
     public async CreateInboxKeys(inboxName: string): Promise<InboxKeys> {
+        inboxName = inboxName.toLowerCase();
+        inboxName = inboxName.trim();
+        
         const symmetricRootKey = NewKey();
         const curve = GetCurve(CurrentCurve);
         const asymmetricPrivateKey = curve.utils.randomPrivateKey();
