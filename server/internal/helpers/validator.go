@@ -21,6 +21,20 @@ func ValidateInputData[Input interface{}](ctx *gin.Context) (*Input, AppError) {
 	return &input, nil
 }
 
+func ValidateQueryParams[Input interface{}](ctx *gin.Context) (*Input, AppError) {
+	var input Input
+
+	if err := ctx.ShouldBindQuery(&input); err != nil {
+		return nil, DataValidationError(err.Error())
+	}
+
+	if err := validate.Struct(&input); err != nil {
+		return nil, DataValidationError(err.Error())
+	}
+
+	return &input, nil
+}
+
 func ValidateOutputData[Output any](output *Output) AppError {
 	if err := validate.Struct(output); err != nil {
 		return DataValidationError(err.Error())
