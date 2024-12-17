@@ -9,7 +9,7 @@ const Endpoints: { [key: string]: [string, string] } = {
     LOGIN_VERIFY:   [`${ROOT}/login/verify`, 'PUT'],
 
     DOMAIN_ADD:     [`${ROOT}/domain/add`, 'POST'],
-    DOMAIN_GET:     [`${ROOT}/domain/get`, 'PUT'],
+    DOMAIN_GET:     [`${ROOT}/domain/get`, 'GET'],
     DOMAIN_DELETE:  [`${ROOT}/domain/delete`, 'DELETE'],
     DOMAIN_LIST:    [`${ROOT}/domain/list`, 'GET'],
     DOMAIN_MODIFY:  [`${ROOT}/domain/modify`, 'PUT'],

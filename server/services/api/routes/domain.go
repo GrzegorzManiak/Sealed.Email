@@ -29,7 +29,7 @@ func DomainRoutes(router *gin.Engine, databaseConnection *gorm.DB) {
 	router.GET("/api/domain/list", func(ctx *gin.Context) {
 		domainList.ExecuteRoute(ctx, databaseConnection)
 	})
-	router.PUT("/api/domain/get", func(ctx *gin.Context) {
+	router.GET("/api/domain/get", func(ctx *gin.Context) {
 		domainGet.ExecuteRoute(ctx, databaseConnection)
 	})
 }

@@ -83,7 +83,7 @@ const AddDomain = async (session: Session, domain: string): Promise<AddDomainRes
 
 const GetDomain = async (session: Session, domainID: DomainRefID): Promise<DomainFull> => HandleRequest<DomainFull>({
     session,
-    body: { domainID },
+    query: { domainID },
     endpoint: Endpoints.DOMAIN_GET,
     fallbackError: new ClientError(
         'Failed to get domain',

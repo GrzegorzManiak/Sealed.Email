@@ -7,7 +7,7 @@ import (
 )
 
 type Input struct {
-	DomainID string `json:"domainID" validate:"PublicID"`
+	DomainID string `form:"domainID" validate:"PublicID"`
 }
 
 type Output struct {
