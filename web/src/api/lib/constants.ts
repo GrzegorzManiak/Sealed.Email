@@ -11,7 +11,7 @@ const Endpoints: { [key: string]: [string, string] } = {
     DOMAIN_ADD:     [`${ROOT}/domain/add`, 'POST'],
     DOMAIN_GET:     [`${ROOT}/domain/get`, 'PUT'],
     DOMAIN_DELETE:  [`${ROOT}/domain/delete`, 'DELETE'],
-    DOMAIN_LIST:    [`${ROOT}/domain/list`, 'PUT'],
+    DOMAIN_LIST:    [`${ROOT}/domain/list`, 'GET'],
     DOMAIN_MODIFY:  [`${ROOT}/domain/modify`, 'PUT'],
     DOMAIN_REFRESH:  [`${ROOT}/domain/refresh`, 'PUT'],
 

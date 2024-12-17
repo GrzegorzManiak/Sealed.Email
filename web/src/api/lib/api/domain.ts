@@ -43,6 +43,7 @@ type DomainFull = {
 
 type DomainListResponse = {
     domains: DomainBrief[];
+    count: number;
 }
 
 //
@@ -115,7 +116,7 @@ const DeleteDomain = async (session: Session, domainID: DomainRefID): Promise<vo
 
 const GetDomainList = async (session: Session, page: number, perPage: number): Promise<DomainListResponse> => HandleRequest<DomainListResponse>({
     session,
-    body: { pagination: { page, perPage } },
+    query: { page, perPage  },
     endpoint: Endpoints.DOMAIN_LIST,
     fallbackError: new ClientError(
         'Failed to get domain list',

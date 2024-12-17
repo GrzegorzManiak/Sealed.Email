@@ -30,6 +30,7 @@ type InboxShort = {
 
 type InboxListResponse = {
     inboxes: InboxShort[];
+    count: number;
 }
 
 //

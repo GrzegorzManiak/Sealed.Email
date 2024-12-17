@@ -26,7 +26,7 @@ func DomainRoutes(router *gin.Engine, databaseConnection *gorm.DB) {
 	router.PUT("/api/domain/refresh", func(ctx *gin.Context) {
 		domainRefresh.ExecuteRoute(ctx, databaseConnection)
 	})
-	router.PUT("/api/domain/list", func(ctx *gin.Context) {
+	router.GET("/api/domain/list", func(ctx *gin.Context) {
 		domainList.ExecuteRoute(ctx, databaseConnection)
 	})
 	router.PUT("/api/domain/get", func(ctx *gin.Context) {
