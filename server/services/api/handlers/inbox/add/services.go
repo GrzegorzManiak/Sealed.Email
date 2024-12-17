@@ -38,6 +38,7 @@ func createInbox(
 		DomainID:  domain.ID,
 		EmailHash: input.EmailHash + "@" + domain.Domain,
 
+		EncryptedEmailName:   input.EncryptedEmailName,
 		AsymmetricPrivateKey: input.AsymmetricPrivateKey,
 		AsymmetricPublicKey:  input.AsymmetricPublicKey,
 		SymmetricRootKey:     input.SymmetricRootKey,

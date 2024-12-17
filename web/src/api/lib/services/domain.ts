@@ -64,14 +64,14 @@ class Domain {
         const asymmetricPublicKey = curve.getPublicKey(asymmetricPrivateKey);
         const encryptedSymmetricRootKey = await this.EncryptKey(symmetricRootKey);
         const encryptedAsymmetricPrivateKey = await Encrypt(EncodeToBase64(asymmetricPrivateKey), symmetricRootKey);
-        const encryptedInboxName = await this.EncryptKey(inboxName);
+        const encryptedEmailName = await this.EncryptKey(inboxName);
 
         return {
             emailHash: await this.CreateEmailHash(inboxName),
             symmetricRootKey: encryptedSymmetricRootKey,
             asymmetricPrivateKey: EncodeToBase64(Compress(encryptedAsymmetricPrivateKey)),
             asymmetricPublicKey: EncodeToBase64(asymmetricPublicKey),
-            encryptedInboxName: encryptedInboxName
+            encryptedEmailName: encryptedEmailName
         }
     }
 

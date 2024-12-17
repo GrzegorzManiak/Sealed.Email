@@ -64,5 +64,5 @@ if (inboxSweep) {
 
     // -- List inboxes
     const inboxes = await API.Inbox.ListInboxes(session, firstDomain.domainID, 0, 10);
-    inboxes.inboxes.forEach(inbox => console.log('-', inbox.inboxName));
+    inboxes.inboxes.forEach(inbox => console.log('-', inbox.emailHash));
 }

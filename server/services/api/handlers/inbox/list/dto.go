@@ -13,10 +13,11 @@ type Input struct {
 }
 
 type Inbox struct {
-	InboxID   string `json:"inboxID"`
-	InboxName string `json:"inboxName"`
-	DateAdded int64  `json:"dateAdded"`
-	Version   uint   `json:"version"`
+	InboxID            string `json:"inboxID"`
+	DateAdded          int64  `json:"dateAdded"`
+	Version            uint   `json:"version"`
+	EncryptedEmailName string `json:"encryptedEmailName"`
+	EmailHash          string `json:"emailHash"`
 }
 
 type Output struct {

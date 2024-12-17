@@ -16,7 +16,13 @@ func fetchInboxesByUserID(
 	inboxes := make([]*models.UserInbox, 0)
 	dbQuery := databaseConnection.
 		Table("user_inboxes").
-		Select("user_inboxes.id, user_inboxes.domain_id, user_inboxes.created_at, user_inboxes.version, user_inboxes.email_hash, user_inboxes.p_id").
+		Select("user_inboxes.id, "+
+			"user_inboxes.domain_id, "+
+			"user_inboxes.created_at, "+
+			"user_inboxes.version, "+
+			"user_inboxes.email_hash, "+
+			"main.user_inboxes.encrypted_email_name, "+
+			"user_inboxes.p_id").
 		Joins("JOIN user_domains ON user_inboxes.domain_id = user_domains.id").
 		Where("user_inboxes.user_id = ? AND user_domains.p_id = ? AND user_domains.user_id = ?", userID, domainID, userID).
 		Limit(pagination.PerPage).
@@ -45,10 +51,11 @@ func parseInboxList(
 	inboxList := make([]Inbox, 0)
 	for _, inbox := range inboxes {
 		inboxList = append(inboxList, Inbox{
-			InboxID:   inbox.PID,
-			InboxName: inbox.EmailHash,
-			DateAdded: inbox.CreatedAt.Unix(),
-			Version:   inbox.Version,
+			InboxID:            inbox.PID,
+			DateAdded:          inbox.CreatedAt.Unix(),
+			Version:            inbox.Version,
+			EncryptedEmailName: inbox.EncryptedEmailName,
+			EmailHash:          inbox.EmailHash,
 		})
 	}
 	return &inboxList

@@ -38,7 +38,7 @@ class InboxService {
         const asymmetricPrivateKey = DecodeFromBase64(await Decrypt(decompressedPrivateKey, rootKey));
         const asymmetricPublicKey = DecodeFromBase64(inboxKeys.asymmetricPublicKey);
         const calculatedPublicKey = curve.getPublicKey(asymmetricPrivateKey);
-        const inboxName = await domainService.DecryptKey(inboxKeys.encryptedInboxName);
+        const inboxName = await domainService.DecryptKey(inboxKeys.encryptedEmailName);
 
         // -- Sanity checks
         if (asymmetricPublicKey.toString() !== calculatedPublicKey.toString()) throw new Error("Invalid asymmetric public key");

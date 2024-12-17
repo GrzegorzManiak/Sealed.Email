@@ -17,12 +17,13 @@ type InboxKeys = {
     symmetricRootKey: string;
     asymmetricPrivateKey: string;
     asymmetricPublicKey: string;
-    encryptedInboxName: string;
+    encryptedEmailName: string;
 }
 
 type InboxShort = {
     inboxID: InboxRefID;
-    inboxName: string;
+    emailHash: string;
+    encryptedEmailName: string;
     dateAdded: number;
     version: number;
 }
