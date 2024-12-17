@@ -22,7 +22,7 @@ const session = new API.Session(await API.Login.Login(username, password), true)
 await session.DecryptKeys();
 console.log("Session token:", session.Token);
 
-if (domainSweep) API.Domain.AddDomain(session, randomString + 'test.grzegorz.ie').then(async(domain) => {
+if (domainSweep) await API.Domain.AddDomain(session, randomString + 'test.grzegorz.ie').then(async(domain) => {
     // -- List domains
     let domains = await API.Domain.GetDomainList(session, 0, 10);
     domains.domains.forEach(domain => console.log('-', domain.domain));
@@ -37,8 +37,8 @@ if (domainSweep) API.Domain.AddDomain(session, randomString + 'test.grzegorz.ie'
     await API.Domain.RefreshDomainVerification(session, domain.domainID);
 
     // -- Delete domain
-    console.log('Deleting domain');
-    await API.Domain.DeleteDomain(session, domain.domainID);
+    // console.log('Deleting domain');
+    // await API.Domain.DeleteDomain(session, domain.domainID);
 
     // -- List domains
     domains = await API.Domain.GetDomainList(session, 0, 10);
@@ -46,23 +46,23 @@ if (domainSweep) API.Domain.AddDomain(session, randomString + 'test.grzegorz.ie'
 });
 
 if (inboxSweep) {
-    let domains = await API.Domain.GetDomainList(session, 0, 10);
-    const firstDomain = domains.domains[0];
-
-    console.log('PID', firstDomain.domainID)
+    const domains = await API.Domain.GetDomainList(session, 1, 10);
+    const lastDomain = domains.domains[domains.domains.length - 1];
+    console.log('PID', lastDomain.domainID)
 
     // -- Build Domain service
-    const domainService = await API.DomainService.Decrypt(
-        session,
-        await API.Domain.GetDomain(session, firstDomain.domainID)
-    );
+    const domainService = await API.DomainService.Decrypt(session, await API.Domain.GetDomain(session, lastDomain.domainID));
 
     // -- Create inbox
-    const userInbox = "hello" + randomString;
-    const inbox = await API.Inbox.AddInbox(session, domainService, userInbox);
-    console.log(inbox.InboxName);
+    const inbox = await API.Inbox.AddInbox(session, domainService, randomString);
+    console.log("New inbox:", inbox.InboxName);
 
     // -- List inboxes
-    const inboxes = await API.Inbox.ListInboxes(session, firstDomain.domainID, 0, 10);
+    const inboxes = await API.Inbox.ListInboxes(session, lastDomain.domainID, 0, 10);
     inboxes.inboxes.forEach(inbox => console.log('-', inbox.emailHash));
+
+    // -- Get first inbox
+    const lastInboxID = inboxes.inboxes[inboxes.inboxes.length - 1].inboxID;
+    const anInbox = await API.Inbox.GetInbox(session, domainService, lastInboxID);
+    console.log("Got inbox:", anInbox.InboxName);
 }

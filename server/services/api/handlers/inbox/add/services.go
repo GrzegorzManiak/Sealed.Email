@@ -36,7 +36,7 @@ func createInbox(
 		PID:       helpers.GeneratePublicId(),
 		UserID:    user.ID,
 		DomainID:  domain.ID,
-		EmailHash: input.EmailHash + "@" + domain.Domain,
+		EmailHash: input.EmailHash,
 
 		EncryptedEmailName:   input.EncryptedEmailName,
 		AsymmetricPrivateKey: input.AsymmetricPrivateKey,

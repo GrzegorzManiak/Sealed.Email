@@ -1,7 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ProjectTreeColorHighlighter">
-    <files />
+    <files>
+      <node color="7" path="$PROJECT_DIR$/dev" />
+      <node color="11" path="$PROJECT_DIR$/docs" />
+      <node color="5" path="$PROJECT_DIR$/server/services/api" />
+      <node color="1" path="$PROJECT_DIR$/server/services/api/handlers/dev" />
+      <node color="2" path="$PROJECT_DIR$/server/services/api/handlers/domain" />
+      <node color="3" path="$PROJECT_DIR$/server/services/api/handlers/inbox" />
+      <node color="4" path="$PROJECT_DIR$/server/services/api/handlers/login" />
+      <node color="6" path="$PROJECT_DIR$/server/services/api/handlers/register" />
+      <node color="7" path="$PROJECT_DIR$/server/services/api/midlewares" />
+      <node color="7" path="$PROJECT_DIR$/server/services/api/outsideServices" />
+      <node color="9" path="$PROJECT_DIR$/server/services/api/routes" />
+      <node color="7" path="$PROJECT_DIR$/server/services/api/session" />
+      <node color="4" path="$PROJECT_DIR$/server/services/domain" />
+      <node color="3" path="$PROJECT_DIR$/web" />
+      <node color="8" path="$PROJECT_DIR$/web/.idea" />
+      <node color="8" path="$PROJECT_DIR$/web/.svelte-kit" />
+      <node color="8" path="$PROJECT_DIR$/web/node_modules" />
+      <node color="7" path="$PROJECT_DIR$/web/src/api" />
+    </files>
     <colors>
       <color id="1" value="#4f060d" name="Color 1" enabled="true" />
       <color id="2" value="#44220e" name="Color 2" enabled="true" />
@@ -11,6 +30,8 @@
       <color id="6" value="#171a34" name="Color 6" enabled="true" />
       <color id="7" value="#311333" name="Color 7" enabled="true" />
       <color id="8" value="#1e1e1e" name="Color 8" enabled="true" />
+      <color id="9" value="#143b16ae" name="Color 9" enabled="true" />
+      <color id="11" value="#3b0017ae" name="Color 11" enabled="true" />
     </colors>
     <option name="marksForCollapsedHighlights" value="Dots" />
   </component>

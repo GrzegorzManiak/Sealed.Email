@@ -16,6 +16,7 @@ const Endpoints: { [key: string]: [string, string] } = {
     DOMAIN_REFRESH:  [`${ROOT}/domain/refresh`, 'PUT'],
 
     INBOX_ADD:      [`${ROOT}/inbox/add`, 'POST'],
+    INBOX_GET:      [`${ROOT}/inbox/get`, 'GET'],
     INBOX_DELETE:   [`${ROOT}/inbox/delete`, 'DELETE'],
     INBOX_LIST:     [`${ROOT}/inbox/list`, 'GET'],
     INBOX_MODIFY:   [`${ROOT}/inbox/modify`, 'PUT'],

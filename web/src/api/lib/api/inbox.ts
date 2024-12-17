@@ -65,9 +65,25 @@ const ListInboxes = async (session: Session, domainID: DomainRefID, page: number
     ),
 });
 
+const GetInbox = async (session: Session, domainService: DomainService, inboxID: InboxRefID): Promise<InboxService> => {
+    const inbox = await HandleRequest<InboxKeys>({
+        session,
+        query: { inboxID },
+        endpoint: Endpoints.INBOX_GET,
+        fallbackError: new ClientError(
+            'Failed to get inbox',
+            'Sorry, we were unable to get the inbox from your account',
+            'INBOX-GET-FAIL'
+        ),
+    });
+
+    return InboxService.Decrypt(domainService, inbox);
+}
+
 export {
     AddInbox,
     ListInboxes,
+    GetInbox,
 
     type InboxRefID,
     type InboxKeys

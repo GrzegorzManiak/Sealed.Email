@@ -8,17 +8,29 @@ import (
 )
 
 func fetchDomainsByUserID(
-	userID uint,
+	user *models.User,
 	pagination Pagination,
 	databaseConnection *gorm.DB,
 ) ([]*models.UserDomain, helpers.AppError) {
 	domains := make([]*models.UserDomain, 0)
-	dbQuery := databaseConnection.Where("user_id = ?", userID).Limit(pagination.PerPage).Offset(pagination.PerPage * pagination.Page).Find(&domains)
+	dbQuery := databaseConnection.
+		Where("user_id = ?", user.ID).
+		Limit(pagination.PerPage).
+		Offset(pagination.PerPage * pagination.Page).
+		Find(&domains)
+
 	if dbQuery.Error != nil {
-		return nil, helpers.NewServerError("The requested domains could not be found.", "Domains not found!")
+		return nil, helpers.NewServerError(
+			"The requested domains could not be found.",
+			"Domains not found!",
+		)
 	}
 
-	zap.L().Debug("fetchDomainsByUserID", zap.Any("domains", domains), zap.Any("pagination", pagination), zap.Any("userID", userID))
+	zap.L().Debug("fetchDomainsByUserID",
+		zap.Any("domains", domains),
+		zap.Any("pagination", pagination),
+		zap.Any("userID", user.ID))
+
 	return domains, nil
 }
 
