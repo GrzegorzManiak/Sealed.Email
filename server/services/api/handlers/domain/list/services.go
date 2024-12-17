@@ -9,18 +9,27 @@ import (
 
 func fetchDomainsByUserID(
 	user *models.User,
-	pagination Pagination,
+	pagination Input,
 	databaseConnection *gorm.DB,
-) ([]*models.UserDomain, helpers.AppError) {
+) ([]*models.UserDomain, int64, helpers.AppError) {
+
+	var count int64
 	domains := make([]*models.UserDomain, 0)
 	dbQuery := databaseConnection.
+		Select("p_id,"+
+			"domain,"+
+			"verified,"+
+			"created_at,"+
+			"catch_all,"+
+			"version").
 		Where("user_id = ?", user.ID).
 		Limit(pagination.PerPage).
 		Offset(pagination.PerPage * pagination.Page).
-		Find(&domains)
+		Find(&domains).
+		Count(&count)
 
 	if dbQuery.Error != nil {
-		return nil, helpers.NewServerError(
+		return nil, 0, helpers.NewServerError(
 			"The requested domains could not be found.",
 			"Domains not found!",
 		)
@@ -31,7 +40,7 @@ func fetchDomainsByUserID(
 		zap.Any("pagination", pagination),
 		zap.Any("userID", user.ID))
 
-	return domains, nil
+	return domains, count, nil
 }
 
 func parseDomainList(

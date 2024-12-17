@@ -8,12 +8,13 @@ import (
 )
 
 func handler(data *Input, ctx *gin.Context, user *models.User, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
-	domains, err := fetchDomainsByUserID(user, *data.Pagination, databaseConnection)
+	domains, total, err := fetchDomainsByUserID(user, *data, databaseConnection)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Output{
 		Domains: *parseDomainList(domains),
+		Total:   total,
 	}, nil
 }

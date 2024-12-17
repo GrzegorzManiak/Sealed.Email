@@ -2,17 +2,14 @@ package domainList
 
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
-type Pagination struct {
+type Input struct {
 	Page    int `json:"page" validate:"gte=0,lte=100"`
 	PerPage int `json:"perPage" validate:"gte=3,lte=15"`
 }
 
-type Input struct {
-	Pagination *Pagination `json:"pagination"`
-}
-
 type Output struct {
 	Domains []Domain `json:"domains"`
+	Total   int64    `json:"total"`
 }
 
 type Domain struct {

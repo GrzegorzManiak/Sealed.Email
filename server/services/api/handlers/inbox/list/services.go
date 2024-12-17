@@ -12,7 +12,9 @@ func fetchInboxesByUserID(
 	domainID string,
 	pagination Pagination,
 	databaseConnection *gorm.DB,
-) ([]*models.UserInbox, helpers.AppError) {
+) ([]*models.UserInbox, int64, helpers.AppError) {
+
+	var count int64
 	inboxes := make([]*models.UserInbox, 0)
 	dbQuery := databaseConnection.
 		Table("user_inboxes").
@@ -27,10 +29,11 @@ func fetchInboxesByUserID(
 		Where("user_inboxes.user_id = ? AND user_domains.p_id = ? AND user_domains.user_id = ?", userID, domainID, userID).
 		Limit(pagination.PerPage).
 		Offset(pagination.PerPage * pagination.Page).
-		Find(&inboxes)
+		Find(&inboxes).
+		Count(&count)
 
 	if dbQuery.Error != nil {
-		return nil, helpers.NewServerError(
+		return nil, 0, helpers.NewServerError(
 			"The requested domains could not be found.",
 			"Domains not found!",
 		)
@@ -42,7 +45,7 @@ func fetchInboxesByUserID(
 		zap.Any("userID", userID),
 		zap.Any("domainID", domainID))
 
-	return inboxes, nil
+	return inboxes, count, nil
 }
 
 func parseInboxList(

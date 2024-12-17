@@ -22,6 +22,7 @@ type Inbox struct {
 
 type Output struct {
 	Inboxes []Inbox `json:"inboxes"`
+	Total   int64   `json:"total"`
 }
 
 var SessionFilter = &session.APIConfiguration{
