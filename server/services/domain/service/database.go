@@ -25,10 +25,10 @@ func VerifyDomain(domain string, uid uint64, did uint64, databaseConnection *gor
 	})
 
 	if err != nil {
-		return helpers.GenericError{
-			Message: "Error verifying domain",
-			ErrCode: 500,
-		}
+		return helpers.NewNotFoundError(
+			"We were unable to verify the domain. Please try again.",
+			"Failed to verify domain!",
+		)
 	}
 
 	return nil

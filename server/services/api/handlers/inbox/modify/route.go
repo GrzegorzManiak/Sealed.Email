@@ -2,14 +2,14 @@ package add
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
-	"github.com/GrzegorzManiak/NoiseBackend/services/api/midlewares"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/middleware"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
-	sessionClaims, sessionErr := midleware.SessionManagerMiddleware(ctx, SessionFilter, databaseConnection)
+	sessionClaims, sessionErr := middleware.SessionManagerMiddleware(ctx, SessionFilter, databaseConnection)
 	if sessionErr != nil {
 		helpers.ErrorResponse(ctx, sessionErr)
 		return

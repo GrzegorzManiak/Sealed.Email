@@ -6,7 +6,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
-	"github.com/GrzegorzManiak/NoiseBackend/services/api/midlewares"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/middleware"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/routes"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/gin-contrib/pprof"
@@ -23,7 +23,7 @@ func Start() {
 	router := gin.Default()
 	router.Use(ginzap.Ginzap(zap.L(), time.RFC3339, true))
 	router.Use(ginzap.RecoveryWithZap(zap.L(), true))
-	router.Use(midleware.URLCleanerMiddleware())
+	router.Use(middleware.URLCleanerMiddleware())
 	router.Use(gin.Recovery())
 	pprof.Register(router, "debug/")
 
