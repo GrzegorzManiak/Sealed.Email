@@ -4,7 +4,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
-	"github.com/GrzegorzManiak/NoiseBackend/services/api/outsideServices"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -26,7 +26,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *m
 	}
 
 	// -- USER CAN RE-VERIFY, NO NEED TO RETURN ERROR
-	err = outsideServices.AddDomainToVerificationQueue(ctx, domainModel)
+	err = services.AddDomainToVerificationQueue(ctx, domainModel)
 	sentVerification := true
 	if err != nil {
 		zap.L().Warn("failed to send verification request", zap.Error(err))

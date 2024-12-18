@@ -7,8 +7,8 @@ import (
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/midlewares"
-	"github.com/GrzegorzManiak/NoiseBackend/services/api/outsideServices"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/routes"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/gin-contrib/pprof"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
@@ -56,7 +56,7 @@ func Start() {
 	}
 
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
-	ServiceProvider.RegisterCallback("filler", outsideServices.PoolCallback)
+	ServiceProvider.RegisterCallback("filler", services.PoolCallback)
 
 	err = router.Run(fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port))
 	if err != nil {

@@ -1,4 +1,4 @@
-package outsideServices
+package services
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
