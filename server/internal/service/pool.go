@@ -100,7 +100,6 @@ func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service 
 func KeepConnectionPoolsAlive(ctx context.Context, service structs.ServiceConfig) {
 
 	go func() {
-
 		for {
 			select {
 			case <-ctx.Done():

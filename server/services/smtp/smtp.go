@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
+	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/service"
 	"go.uber.org/zap"
 )
 
@@ -11,6 +12,8 @@ func Start() {
 	zap.L().Info("Starting smtp service")
 
 	//primaryDatabaseConnection := PrimaryDatabase.InitiateConnection()
+
+	service.ExampleServer()
 
 	listener, grpcServer, ServiceID := ServiceProvider.CreateGRPCService(config.Certificates.SMTP)
 
