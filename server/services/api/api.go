@@ -23,7 +23,7 @@ func Start() {
 	router := gin.Default()
 	router.Use(ginzap.Ginzap(zap.L(), time.RFC3339, true))
 	router.Use(ginzap.RecoveryWithZap(zap.L(), true))
-	router.Use(midlewares.URLCleanerMiddleware())
+	router.Use(midleware.URLCleanerMiddleware())
 	router.Use(gin.Recovery())
 	pprof.Register(router, "debug/")
 

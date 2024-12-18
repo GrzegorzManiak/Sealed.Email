@@ -9,7 +9,7 @@ import (
 )
 
 func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
-	_, sessionErr := midlewares.SessionManagerMiddleware(ctx, SessionFilter, databaseConnection)
+	_, sessionErr := midleware.SessionManagerMiddleware(ctx, SessionFilter, databaseConnection)
 	if sessionErr != nil {
 		helpers.ErrorResponse(ctx, sessionErr)
 		return

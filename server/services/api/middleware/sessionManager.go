@@ -1,4 +1,4 @@
-package midlewares
+package middleware
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
