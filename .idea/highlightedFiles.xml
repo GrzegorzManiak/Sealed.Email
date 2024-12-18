@@ -7,6 +7,7 @@
       <node color="5" path="$PROJECT_DIR$/server/services/api" />
       <node color="1" path="$PROJECT_DIR$/server/services/api/handlers/dev" />
       <node color="2" path="$PROJECT_DIR$/server/services/api/handlers/domain" />
+      <node color="11" path="$PROJECT_DIR$/server/services/api/handlers/email" />
       <node color="3" path="$PROJECT_DIR$/server/services/api/handlers/inbox" />
       <node color="4" path="$PROJECT_DIR$/server/services/api/handlers/login" />
       <node color="6" path="$PROJECT_DIR$/server/services/api/handlers/register" />
@@ -15,6 +16,7 @@
       <node color="9" path="$PROJECT_DIR$/server/services/api/routes" />
       <node color="7" path="$PROJECT_DIR$/server/services/api/session" />
       <node color="4" path="$PROJECT_DIR$/server/services/domain" />
+      <node color="2" path="$PROJECT_DIR$/server/services/smtp" />
       <node color="3" path="$PROJECT_DIR$/web" />
       <node color="8" path="$PROJECT_DIR$/web/.idea" />
       <node color="8" path="$PROJECT_DIR$/web/.svelte-kit" />
