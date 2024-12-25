@@ -99,3 +99,20 @@ certificates:
     api:
         crt: './dev/.certs/api/api.crt'
         key: './dev/.certs/api/api.key'
+
+smtp:
+  outboundQueue:
+    name: 'smtp-output-dev-queue'
+    maxWorkers: 10
+    maxQueueSize: 1000
+    maxRetry: 3
+    retryInterval: 300
+    retryMax: 100
+
+  inboundQueue:
+    name: 'smtp-input-dev-queue'
+    maxWorkers: 10
+    maxQueueSize: 1000
+    maxRetry: 3
+    retryInterval: 300
+    retryMax: 100
