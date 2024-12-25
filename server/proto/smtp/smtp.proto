@@ -4,6 +4,7 @@ option go_package = "github.com/GrzegorzManiak/NoiseBackend/proto/smtp";
 
 service SmtpService {
   rpc SendEncryptedEmail(EncryptedEmail) returns (SendEmailResponse);
+  rpc SendPublicEmail(PublicEmail) returns (SendEmailResponse);
 }
 
 // FYI: <USER>@<SDL>.<TLD>
@@ -12,16 +13,14 @@ service SmtpService {
 //      <SLD> = [a-zA-Z0-9.-]+
 //      <TLD> = [a-zA-Z]{2,}
 
+//
+// --- EncryptedEmail ---
+//
+
 message PrivateInbox {
   string pepperedUser = 1; // Hash of the usr with a pepper (the sending domain)
   string domain = 2;
   string encryptedKey = 3;
-}
-
-message PublicInbox {
-  string user = 1;
-  string domain = 2;
-  string email = 3;
 }
 
 message EncryptedEmail {
@@ -35,42 +34,68 @@ message EncryptedEmail {
 
   string encryptedSubject = 7;
   string encryptedBody = 8;
-  string bounceAddressHash = 10;
-  string boundDomain = 11;
+  string contentType = 14; // Content type, e.g., "text/plain", "text/html"
   string dkimSignature = 12;
 
-  repeated string attachments = 13;
-  string contentType = 14; // Content type, e.g., "text/plain", "text/html"
   map<string, string> headers = 15;
 
-  string replyChain = 16;
   int64 date = 17;
-  string serverName = 18; // The name of the sending server e.g., "NOISE_V1.0.0"
   string version = 19;
+  string inReplyTo = 20;
+  repeated string references = 21;
+  string messageId = 22;
+}
+
+//
+// --- PublicEmail ---
+//
+
+message PublicInbox {
+  string user = 1;
+  string domain = 2;
+  string email = 3;
 }
 
 message PublicEmail {
   string fromDomain = 1;
   string fromUser = 2;
   string fromName = 3;
-  PublicInbox to = 4;
 
+  PublicInbox to = 4;
   repeated PublicInbox cc = 5;
   repeated PublicInbox bcc = 6;
 
   string subject = 7;
   string body = 8;
-
   string contentType = 9; // Content type, e.g., "text/plain", "text/html"
-  map<string, string> headers = 10;
-  repeated string attachments = 11;
-  string replyTo = 12;
   string dkimSignature = 13;
+
+  map<string, string> headers = 10;
+
   int64 date = 14;
   string version = 15;
+  string inReplyTo = 16;
+  repeated string references = 17;
+  string messageId = 18;
 }
 
 message SendEmailResponse {
   bool success = 1;
   string error = 2;
+}
+
+//
+// --- Key Fetching ---
+//
+
+message ContactRequest {
+  string domain = 1;
+  string pepperedUser = 2;
+  string publicKey = 3;
+}
+
+message ContactResponse {
+  string encryptedPublicKey = 1;
+  string version = 2;
+
 }
