@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	models "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"

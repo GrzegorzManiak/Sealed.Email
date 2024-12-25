@@ -8,7 +8,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/domain"
-	"github.com/GrzegorzManiak/NoiseBackend/services/domain/service"
+	"github.com/GrzegorzManiak/NoiseBackend/services/domain/services"
 	"go.uber.org/zap"
 )
 
@@ -21,7 +21,7 @@ func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSV
 		}, nil
 	}
 
-	entry, err := queue.Initiate(config.Domain.Service.RetryMax, config.Domain.Service.RetryInterval, service.QueueName, database.VerificationQueue{
+	entry, err := queue.Initiate(config.Domain.Service.RetryMax, config.Domain.Service.RetryInterval, services.QueueName, database.VerificationQueue{
 		DomainName:      cleanDomain,
 		DkimPublicKey:   req.DkimPublicKey,
 		TxtVerification: req.TxtVerificationCode,
