@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"errors"
@@ -25,7 +25,7 @@ type Session struct{}
 // AuthMechanisms returns a slice of available auth mechanisms; only PLAIN is
 // supported in this example.
 func (s *Session) AuthMechanisms() []string {
-	return []string{sasl.Plain}
+	return []string{"NOISE-ID-1"}
 }
 
 // Auth is the handler for supported authenticators.
@@ -40,7 +40,6 @@ func (s *Session) Auth(mech string) (sasl.Server, error) {
 
 func (s *Session) Mail(from string, opts *smtp.MailOptions) error {
 	log.Println("Mail from:", from)
-
 	return nil
 }
 

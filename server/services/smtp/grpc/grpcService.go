@@ -1,11 +1,11 @@
 package grpc
 
 import (
-	"github.com/GrzegorzManiak/NoiseBackend/proto/domain"
+	"github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
 	"gorm.io/gorm"
 )
 
 type Server struct {
-	domain.UnimplementedDomainServiceServer
-	QueueDatabaseConnection *gorm.DB
+	smtp.UnimplementedSmtpServiceServer
+	MainDatabaseConnection *gorm.DB
 }
