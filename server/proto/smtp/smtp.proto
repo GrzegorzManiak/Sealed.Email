@@ -82,6 +82,8 @@ message PublicEmail {
 message SendEmailResponse {
   bool success = 1;
   string error = 2;
+  bool recipientNotFound = 3;
+  bool recipientEncryptionSupport = 4;
 }
 
 //
@@ -97,5 +99,4 @@ message ContactRequest {
 message ContactResponse {
   string encryptedPublicKey = 1;
   string version = 2;
-
 }
