@@ -116,3 +116,20 @@ smtp:
     maxRetry: 3
     retryInterval: 300
     retryMax: 100
+
+  certificates:
+    crt: './dev/.certs/smtp/tls/smtp.crt'
+    key: './dev/.certs/smtp/tls/smtp.key'
+
+  ports:
+    tls: 49100
+    plain: 49101 # Cant use 25 as blocked by ISP
+    startTls: 49102
+
+  address: 'localhost:%d'
+  domain: 'mx.noise.email'
+  writeTimeout: 10
+  readTimeout: 10
+  maxMessageBytes: 10000000 # 10MB
+  maxRecipients: 100
+  allowInsecureAuth: true
