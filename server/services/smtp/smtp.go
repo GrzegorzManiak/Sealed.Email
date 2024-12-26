@@ -9,6 +9,7 @@ import (
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/grpc"
+	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/server"
 	"go.uber.org/zap"
 )
 
@@ -31,6 +32,8 @@ func Start() {
 		config.Smtp.OutboundQueue.BatchTimeout,
 		config.Smtp.OutboundQueue.MaxConcurrent,
 	)
+
+	server.StartServers()
 
 	listener, grpcServer, ServiceID := ServiceProvider.CreateGRPCService(config.Certificates.SMTP)
 	smtp.RegisterSmtpServiceServer(grpcServer, &grpc.Server{
