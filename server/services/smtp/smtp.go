@@ -33,7 +33,7 @@ func Start() {
 		config.Smtp.OutboundQueue.MaxConcurrent,
 	)
 
-	server.StartServers()
+	server.StartServers(inboundQueue)
 
 	listener, grpcServer, ServiceID := ServiceProvider.CreateGRPCService(config.Certificates.SMTP)
 	smtp.RegisterSmtpServiceServer(grpcServer, &grpc.Server{
