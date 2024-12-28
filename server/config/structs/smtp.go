@@ -28,4 +28,5 @@ type SmtpConfig struct {
 	MaxMessageBytes   int64  `yaml:"maxMessageBytes"`
 	MaxRecipients     int    `yaml:"maxRecipients"`
 	AllowInsecureAuth bool   `yaml:"allowInsecureAuth"`
+	MaxLineLength     int    `yaml:"maxLineLength"`
 }
