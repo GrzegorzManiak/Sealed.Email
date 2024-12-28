@@ -22,7 +22,7 @@ func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {
 	}
 
 	// -- Normal header
-	headerParts := strings.Split(rawHeader, ":")
+	headerParts := strings.SplitN(rawHeader, ":", 2)
 	if len(headerParts) != 2 {
 		return "", "", fmt.Errorf("invalid header format")
 	}
