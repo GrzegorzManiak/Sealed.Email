@@ -25,6 +25,7 @@ func SetServerVariables(server *smtp.Server) {
 	server.MaxMessageBytes = config.Smtp.MaxMessageBytes
 	server.MaxRecipients = config.Smtp.MaxRecipients
 	server.AllowInsecureAuth = config.Smtp.AllowInsecureAuth
+	server.MaxLineLength = config.Smtp.MaxLineLength
 
 	certs, err := helpers.BuildTlsConfig(config.Smtp.Certificates)
 	if err != nil {

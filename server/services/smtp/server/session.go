@@ -1,53 +1,58 @@
 package server
 
 import (
-	"errors"
-	"github.com/emersion/go-sasl"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
+	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
 	"github.com/emersion/go-smtp"
+	"go.uber.org/zap"
 	"io"
-	"log"
 )
 
 // A Session is returned after successful login.
-type Session struct{}
+type Session struct {
+	Headers      headers.HeaderContext
+	Id           string
+	InboundQueue *queue.Queue
+	Ctx          *smtp.Conn
 
-// AuthMechanisms returns a slice of available auth mechanisms; only PLAIN is
-// supported in this example.
-func (s *Session) AuthMechanisms() []string {
-	return []string{sasl.Plain}
-}
+	From string
+	To   []string
 
-// Auth is the handler for supported authenticators.
-func (s *Session) Auth(mech string) (sasl.Server, error) {
-	return sasl.NewPlainServer(func(identity, username, password string) error {
-		if username != "username" || password != "password" {
-			return errors.New("Invalid username or password")
-		}
-		return nil
-	}), nil
+	RawData []byte
 }
 
 func (s *Session) Mail(from string, opts *smtp.MailOptions) error {
-	log.Println("Mail from:", from)
+	zap.L().Debug("Mail from", zap.String("from", from))
+	s.From = from
 	return nil
 }
 
 func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
-	log.Println("Rcpt to:", to)
+	zap.L().Debug("Rcpt to", zap.String("to", to))
+	s.To = append(s.To, to)
 	return nil
 }
 
 func (s *Session) Data(r io.Reader) error {
-	if b, err := io.ReadAll(r); err != nil {
-		return err
-	} else {
-		log.Println("Data:", string(b))
-	}
-	return nil
+	zap.L().Debug("Data received")
+	return ProcessData(r, s)
 }
 
-func (s *Session) Reset() {}
+func (s *Session) Reset() {
+	// debug
+	// dump the session state
+	zap.L().Debug("Session reset", zap.String("id", s.Id))
+	zap.L().Debug("Session reset", zap.String("from", s.From))
+	zap.L().Debug("Session reset", zap.Strings("to", s.To))
+	for k, v := range s.Headers.Data {
+		zap.L().Debug("Session reset", zap.String("key", k), zap.Any("value", v))
+	}
+
+	s.From = ""
+	s.To = nil
+}
 
 func (s *Session) Logout() error {
+	zap.L().Info("Session closed", zap.String("id", s.Id))
 	return nil
 }

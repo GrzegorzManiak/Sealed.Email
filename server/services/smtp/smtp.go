@@ -60,3 +60,17 @@ func Start() {
 		zap.L().Panic("failed to serve gRPC server", zap.Error(err))
 	}
 }
+
+//
+// -- Quick setup to send email
+//
+
+// EHLO example.com
+// MAIL FROM: <BOB@BOB.COM>
+// RCPT TO: <a@a.com>
+// DATA
+// Subject: Test email
+//
+// This is a test email.
+// .
+// QUIT
