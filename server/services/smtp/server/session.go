@@ -39,15 +39,8 @@ func (s *Session) Data(r io.Reader) error {
 }
 
 func (s *Session) Reset() {
-	// debug
-	// dump the session state
-	zap.L().Debug("Session reset", zap.String("id", s.Id))
-	zap.L().Debug("Session reset", zap.String("from", s.From))
-	zap.L().Debug("Session reset", zap.Strings("to", s.To))
-	for k, v := range s.Headers.Data {
-		zap.L().Debug("Session reset", zap.String("key", k), zap.Any("value", v))
-	}
-
+	s.Headers = headers.CreateHeaderContext()
+	s.RawData = nil
 	s.From = ""
 	s.To = nil
 }
