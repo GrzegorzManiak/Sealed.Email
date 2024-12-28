@@ -13,8 +13,8 @@ type NoiseExtensionHeader HeaderKey
 type Header struct {
 	Key   string
 	Value string
-	WKH   bool
-	NEH   bool
+	WKH   WellKnownHeader
+	NEH   NoiseExtensionHeader
 }
 
 type Headers map[string]Header
@@ -45,32 +45,12 @@ var (
 	NoiseSignature     NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-signature", "X-Noise-Signature"}
 )
 
-func IsWellKnownHeader(h string) bool {
-	lowerH := strings.ToLower(h)
-	switch lowerH {
-	case From.Lower, To.Lower, Subject.Lower, MessageID.Lower, Date.Lower, ReplyTo.Lower, InReplyTo.Lower, MIMEVersion.Lower, ContentType.Lower, CC.Lower, BCC.Lower:
-		return true
-	default:
-		return false
-	}
-}
-
-func IsNoiseExtensionHeader(h string) bool {
-	lowerH := strings.ToLower(h)
-	switch lowerH {
-	case NoiseVersion.Lower, NoiseEncryptionKey.Lower, NoiseSignature.Lower:
-		return true
-	default:
-		return false
-	}
-}
-
 func (h Headers) Add(key, value string) {
 	h[key] = Header{
 		Key:   key,
 		Value: value,
-		WKH:   IsWellKnownHeader(key),
-		NEH:   IsNoiseExtensionHeader(key),
+		WKH:   GetWellKnownHeader(key),
+		NEH:   GetNoiseExtensionHeader(key),
 	}
 }
 
@@ -83,5 +63,49 @@ func CreateHeaderContext() HeaderContext {
 	return HeaderContext{
 		Data:     make(Headers),
 		Finished: false,
+	}
+}
+
+func GetWellKnownHeader(h string) WellKnownHeader {
+	lowerH := strings.ToLower(h)
+	switch lowerH {
+	case From.Lower:
+		return From
+	case To.Lower:
+		return To
+	case Subject.Lower:
+		return Subject
+	case MessageID.Lower:
+		return MessageID
+	case Date.Lower:
+		return Date
+	case ReplyTo.Lower:
+		return ReplyTo
+	case InReplyTo.Lower:
+		return InReplyTo
+	case MIMEVersion.Lower:
+		return MIMEVersion
+	case ContentType.Lower:
+		return ContentType
+	case CC.Lower:
+		return CC
+	case BCC.Lower:
+		return BCC
+	default:
+		return WellKnownHeader{}
+	}
+}
+
+func GetNoiseExtensionHeader(h string) NoiseExtensionHeader {
+	lowerH := strings.ToLower(h)
+	switch lowerH {
+	case NoiseVersion.Lower:
+		return NoiseVersion
+	case NoiseEncryptionKey.Lower:
+		return NoiseEncryptionKey
+	case NoiseSignature.Lower:
+		return NoiseSignature
+	default:
+		return NoiseExtensionHeader{}
 	}
 }
