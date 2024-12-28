@@ -1,7 +1,14 @@
 package headers
 
-type WellKnownHeader string
-type NoiseExtensionHeader string
+import "strings"
+
+type HeaderKey struct {
+	Lower string
+	Cased string
+}
+
+type WellKnownHeader HeaderKey
+type NoiseExtensionHeader HeaderKey
 
 type Header struct {
 	Key   string
@@ -18,29 +25,30 @@ type HeaderContext struct {
 	LastHeader string
 }
 
-const (
-	From        WellKnownHeader = "From"
-	To          WellKnownHeader = "To"
-	Subject     WellKnownHeader = "Subject"
-	MessageID   WellKnownHeader = "Message-ID"
-	Date        WellKnownHeader = "Date"
-	ReplyTo     WellKnownHeader = "Reply-To"
-	InReplyTo   WellKnownHeader = "In-Reply-To"
-	MIMEVersion WellKnownHeader = "MIME-Version"
-	ContentType WellKnownHeader = "Content-Type"
-	CC          WellKnownHeader = "Cc"
-	BCC         WellKnownHeader = "Bcc"
+var (
+	From        WellKnownHeader = WellKnownHeader{"from", "From"}
+	To          WellKnownHeader = WellKnownHeader{"to", "To"}
+	Subject     WellKnownHeader = WellKnownHeader{"subject", "Subject"}
+	MessageID   WellKnownHeader = WellKnownHeader{"message-id", "Message-ID"}
+	Date        WellKnownHeader = WellKnownHeader{"date", "Date"}
+	ReplyTo     WellKnownHeader = WellKnownHeader{"reply-to", "Reply-To"}
+	InReplyTo   WellKnownHeader = WellKnownHeader{"in-reply-to", "In-Reply-To"}
+	MIMEVersion WellKnownHeader = WellKnownHeader{"mime-version", "MIME-Version"}
+	ContentType WellKnownHeader = WellKnownHeader{"content-type", "Content-Type"}
+	CC          WellKnownHeader = WellKnownHeader{"cc", "Cc"}
+	BCC         WellKnownHeader = WellKnownHeader{"bcc", "Bcc"}
 )
 
-const (
-	NoiseVersion       NoiseExtensionHeader = "X-Noise-Version"
-	NoiseEncryptionKey NoiseExtensionHeader = "X-Noise-Encryption-Key"
-	NoiseSignature     NoiseExtensionHeader = "X-Noise-Signature"
+var (
+	NoiseVersion       NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-version", "X-Noise-Version"}
+	NoiseEncryptionKey NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-encryption-key", "X-Noise-Encryption-Key"}
+	NoiseSignature     NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-signature", "X-Noise-Signature"}
 )
 
 func IsWellKnownHeader(h string) bool {
-	switch WellKnownHeader(h) {
-	case From, To, Subject, MessageID, Date, ReplyTo, InReplyTo, MIMEVersion, ContentType, CC, BCC:
+	lowerH := strings.ToLower(h)
+	switch lowerH {
+	case From.Lower, To.Lower, Subject.Lower, MessageID.Lower, Date.Lower, ReplyTo.Lower, InReplyTo.Lower, MIMEVersion.Lower, ContentType.Lower, CC.Lower, BCC.Lower:
 		return true
 	default:
 		return false
@@ -48,8 +56,9 @@ func IsWellKnownHeader(h string) bool {
 }
 
 func IsNoiseExtensionHeader(h string) bool {
-	switch NoiseExtensionHeader(h) {
-	case NoiseVersion, NoiseEncryptionKey, NoiseSignature:
+	lowerH := strings.ToLower(h)
+	switch lowerH {
+	case NoiseVersion.Lower, NoiseEncryptionKey.Lower, NoiseSignature.Lower:
 		return true
 	default:
 		return false
