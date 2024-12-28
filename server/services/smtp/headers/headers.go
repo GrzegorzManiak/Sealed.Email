@@ -13,8 +13,9 @@ type Header struct {
 type Headers map[string]Header
 
 type HeaderContext struct {
-	Data     Headers
-	Finished bool
+	Data       Headers
+	Finished   bool
+	LastHeader string
 }
 
 const (

@@ -33,7 +33,6 @@ func ProcessData(reader io.Reader, session *Session) error {
 		if !session.Headers.Finished {
 			buffer.Write(line)
 			strData := buffer.String()
-			strData = strings.TrimSpace(strData)
 			ProcessHeaders(strData, session)
 			buffer.Reset()
 			continue
@@ -48,12 +47,13 @@ func ProcessData(reader io.Reader, session *Session) error {
 
 func ProcessHeaders(data string, session *Session) {
 
-	if len(data) == 0 {
+	if len(strings.TrimSpace(data)) == 0 {
 		session.Headers.Finished = true
 		return
 	}
 
-	header, value, err := headers.ParseHeader(data)
+	lastHeader, _ := session.Headers.Data.Get(session.Headers.LastHeader)
+	header, value, err := headers.ParseHeader(data, lastHeader)
 	if err != nil {
 		zap.L().Debug("Failed to parse header", zap.Error(err))
 		return
@@ -61,4 +61,5 @@ func ProcessHeaders(data string, session *Session) {
 
 	zap.L().Debug("Header parsed", zap.String("header", header), zap.String("value", value))
 	session.Headers.Data.Add(header, value)
+	session.Headers.LastHeader = header
 }
