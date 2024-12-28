@@ -8,7 +8,6 @@ import (
 	"io"
 )
 
-// A Session is returned after successful login.
 type Session struct {
 	Headers      headers.HeaderContext
 	Id           string
