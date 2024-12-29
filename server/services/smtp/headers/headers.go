@@ -7,14 +7,16 @@ type HeaderKey struct {
 	Cased string
 }
 
+type HeaderStatus int
 type WellKnownHeader HeaderKey
 type NoiseExtensionHeader HeaderKey
 
 type Header struct {
-	Key   string
-	Value string
-	WKH   WellKnownHeader
-	NEH   NoiseExtensionHeader
+	Key    string
+	Value  string
+	WKH    WellKnownHeader
+	NEH    NoiseExtensionHeader
+	Status HeaderStatus
 }
 
 type Headers map[string]Header
@@ -24,6 +26,12 @@ type HeaderContext struct {
 	Finished   bool
 	LastHeader string
 }
+
+const (
+	HeaderUnknown        HeaderStatus = iota
+	HeaderWellKnown      HeaderStatus = iota
+	HeaderNoiseExtension HeaderStatus = iota
+)
 
 var (
 	From        WellKnownHeader = WellKnownHeader{"from", "From"}
@@ -55,15 +63,27 @@ var RequiredHeaders = []WellKnownHeader{
 
 func (h Headers) Add(key, value string) {
 	key = strings.ToLower(key)
+	wkh := GetWellKnownHeader(key)
+	neh := GetNoiseExtensionHeader(key)
+
+	status := HeaderUnknown
+	if wkh.Lower != "" {
+		status = HeaderWellKnown
+	} else if neh.Lower != "" {
+		status = HeaderNoiseExtension
+	}
+
 	h[key] = Header{
-		Key:   key,
-		Value: value,
-		WKH:   GetWellKnownHeader(key),
-		NEH:   GetNoiseExtensionHeader(key),
+		Key:    key,
+		Value:  value,
+		WKH:    wkh,
+		NEH:    neh,
+		Status: status,
 	}
 }
 
 func (h Headers) Get(key string) (Header, bool) {
+	key = strings.ToLower(key)
 	v, ok := h[key]
 	return v, ok
 }
