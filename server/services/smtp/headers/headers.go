@@ -54,6 +54,7 @@ var RequiredHeaders = []WellKnownHeader{
 }
 
 func (h Headers) Add(key, value string) {
+	key = strings.ToLower(key)
 	h[key] = Header{
 		Key:   key,
 		Value: value,
@@ -69,7 +70,7 @@ func (h Headers) Get(key string) (Header, bool) {
 
 func (h Headers) Has(key []WellKnownHeader) bool {
 	for _, k := range key {
-		if _, ok := h[k.Cased]; !ok {
+		if _, ok := h[k.Lower]; !ok {
 			return false
 		}
 	}
