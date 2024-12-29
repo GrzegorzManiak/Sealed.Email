@@ -6,6 +6,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
 	"github.com/emersion/go-smtp"
+	"github.com/wttw/spf"
 	"go.uber.org/zap"
 	"net/mail"
 	"strings"
@@ -13,6 +14,7 @@ import (
 
 type Session struct {
 	Headers      headers.HeaderContext
+	SpfResult    spf.Result
 	Id           string
 	InboundQueue *queue.Queue
 	Ctx          *smtp.Conn
@@ -26,6 +28,7 @@ type Session struct {
 func (s *Session) Mail(from string, opts *smtp.MailOptions) error {
 	zap.L().Debug("Mail from", zap.String("from", from), zap.Any("opts", opts))
 
+	from = strings.ToLower(from)
 	email, err := mail.ParseAddress(from)
 	if err != nil {
 		zap.L().Debug("Failed to parse email address", zap.Error(err))
@@ -38,12 +41,20 @@ func (s *Session) Mail(from string, opts *smtp.MailOptions) error {
 		return fmt.Errorf("the 'from' address is invalid")
 	}
 
+	spfResult := ValidateMailFromSpf(s)
+	zap.L().Debug("SPF result", zap.Any("result", spfResult))
+	if spfResult.Error != nil {
+		zap.L().Debug("Failed to validate SPF", zap.Error(spfResult.Error))
+		return fmt.Errorf("failed to validate SPF")
+	}
+
 	zap.L().Debug("Email address parsed",
+		zap.String("SPF", PrettyPrintSpfResult(spfResult)),
 		zap.String("email", email.Address),
-		zap.String("name", email.Name),
 		zap.String("domain", domain))
 
 	s.From = from
+	s.SpfResult = spfResult
 	return nil
 }
 
@@ -55,6 +66,7 @@ func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
 		return fmt.Errorf("the 'to' address is invalid")
 	}
 
+	to = strings.ToLower(to)
 	domain := to[strings.Index(to, "@")+1:]
 	if !helpers.ValidateEmailDomain(domain) {
 		zap.L().Debug("Invalid domain", zap.String("domain", domain))
