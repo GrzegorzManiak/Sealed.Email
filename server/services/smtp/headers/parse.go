@@ -6,10 +6,6 @@ import (
 )
 
 func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {
-	// -- Empty line (2 chars is the minimum for a valid header)
-	if rawHeader == "\r\n" || rawHeader == "\n" || len(rawHeader) <= 2 {
-		return "", "", fmt.Errorf("empty line")
-	}
 
 	// -- Folded header
 	if rawHeader[0] == ' ' || rawHeader[0] == '\t' {
@@ -19,6 +15,11 @@ func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {
 
 		lastHeader.Value += rawHeader
 		return lastHeader.Key, lastHeader.Value, nil
+	}
+
+	// -- Empty line (2 chars is the minimum for a valid header)
+	if rawHeader == "\r\n" || rawHeader == "\n" || len(rawHeader) <= 2 {
+		return "", "", fmt.Errorf("empty line")
 	}
 
 	// -- Normal header

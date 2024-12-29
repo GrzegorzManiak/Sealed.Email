@@ -5,176 +5,196 @@ import (
 	"testing"
 )
 
-func TestCreateHeaderContext(t *testing.T) {
-	t.Run("TestCreateHeaderContext", func(t *testing.T) {
+func TestParseHeader(t *testing.T) {
+	t.Run("TestParseHeader", func(t *testing.T) {
 		t.Parallel()
 
-		hc := CreateHeaderContext()
-		assert.Equal(t, hc.LastHeader, "", "LastHeader should be empty")
-		assert.Equal(t, len(hc.Data), 0, "Headers should be empty")
-		assert.False(t, hc.Finished, "Finished should be false")
-	})
-}
+		headers := []string{
+			"From: <test@test.com>",
+			"Subject: Test",
+			"Date: Mon, 01 Jan 2000 00:00:00 +0000",
+			"Message-ID: <123>",
+		}
 
-func TestHeaders_Add(t *testing.T) {
-	t.Run("TestHeaders_Add unknown", func(t *testing.T) {
-		t.Parallel()
+		var lastHeader Header = Header{}
+		var parsedHeaders []Header
 
-		h := make(Headers)
-		h.Add("Test", "Value")
-		assert.Equal(t, len(h), 1, "Headers should have 1 item")
-		assert.Equal(t, h["test"].Value, "Value", "Header value should be 'Value'")
-		assert.Empty(t, h["test"].WKH.Lower, "WellKnownHeader should be empty")
-		assert.Empty(t, h["test"].NEH.Lower, "NoiseExtensionHeader should be empty")
-		assert.Equal(t, h["test"].Status, HeaderUnknown, "Status should be HeaderUnknown")
-	})
+		for _, header := range headers {
+			h, v, err := ParseHeader(header, lastHeader)
+			if err != nil {
+				t.Errorf("Error parsing header: %v", err)
+			}
+			lastHeader = Header{Key: h, Value: v}
+			parsedHeaders = append(parsedHeaders, lastHeader)
+		}
 
-	t.Run("TestHeaders_Add wellknown", func(t *testing.T) {
-		t.Parallel()
-
-		h := make(Headers)
-		h.Add("From", "Value")
-		assert.Equal(t, len(h), 1, "Headers should have 1 item")
-		assert.Equal(t, h["from"].Value, "Value", "Header value should be 'Value'")
-		assert.NotEmpty(t, h["from"].WKH.Lower, "WellKnownHeader should not be empty")
-		assert.Empty(t, h["from"].NEH.Lower, "NoiseExtensionHeader should be empty")
-		assert.Equal(t, h["from"].Status, HeaderWellKnown, "Status should be HeaderWellKnown")
+		if len(parsedHeaders) != 4 {
+			t.Errorf("Expected 4 headers, got %d", len(parsedHeaders))
+		}
 	})
 
-	t.Run("TestHeaders_Add extension", func(t *testing.T) {
+	t.Run("TestParseHeader folded start", func(t *testing.T) {
 		t.Parallel()
 
-		h := make(Headers)
-		h.Add("x-noise-version", "Value")
-		assert.Equal(t, len(h), 1, "Headers should have 1 item")
-		assert.Equal(t, h["x-noise-version"].Value, "Value", "Header value should be 'Value'")
-		assert.Empty(t, h["x-noise-version"].WKH.Lower, "WellKnownHeader should be empty")
-		assert.NotEmpty(t, h["x-noise-version"].NEH.Lower, "NoiseExtensionHeader should not be empty")
-		assert.Equal(t, h["x-noise-version"].Status, HeaderNoiseExtension, "Status should be HeaderNoiseExtension")
+		headers := []string{
+			"From: a",
+			" b",
+			" c",
+		}
+
+		var lastHeader Header = Header{}
+		var parsedHeaders map[string]Header = make(map[string]Header)
+
+		for _, header := range headers {
+			h, v, err := ParseHeader(header, lastHeader)
+			if err != nil {
+				t.Errorf("Error parsing header: %v", err)
+			}
+			lastHeader = Header{Key: h, Value: v}
+			parsedHeaders[h] = lastHeader
+		}
+
+		if len(parsedHeaders) != 1 {
+			t.Errorf("Expected 1 header, got %d", len(parsedHeaders))
+		}
+
+		assert.Equal(t, parsedHeaders["From"].Value, "a b c", "Header value should be 'a b c'")
 	})
 
-	t.Run("TestHeaders_Add overwrite", func(t *testing.T) {
+	t.Run("TestParseHeader folded middle", func(t *testing.T) {
 		t.Parallel()
 
-		h := make(Headers)
-		h.Add("Test", "Value")
-		h.Add("Test", "Value2")
-		assert.Equal(t, len(h), 1, "Headers should have 1 item")
-		assert.Equal(t, h["test"].Value, "Value2", "Header value should be 'Value2'")
+		headers := []string{
+			"test-a: a",
+			"From: a",
+			" b",
+			" c",
+			"test-b: b",
+		}
+
+		var lastHeader Header = Header{Key: "From", Value: "a"}
+		var parsedHeaders map[string]Header = make(map[string]Header)
+
+		for _, header := range headers {
+			h, v, err := ParseHeader(header, lastHeader)
+			if err != nil {
+				t.Errorf("Error parsing header: %v", err)
+			}
+			lastHeader = Header{Key: h, Value: v}
+			parsedHeaders[h] = lastHeader
+		}
+
+		if len(parsedHeaders) != 3 {
+			t.Errorf("Expected 2 headers, got %d", len(parsedHeaders))
+		}
+
+		assert.Equal(t, parsedHeaders["From"].Value, "a b c", "Header value should be 'a b c'")
+		assert.Equal(t, parsedHeaders["test-a"].Value, "a", "Header value should be 'a'")
 	})
 
-	t.Run("TestHeaders_Add case insensitive", func(t *testing.T) {
+	t.Run("TestParseHeader folded end", func(t *testing.T) {
 		t.Parallel()
 
-		h := make(Headers)
-		h.Add("TEST", "Value")
-		assert.Equal(t, len(h), 1, "Headers should have 1 item")
-		assert.Equal(t, h["test"].Value, "Value", "Header value should be 'Value'")
-	})
-}
+		headers := []string{
+			"test-a: a",
+			"From: a",
+			" b",
+			" c",
+		}
 
-func TestHeaders_Get(t *testing.T) {
-	t.Run("TestHeaders_Get", func(t *testing.T) {
-		t.Parallel()
+		var lastHeader Header = Header{Key: "From", Value: "a"}
+		var parsedHeaders map[string]Header = make(map[string]Header)
 
-		h := make(Headers)
-		h.Add("Test", "Value")
-		v, ok := h.Get("Test")
-		assert.True(t, ok, "Header should exist")
-		assert.Equal(t, v.Value, "Value", "Header value should be 'Value'")
-	})
+		for _, header := range headers {
+			h, v, err := ParseHeader(header, lastHeader)
+			if err != nil {
+				t.Errorf("Error parsing header: %v", err)
+			}
+			lastHeader = Header{Key: h, Value: v}
+			parsedHeaders[h] = lastHeader
+		}
 
-	t.Run("TestHeaders_Get not found", func(t *testing.T) {
-		t.Parallel()
+		if len(parsedHeaders) != 2 {
+			t.Errorf("Expected 2 headers, got %d", len(parsedHeaders))
+		}
 
-		h := make(Headers)
-		_, ok := h.Get("Test")
-		assert.False(t, ok, "Header should not exist")
-	})
-}
-
-func TestHeaders_Has(t *testing.T) {
-	t.Run("TestHeaders_Has", func(t *testing.T) {
-		t.Parallel()
-
-		h := make(Headers)
-		h.Add("From", "Value")
-		h.Add("To", "Value")
-		h.Add("Subject", "Value")
-		h.Add("Message-ID", "Value")
-		h.Add("Date", "Value")
-		assert.True(t, h.Has(RequiredHeaders), "All required headers should exist")
+		assert.Equal(t, parsedHeaders["From"].Value, "a b c", "Header value should be 'a b c'")
+		assert.Equal(t, parsedHeaders["test-a"].Value, "a", "Header value should be 'a'")
 	})
 
-	t.Run("TestHeaders_Has missing", func(t *testing.T) {
+	t.Run("TestParseHeader only folded", func(t *testing.T) {
 		t.Parallel()
 
-		h := make(Headers)
-		h.Add("From", "Value")
-		h.Add("To", "Value")
-		h.Add("Subject", "Value")
-		h.Add("Date", "Value")
-		assert.False(t, h.Has(RequiredHeaders), "Missing headers")
+		headers := []string{
+			"From: a",
+			" b",
+			" c",
+			"From1: a",
+			" b",
+			" c",
+			"From2: a",
+			" b",
+			" c",
+			"From3: a",
+			" b",
+			" c",
+		}
+
+		var lastHeader Header = Header{}
+		var parsedHeaders map[string]Header = make(map[string]Header)
+
+		for _, header := range headers {
+			h, v, err := ParseHeader(header, lastHeader)
+			if err != nil {
+				t.Errorf("Error parsing header: %v", err)
+			}
+			lastHeader = Header{Key: h, Value: v}
+			parsedHeaders[h] = lastHeader
+		}
+
+		if len(parsedHeaders) != 4 {
+			t.Errorf("Expected 4 headers, got %d", len(parsedHeaders))
+		}
+
+		assert.Equal(t, parsedHeaders["From"].Value, "a b c", "Header value should be 'a b c'")
+		assert.Equal(t, parsedHeaders["From1"].Value, "a b c", "Header value should be 'a b c'")
+		assert.Equal(t, parsedHeaders["From2"].Value, "a b c", "Header value should be 'a b c'")
+		assert.Equal(t, parsedHeaders["From3"].Value, "a b c", "Header value should be 'a b c'")
 	})
 
-	t.Run("TestHeaders_Has case insensitive", func(t *testing.T) {
+	t.Run("TestParseHeader empty line", func(t *testing.T) {
 		t.Parallel()
 
-		h := make(Headers)
-		h.Add("from", "Value")
-		h.Add("to", "Value")
-		h.Add("subject", "Value")
-		h.Add("message-id", "Value")
-		h.Add("date", "Value")
-		assert.True(t, h.Has(RequiredHeaders), "All required headers should exist")
-	})
-}
+		header := "\r\n"
+		_, _, err := ParseHeader(header, Header{})
+		if err == nil {
+			t.Errorf("Expected error, got nil")
+		}
 
-func TestGetWellKnownHeader(t *testing.T) {
-	t.Run("TestGetWellKnownHeader", func(t *testing.T) {
-		t.Parallel()
-
-		assert.Equal(t, GetWellKnownHeader("From"), From, "Should return From")
-		assert.Equal(t, GetWellKnownHeader("To"), To, "Should return To")
-		assert.Equal(t, GetWellKnownHeader("Subject"), Subject, "Should return Subject")
-		assert.Equal(t, GetWellKnownHeader("Message-ID"), MessageID, "Should return Message-ID")
-		assert.Equal(t, GetWellKnownHeader("Date"), Date, "Should return Date")
-		assert.Equal(t, GetWellKnownHeader("test"), WellKnownHeader{}, "Should return empty")
+		assert.Equal(t, err.Error(), "empty line", "Error should be 'empty line'")
 	})
 
-	t.Run("TestGetWellKnownHeader case insensitive", func(t *testing.T) {
+	t.Run("TestParseHeader invalid header format", func(t *testing.T) {
 		t.Parallel()
 
-		assert.Equal(t, GetWellKnownHeader("FROM"), From, "Should return From")
-		assert.Equal(t, GetWellKnownHeader("TO"), To, "Should return To")
-		assert.Equal(t, GetWellKnownHeader("SUBJECT"), Subject, "Should return Subject")
-		assert.Equal(t, GetWellKnownHeader("MESSAGE-ID"), MessageID, "Should return Message-ID")
+		header := "From"
+		_, _, err := ParseHeader(header, Header{})
+		if err == nil {
+			t.Errorf("Expected error, got nil")
+		}
+
+		assert.Equal(t, err.Error(), "invalid header format", "Error should be 'invalid header format'")
 	})
 
-	t.Run("TestGetWellKnownHeader unknown", func(t *testing.T) {
+	t.Run("TestParseHeader invalid folded header format", func(t *testing.T) {
 		t.Parallel()
 
-		assert.Equal(t, GetWellKnownHeader("test"), WellKnownHeader{}, "Should return empty")
-	})
-}
+		header := " From"
+		_, _, err := ParseHeader(header, Header{})
+		if err == nil {
+			t.Errorf("Expected error, got nil")
+		}
 
-func TestGetNoiseExtensionHeader(t *testing.T) {
-	t.Run("TestGetNoiseExtensionHeader", func(t *testing.T) {
-		t.Parallel()
-
-		assert.Equal(t, GetNoiseExtensionHeader("X-Noise-Version"), NoiseVersion, "Should return X-Noise-Version")
-		assert.Equal(t, GetNoiseExtensionHeader("test"), NoiseExtensionHeader{}, "Should return empty")
-	})
-
-	t.Run("TestGetNoiseExtensionHeader case insensitive", func(t *testing.T) {
-		t.Parallel()
-
-		assert.Equal(t, GetNoiseExtensionHeader("X-NOISE-VERSION"), NoiseVersion, "Should return X-Noise-Version")
-	})
-
-	t.Run("TestGetNoiseExtensionHeader unknown", func(t *testing.T) {
-		t.Parallel()
-
-		assert.Equal(t, GetNoiseExtensionHeader("test"), NoiseExtensionHeader{}, "Should return empty")
+		assert.Equal(t, err.Error(), "invalid folded header format", "Error should be 'invalid folded header format'")
 	})
 }
