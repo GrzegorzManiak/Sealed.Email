@@ -90,5 +90,6 @@ func (s *Session) Reset() {
 
 func (s *Session) Logout() error {
 	zap.L().Info("Session closed", zap.String("id", s.Id))
+	zap.L().Debug("Session data", zap.Any("data", s), zap.String("content", string(s.RawData)))
 	return nil
 }
