@@ -3,6 +3,7 @@ package server
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
 	"go.uber.org/zap"
 	"io"
@@ -33,7 +34,10 @@ func (s *Session) Data(r io.Reader) error {
 		if !s.Headers.Finished {
 			buffer.Write(line)
 			strData := buffer.String()
-			ProcessHeaders(strData, s)
+			err := ProcessHeaders(strData, s)
+			if err != nil {
+				return err
+			}
 			buffer.Reset()
 			continue
 		}
@@ -45,21 +49,27 @@ func (s *Session) Data(r io.Reader) error {
 	return nil
 }
 
-func ProcessHeaders(data string, session *Session) {
+func ProcessHeaders(data string, session *Session) error {
 
 	if len(strings.TrimSpace(data)) == 0 {
 		session.Headers.Finished = true
-		return
+		if !session.Headers.Data.Has(headers.RequiredHeaders) {
+			zap.L().Debug("Missing required headers")
+			return fmt.Errorf("missing required headers")
+		}
+		return nil
 	}
 
 	lastHeader, _ := session.Headers.Data.Get(session.Headers.LastHeader)
 	header, value, err := headers.ParseHeader(data, lastHeader)
 	if err != nil {
 		zap.L().Debug("Failed to parse header", zap.Error(err))
-		return
+		return nil
 	}
 
 	zap.L().Debug("Header parsed", zap.String("header", header), zap.String("value", value))
 	session.Headers.Data.Add(header, value)
 	session.Headers.LastHeader = header
+
+	return nil
 }

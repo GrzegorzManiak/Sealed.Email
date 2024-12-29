@@ -45,6 +45,14 @@ var (
 	NoiseSignature     NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-signature", "X-Noise-Signature"}
 )
 
+var RequiredHeaders = []WellKnownHeader{
+	From,
+	To,
+	Subject,
+	MessageID,
+	Date,
+}
+
 func (h Headers) Add(key, value string) {
 	h[key] = Header{
 		Key:   key,
@@ -57,6 +65,15 @@ func (h Headers) Add(key, value string) {
 func (h Headers) Get(key string) (Header, bool) {
 	v, ok := h[key]
 	return v, ok
+}
+
+func (h Headers) Has(key []WellKnownHeader) bool {
+	for _, k := range key {
+		if _, ok := h[k.Cased]; !ok {
+			return false
+		}
+	}
+	return true
 }
 
 func CreateHeaderContext() HeaderContext {

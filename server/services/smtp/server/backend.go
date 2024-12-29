@@ -22,5 +22,6 @@ func (bkd *Backend) NewSession(c *smtp.Conn) (smtp.Session, error) {
 		Id:           id,
 		InboundQueue: bkd.InboundQueue,
 		Ctx:          c,
+		To:           make(map[string]bool),
 	}, nil
 }

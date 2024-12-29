@@ -122,9 +122,9 @@ smtp:
     key: './dev/.certs/smtp/tls/smtp.key'
 
   ports:
-    tls: 49100
-    plain: 49101 # Cant use 25 as blocked by ISP
-    startTls: 49102
+    tls: 49100 # 465
+    plain: 49101 # 25
+    startTls: 49102 # 587
 
   address: 'localhost:%d'
   domain: 'mx.noise.email'
