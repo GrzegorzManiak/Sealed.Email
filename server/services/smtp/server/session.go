@@ -1,12 +1,12 @@
 package server
 
 import (
+	"blitiri.com.ar/go/spf"
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
 	"github.com/emersion/go-smtp"
-	"github.com/wttw/spf"
 	"go.uber.org/zap"
 	"net/mail"
 	"strings"
@@ -41,15 +41,14 @@ func (s *Session) Mail(from string, opts *smtp.MailOptions) error {
 		return fmt.Errorf("the 'from' address is invalid")
 	}
 
-	spfResult := ValidateMailFromSpf(s)
+	spfResult, _ := ValidateMailFromSpf(GetRemoteConnectionIp(s), from, s.Ctx.Hostname())
 	zap.L().Debug("SPF result", zap.Any("result", spfResult))
-	if spfResult.Error != nil {
-		zap.L().Debug("Failed to validate SPF", zap.Error(spfResult.Error))
-		return fmt.Errorf("failed to validate SPF")
+	if SpfShouldBlock(spfResult) {
+		zap.L().Debug("SPF validation failed", zap.String("from", from))
+		return fmt.Errorf("SPF validation failed")
 	}
 
 	zap.L().Debug("Email address parsed",
-		zap.String("SPF", PrettyPrintSpfResult(spfResult)),
 		zap.String("email", email.Address),
 		zap.String("domain", domain))
 
