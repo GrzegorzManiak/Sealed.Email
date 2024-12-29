@@ -5,6 +5,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
 	"github.com/emersion/go-smtp"
+	"go.uber.org/zap"
 )
 
 type Backend struct {
@@ -13,9 +14,12 @@ type Backend struct {
 }
 
 func (bkd *Backend) NewSession(c *smtp.Conn) (smtp.Session, error) {
+	id := helpers.GeneratePublicId()
+	zap.L().Debug("New session", zap.String("id", id))
+
 	return &Session{
 		Headers:      headers.CreateHeaderContext(),
-		Id:           helpers.GeneratePublicId(),
+		Id:           id,
 		InboundQueue: bkd.InboundQueue,
 		Ctx:          c,
 	}, nil
