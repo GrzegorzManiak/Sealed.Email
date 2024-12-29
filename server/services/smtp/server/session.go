@@ -7,7 +7,6 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
 	"github.com/emersion/go-smtp"
 	"go.uber.org/zap"
-	"io"
 	"net/mail"
 	"strings"
 )
@@ -68,11 +67,6 @@ func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
 
 	s.To[to] = true
 	return nil
-}
-
-func (s *Session) Data(r io.Reader) error {
-	zap.L().Debug("Data received")
-	return ProcessData(r, s)
 }
 
 func (s *Session) Reset() {

@@ -9,11 +9,11 @@ import (
 	"strings"
 )
 
-func ProcessData(reader io.Reader, session *Session) error {
+func (s *Session) Data(r io.Reader) error {
 	zap.L().Debug("Data received")
 
 	var buffer bytes.Buffer
-	bufReader := bufio.NewReader(reader)
+	bufReader := bufio.NewReader(r)
 
 	for {
 		line, err := bufReader.ReadBytes('\n')
@@ -21,7 +21,7 @@ func ProcessData(reader io.Reader, session *Session) error {
 			if err == io.EOF {
 				if buffer.Len() > 0 {
 					eofBytes := buffer.Bytes()
-					session.RawData = append(session.RawData, eofBytes...)
+					s.RawData = append(s.RawData, eofBytes...)
 				}
 				break
 			}
@@ -30,16 +30,16 @@ func ProcessData(reader io.Reader, session *Session) error {
 		}
 
 		// -- Handle headers
-		if !session.Headers.Finished {
+		if !s.Headers.Finished {
 			buffer.Write(line)
 			strData := buffer.String()
-			ProcessHeaders(strData, session)
+			ProcessHeaders(strData, s)
 			buffer.Reset()
 			continue
 		}
 
 		// -- Handle data
-		session.RawData = append(session.RawData, line...)
+		s.RawData = append(s.RawData, line...)
 	}
 
 	return nil
