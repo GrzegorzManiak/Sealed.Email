@@ -26,7 +26,6 @@ func (s *Session) Data(r io.Reader) error {
 				}
 				break
 			}
-			zap.L().Error("Error reading data", zap.Error(err))
 			return err
 		}
 
@@ -54,7 +53,6 @@ func ProcessHeaders(data string, session *Session) error {
 	if len(strings.TrimSpace(data)) == 0 {
 		session.Headers.Finished = true
 		if !session.Headers.Data.Has(headers.RequiredHeaders) {
-			zap.L().Debug("Missing required headers")
 			return fmt.Errorf("missing required headers")
 		}
 		return nil
@@ -63,11 +61,12 @@ func ProcessHeaders(data string, session *Session) error {
 	lastHeader, _ := session.Headers.Data.Get(session.Headers.LastHeader)
 	header, value, err := headers.ParseHeader(data, lastHeader)
 	if err != nil {
-		zap.L().Debug("Failed to parse header", zap.Error(err))
 		return nil
 	}
 
-	zap.L().Debug("Header parsed", zap.String("header", header), zap.String("value", value))
+	header = strings.Trim(header, " \n\t")
+	value = strings.Trim(value, " \n\t")
+
 	session.Headers.Data.Add(header, value)
 	session.Headers.LastHeader = header
 
