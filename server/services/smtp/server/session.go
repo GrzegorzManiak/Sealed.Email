@@ -82,6 +82,7 @@ func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
 }
 
 func (s *Session) Reset() {
+	zap.L().Debug("Resetting session", zap.String("id", s.Id))
 	s.Headers = headers.CreateHeaderContext()
 	s.RawData = nil
 	s.From = ""

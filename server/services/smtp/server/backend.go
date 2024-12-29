@@ -15,7 +15,11 @@ type Backend struct {
 
 func (bkd *Backend) NewSession(c *smtp.Conn) (smtp.Session, error) {
 	id := helpers.GeneratePublicId()
-	zap.L().Debug("New session", zap.String("id", id))
+	zap.L().Debug("New session",
+		zap.String("id", id),
+		zap.String("server", string(bkd.Mode)),
+		zap.String("remote", c.Hostname()),
+		zap.String("local", c.Conn().LocalAddr().String()))
 
 	return &Session{
 		Headers:      headers.CreateHeaderContext(),
