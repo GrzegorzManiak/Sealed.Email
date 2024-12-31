@@ -14,12 +14,16 @@ import (
 func (s *Session) Data(r io.Reader) error {
 	zap.L().Debug("Data received")
 
-	var buffer bytes.Buffer
-	teeReader := io.TeeReader(r, &buffer)
+	var buffer, dkimBuffer bytes.Buffer
+	multiWriter := io.MultiWriter(&buffer, &dkimBuffer)
+	_, err := io.Copy(multiWriter, r)
+	if err != nil {
+		zap.L().Debug("Failed to copy data", zap.Error(err))
+		return err
+	}
 
-	// -- We need two readers, one for us, and one for dkim
-	bufReader := bufio.NewReader(teeReader)
-	dkimReader := bufio.NewReader(&buffer)
+	bufReader := bufio.NewReader(&buffer)
+	dkimReader := bufio.NewReader(&dkimBuffer)
 
 	services.VerifyDkimSignature(dkimReader)
 

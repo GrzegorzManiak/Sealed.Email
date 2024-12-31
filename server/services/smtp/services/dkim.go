@@ -23,8 +23,7 @@ type DkimHeader struct {
 
 func VerifyDkimSignature(reader *bufio.Reader) (DkimResult, error) {
 	results, err := dkim.Verify(reader)
-	zap.L().Debug("DKIM error",
-		zap.Error(err))
+	zap.L().Debug("DKIM error", zap.Error(err))
 
 	if err != nil {
 		return DkimNone, err

@@ -23,13 +23,7 @@ func ValidateMailFromSpf(ipStr, from, host string) (spf.Result, error) {
 		zap.L().Debug("Failed to parse IP", zap.String("ip", ipStr))
 	}
 
-	result, err := spf.CheckHostWithSender(ip, host, from)
-	if err != nil {
-		zap.L().Debug("Failed to validate SPF", zap.Error(err))
-		return result, err
-	}
-
-	return result, nil
+	return spf.CheckHostWithSender(ip, host, from)
 }
 
 func SpfShouldBlock(result spf.Result) bool {
