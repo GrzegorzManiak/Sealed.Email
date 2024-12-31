@@ -6,6 +6,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
+	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/services"
 	"github.com/emersion/go-smtp"
 	"go.uber.org/zap"
 	"net/mail"
@@ -23,6 +24,7 @@ type Session struct {
 	To   map[string]bool // pseudo set
 
 	RawData []byte
+	Dkim    *services.DkimHeader
 }
 
 func (s *Session) Mail(from string, opts *smtp.MailOptions) error {

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
+	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/services"
 	"go.uber.org/zap"
 	"io"
 	"strings"
@@ -14,7 +15,13 @@ func (s *Session) Data(r io.Reader) error {
 	zap.L().Debug("Data received")
 
 	var buffer bytes.Buffer
-	bufReader := bufio.NewReader(r)
+	teeReader := io.TeeReader(r, &buffer)
+
+	// -- We need two readers, one for us, and one for dkim
+	bufReader := bufio.NewReader(teeReader)
+	dkimReader := bufio.NewReader(&buffer)
+
+	services.VerifyDkimSignature(dkimReader)
 
 	for {
 		line, err := bufReader.ReadBytes('\n')
