@@ -19,6 +19,11 @@ type Header struct {
 	Status HeaderStatus
 }
 
+type SimpleHeader struct {
+	CasedKey string
+	Value    string
+}
+
 type Headers map[string]Header
 
 type HeaderContext struct {
@@ -95,6 +100,17 @@ func (h Headers) Has(key []WellKnownHeader) bool {
 		}
 	}
 	return true
+}
+
+func (h Headers) GetSimpleHeaders() []SimpleHeader {
+	headers := make([]SimpleHeader, 0)
+	for _, header := range h {
+		headers = append(headers, SimpleHeader{
+			CasedKey: strings.ToLower(header.Key),
+			Value:    header.Value,
+		})
+	}
+	return headers
 }
 
 func CreateHeaderContext() HeaderContext {

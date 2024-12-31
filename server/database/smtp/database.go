@@ -28,5 +28,5 @@ func InitiateConnection() *gorm.DB {
 }
 
 func AutoMigrateTables(databaseConnection *gorm.DB) {
-	databaseConnection.AutoMigrate(&models.VerificationQueue{})
+	databaseConnection.AutoMigrate(&models.InboundEmail{})
 }
