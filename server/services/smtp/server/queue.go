@@ -34,6 +34,7 @@ func (s *Session) AwaitQueue() error {
 
 	headers := s.Headers.Data.GetSimpleHeaders()
 	marshalledHeaders := headers.Marshal()
+	headerBytes := make([]byte, len(marshalledHeaders))
 
 	inboundEmail := models.InboundEmail{
 		RefID:      entry.RefID,
@@ -44,14 +45,12 @@ func (s *Session) AwaitQueue() error {
 		From: s.From,
 		To:   toArray,
 
-		Headers: marshalledHeaders,
+		Headers: headerBytes,
 		RawData: s.RawData,
 
 		DkimResult: s.DkimResult,
 		SpfResult:  s.SpfResult,
-
-		Encrypted: false,
-		Version:   1,
+		Version:    1,
 	}
 
 	zap.L().Debug("Inbound email created", zap.Any("email", inboundEmail))

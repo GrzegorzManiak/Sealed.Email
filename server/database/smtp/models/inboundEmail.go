@@ -16,12 +16,10 @@ type InboundEmail struct {
 	From string
 	To   []string `gorm:"type:text[]" gorm:"default:[]"`
 
-	Headers []string `gorm:"type:text[]" gorm:"default:[]"`
-	RawData []uint8  `gorm:"type:bytea"`
+	Headers []uint8 `gorm:"type:bytea"`
+	RawData []uint8 `gorm:"type:bytea"`
 
 	DkimResult services.DkimResult
 	SpfResult  spf.Result
-
-	Encrypted bool
-	Version   uint
+	Version    uint
 }
