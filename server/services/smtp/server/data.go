@@ -26,7 +26,8 @@ func (s *Session) Data(r io.Reader) error {
 	bufReader := bufio.NewReader(&buffer)
 	dkimReader := bufio.NewReader(&dkimBuffer)
 
-	services.VerifyDkimSignature(dkimReader)
+	verdict, _ := services.VerifyDkimSignature(dkimReader)
+	s.DkimResult = verdict
 
 	for {
 		line, err := bufReader.ReadBytes('\n')
