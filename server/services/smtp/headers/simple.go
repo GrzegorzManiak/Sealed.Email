@@ -7,10 +7,10 @@ type SimpleHeader struct {
 
 type SimpleHeaders []SimpleHeader
 
-func (h SimpleHeaders) Marshal() ([]string, error) {
-	var headers []string
-	for _, header := range h {
-		headers = append(headers, header.CasedKey+": "+header.Value)
+func (h SimpleHeaders) Marshal() []string {
+	headers := make([]string, len(h))
+	for i, header := range h {
+		headers[i] = header.CasedKey + ": " + header.Value
 	}
-	return headers, nil
+	return headers
 }

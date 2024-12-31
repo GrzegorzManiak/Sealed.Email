@@ -32,12 +32,8 @@ func (s *Session) AwaitQueue() error {
 		toArray = append(toArray, k)
 	}
 
-	//headers := s.Headers.Data.GetSimpleHeaders()
-	//marshalledHeaders, err := headers.Marshal()
-	//if err != nil {
-	//	zap.L().Error("failed to marshal headers", zap.Error(err))
-	//	return err
-	//}
+	headers := s.Headers.Data.GetSimpleHeaders()
+	marshalledHeaders := headers.Marshal()
 
 	inboundEmail := models.InboundEmail{
 		RefID:      entry.RefID,
@@ -48,7 +44,7 @@ func (s *Session) AwaitQueue() error {
 		From: s.From,
 		To:   toArray,
 
-		//Headers: marshalledHeaders,
+		Headers: marshalledHeaders,
 		RawData: s.RawData,
 
 		DkimResult: s.DkimResult,
