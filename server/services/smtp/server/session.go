@@ -23,8 +23,8 @@ type Session struct {
 	From string
 	To   map[string]bool // pseudo set
 
-	RawData []byte
-	Dkim    *services.DkimHeader
+	RawData    []byte
+	DkimResult services.DkimResult
 }
 
 func (s *Session) Mail(from string, opts *smtp.MailOptions) error {

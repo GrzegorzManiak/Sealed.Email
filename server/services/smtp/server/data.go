@@ -14,6 +14,7 @@ import (
 func (s *Session) Data(r io.Reader) error {
 	zap.L().Debug("Data received")
 
+	// -- Note: This is hacky, its also using 2x the memory, but it works for now
 	var buffer, dkimBuffer bytes.Buffer
 	multiWriter := io.MultiWriter(&buffer, &dkimBuffer)
 	_, err := io.Copy(multiWriter, r)
