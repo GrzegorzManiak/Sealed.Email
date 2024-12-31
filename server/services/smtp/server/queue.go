@@ -32,10 +32,6 @@ func (s *Session) AwaitQueue() error {
 		toArray = append(toArray, k)
 	}
 
-	headers := s.Headers.Data.GetSimpleHeaders()
-	marshalledHeaders := headers.Marshal()
-	headerBytes := make([]byte, len(marshalledHeaders))
-
 	inboundEmail := models.InboundEmail{
 		RefID:      entry.RefID,
 		EmailId:    s.Id,
@@ -45,7 +41,7 @@ func (s *Session) AwaitQueue() error {
 		From: s.From,
 		To:   toArray,
 
-		Headers: headerBytes,
+		Headers: s.Headers.Data.Marshal(),
 		RawData: s.RawData,
 
 		DkimResult: s.DkimResult,

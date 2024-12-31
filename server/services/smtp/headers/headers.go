@@ -97,15 +97,15 @@ func (h Headers) Has(key []WellKnownHeader) bool {
 	return true
 }
 
-func (h Headers) GetSimpleHeaders() SimpleHeaders {
-	headers := make([]SimpleHeader, 0)
-	for _, header := range h {
-		headers = append(headers, SimpleHeader{
-			CasedKey: strings.ToLower(header.Key),
-			Value:    header.Value,
-		})
+func (h Headers) Marshal() []byte {
+	var bytes []byte
+	for k, v := range h {
+		bytes = append(bytes, []byte(k)...)
+		bytes = append(bytes, []byte(": ")...)
+		bytes = append(bytes, []byte(v.Value)...)
+		bytes = append(bytes, []byte("\r\n")...)
 	}
-	return headers
+	return bytes
 }
 
 func CreateHeaderContext() HeaderContext {
