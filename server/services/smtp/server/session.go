@@ -83,6 +83,15 @@ func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
 }
 
 func (s *Session) Reset() {
+	zap.L().Debug("Session data",
+		zap.String("id", s.Id),
+		zap.Any("from", s.From),
+		zap.Any("to", s.To),
+		zap.Any("headers parsed", s.Headers.Finished),
+		zap.Any("headers", s.Headers.Data),
+		zap.Any("dkim", s.DkimResult),
+		zap.Any("spf", s.SpfResult))
+
 	zap.L().Debug("Resetting session", zap.String("id", s.Id))
 	s.Headers = headers.CreateHeaderContext()
 	//s.RawData = nil
@@ -92,6 +101,5 @@ func (s *Session) Reset() {
 
 func (s *Session) Logout() error {
 	zap.L().Info("Session closed", zap.String("id", s.Id))
-	zap.L().Debug("Session data", zap.Any("data", s), zap.String("content", string(s.RawData)))
 	return nil
 }
