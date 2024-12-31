@@ -2,22 +2,22 @@ package models
 
 import (
 	"blitiri.com.ar/go/spf"
-	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/services"
+	"gorm.io/gorm"
 )
 
 type InboundEmail struct {
-	RefID string `gorm:"primaryKey"`
-	ID    uint   `gorm:"primaryKey"`
-
+	gorm.Model
+	RefID      string `gorm:"uniqueIndex"`
+	EmailId    string `gorm:"uniqueIndex"`
 	ServerId   string
 	ServerMode string
 
 	From string
-	To   string
+	To   []string `gorm:"type:text[]" gorm:"default:[]"`
 
-	Headers []headers.SimpleHeader
-	RawData []byte
+	Headers []string `gorm:"type:test[]" gorm:"default:[]"`
+	RawData []byte   `gorm:"type:blob"`
 
 	DkimResult services.DkimResult
 	SpfResult  spf.Result
