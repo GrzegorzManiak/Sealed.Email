@@ -17,7 +17,7 @@ type InboundEmail struct {
 	To   []string `gorm:"type:text[]" gorm:"default:[]"`
 
 	Headers []string `gorm:"type:test[]" gorm:"default:[]"`
-	RawData []byte   `gorm:"type:blob"`
+	RawData []uint8  `gorm:"type:bytea"`
 
 	DkimResult services.DkimResult
 	SpfResult  spf.Result
