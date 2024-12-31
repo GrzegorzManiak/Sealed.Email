@@ -3,28 +3,35 @@ package server
 import (
 	"blitiri.com.ar/go/spf"
 	"fmt"
+	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/services"
 	"github.com/emersion/go-smtp"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"net/mail"
 	"strings"
 )
 
 type Session struct {
-	Headers      headers.HeaderContext
-	SpfResult    spf.Result
-	Id           string
-	InboundQueue *queue.Queue
-	Ctx          *smtp.Conn
+	Headers            headers.HeaderContext
+	SpfResult          spf.Result
+	Id                 string
+	InboundQueue       *queue.Queue
+	DatabaseConnection *gorm.DB
+	Ctx                *smtp.Conn
+	Mode               Mode
 
 	From string
 	To   map[string]bool // pseudo set
 
 	RawData    []byte
 	DkimResult services.DkimResult
+
+	QueueEntry *queue.Entry
+	Processed  *models.InboundEmail
 }
 
 func (s *Session) Mail(from string, opts *smtp.MailOptions) error {
@@ -83,15 +90,6 @@ func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
 }
 
 func (s *Session) Reset() {
-	zap.L().Debug("Session data",
-		zap.String("id", s.Id),
-		zap.Any("from", s.From),
-		zap.Any("to", s.To),
-		zap.Any("headers parsed", s.Headers.Finished),
-		zap.Any("headers", s.Headers.Data),
-		zap.Any("dkim", s.DkimResult),
-		zap.Any("spf", s.SpfResult))
-
 	zap.L().Debug("Resetting session", zap.String("id", s.Id))
 	s.Headers = headers.CreateHeaderContext()
 	s.RawData = nil
@@ -103,5 +101,10 @@ func (s *Session) Reset() {
 
 func (s *Session) Logout() error {
 	zap.L().Info("Session closed", zap.String("id", s.Id))
+	if s.Processed != nil && s.QueueEntry != nil {
+		return s.Process()
+	}
+	s.QueueEntry = nil
+	s.Processed = nil
 	return nil
 }

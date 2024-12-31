@@ -58,7 +58,7 @@ func (s *Session) Data(r io.Reader) error {
 		s.RawData = append(s.RawData, line...)
 	}
 
-	return nil
+	return s.AwaitQueue()
 }
 
 func ProcessHeaders(data string, session *Session) error {
