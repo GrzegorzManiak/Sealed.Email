@@ -7,6 +7,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/emersion/go-smtp"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -35,8 +36,8 @@ func SetServerVariables(server *smtp.Server) {
 	server.TLSConfig = certs
 }
 
-func CreateTlsServer(inboundQueue *queue.Queue) (*Backend, *smtp.Server) {
-	backend := &Backend{Mode: ModeTLS, InboundQueue: inboundQueue}
+func CreateTlsServer(inboundQueue *queue.Queue, databaseConnection *gorm.DB) (*Backend, *smtp.Server) {
+	backend := &Backend{Mode: ModeTLS, InboundQueue: inboundQueue, DatabaseConnection: databaseConnection}
 	server := smtp.NewServer(backend)
 	server.Addr = fmt.Sprintf(config.Smtp.Address, config.Smtp.Ports.Tls)
 	SetServerVariables(server)
@@ -45,8 +46,8 @@ func CreateTlsServer(inboundQueue *queue.Queue) (*Backend, *smtp.Server) {
 	return backend, server
 }
 
-func CreatePlainServer(inboundQueue *queue.Queue) (*Backend, *smtp.Server) {
-	backend := &Backend{Mode: ModePlain, InboundQueue: inboundQueue}
+func CreatePlainServer(inboundQueue *queue.Queue, databaseConnection *gorm.DB) (*Backend, *smtp.Server) {
+	backend := &Backend{Mode: ModePlain, InboundQueue: inboundQueue, DatabaseConnection: databaseConnection}
 	server := smtp.NewServer(backend)
 	server.Addr = fmt.Sprintf(config.Smtp.Address, config.Smtp.Ports.Plain)
 	SetServerVariables(server)
@@ -54,8 +55,8 @@ func CreatePlainServer(inboundQueue *queue.Queue) (*Backend, *smtp.Server) {
 	return backend, server
 }
 
-func CreateStartTlsServer(inboundQueue *queue.Queue) (*Backend, *smtp.Server) {
-	backend := &Backend{Mode: ModeStartTLS, InboundQueue: inboundQueue}
+func CreateStartTlsServer(inboundQueue *queue.Queue, databaseConnection *gorm.DB) (*Backend, *smtp.Server) {
+	backend := &Backend{Mode: ModeStartTLS, InboundQueue: inboundQueue, DatabaseConnection: databaseConnection}
 	server := smtp.NewServer(backend)
 	server.Addr = fmt.Sprintf(config.Smtp.Address, config.Smtp.Ports.StartTls)
 	SetServerVariables(server)
@@ -63,9 +64,9 @@ func CreateStartTlsServer(inboundQueue *queue.Queue) (*Backend, *smtp.Server) {
 	return backend, server
 }
 
-func StartServers(inboundQueue *queue.Queue) {
+func StartServers(inboundQueue *queue.Queue, databaseConnection *gorm.DB) {
 	if config.Smtp.Ports.Tls > 0 {
-		_, tlsServer := CreateTlsServer(inboundQueue)
+		_, tlsServer := CreateTlsServer(inboundQueue, databaseConnection)
 		go func() {
 			if err := tlsServer.ListenAndServeTLS(); err != nil {
 				zap.L().Fatal("TLS server failed", zap.Error(err))
@@ -74,7 +75,7 @@ func StartServers(inboundQueue *queue.Queue) {
 	}
 
 	if config.Smtp.Ports.Plain > 0 {
-		_, plainServer := CreatePlainServer(inboundQueue)
+		_, plainServer := CreatePlainServer(inboundQueue, databaseConnection)
 		go func() {
 			if err := plainServer.ListenAndServe(); err != nil {
 				zap.L().Fatal("Plain server failed", zap.Error(err))
@@ -83,7 +84,7 @@ func StartServers(inboundQueue *queue.Queue) {
 	}
 
 	if config.Smtp.Ports.StartTls > 0 {
-		_, startTlsServer := CreateStartTlsServer(inboundQueue)
+		_, startTlsServer := CreateStartTlsServer(inboundQueue, databaseConnection)
 		go func() {
 			if err := startTlsServer.ListenAndServe(); err != nil {
 				zap.L().Fatal("StartTLS server failed", zap.Error(err))
