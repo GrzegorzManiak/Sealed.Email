@@ -1,6 +1,7 @@
 server:
   port: 2500
   host: 'localhost'
+  id: 'dev-noise-email(Smtp)'
 
 session:
   privateKey: 'VEEHKF8dUjUmQqasfirtGR6coar5yfGgfk6C8sQIk1U='
