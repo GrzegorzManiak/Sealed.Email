@@ -51,8 +51,11 @@ func Start() {
 	}
 
 	etcdContext := context.Background()
-	ServiceProvider.InstantiateEtcdClient(config.Etcd.API)
-	ServiceProvider.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false)
+	_, err := ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
+	if err != nil {
+		zap.L().Panic("failed to create etcd service", zap.Error(err))
+	}
+
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
 
 	zap.L().Info("Domain service started", zap.String("service_id", ServiceID))

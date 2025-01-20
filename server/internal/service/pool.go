@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
@@ -57,64 +56,64 @@ func RunCallbacks() {
 }
 
 func BuildConnectionPools(ctx context.Context, client *clientv3.Client, service structs.ServiceConfig) error {
-	if err := InstantiateEtcdClient(service); err != nil {
-		return fmt.Errorf("failed to instantiate etcd client: %w", err)
-	}
-
-	keyValues, err := GetAllKeys(ctx, client)
-	if err != nil {
-		return fmt.Errorf("failed to get keys: %w", err)
-	}
-
-	connectionPoolLock.Lock()
-	apiConnectionPool, smtpConnectionPool, domainConnectionPool, notificationConnectionPool =
-		make(map[string]Announcement), make(map[string]Announcement), make(map[string]Announcement), make(map[string]Announcement)
-
-	for _, keyValue := range keyValues {
-		service, err := UnmarshalServiceAnnouncement(keyValue.Value)
-		if err != nil {
-			zap.L().Error("failed to unmarshal service announcement", zap.Error(err))
-			continue
-		}
-
-		switch service.Service.Prefix {
-		case config.Etcd.Domain.Prefix:
-			domainConnectionPool[service.Id] = service
-
-		case config.Etcd.Notification.Prefix:
-			notificationConnectionPool[service.Id] = service
-
-		case config.Etcd.SMTP.Prefix:
-			smtpConnectionPool[service.Id] = service
-
-		case config.Etcd.API.Prefix:
-			apiConnectionPool[service.Id] = service
-		}
-	}
-
-	connectionPoolLock.Unlock()
-	RunCallbacks()
+	//if err := InstantiateEtcdClient(service); err != nil {
+	//	return fmt.Errorf("failed to instantiate etcd client: %w", err)
+	//}
+	//
+	//keyValues, err := GetAllKeys(ctx, client)
+	//if err != nil {
+	//	return fmt.Errorf("failed to get keys: %w", err)
+	//}
+	//
+	//connectionPoolLock.Lock()
+	//apiConnectionPool, smtpConnectionPool, domainConnectionPool, notificationConnectionPool =
+	//	make(map[string]Announcement), make(map[string]Announcement), make(map[string]Announcement), make(map[string]Announcement)
+	//
+	//for _, keyValue := range keyValues {
+	//	service, err := UnmarshalServiceAnnouncement(keyValue.Value)
+	//	if err != nil {
+	//		zap.L().Error("failed to unmarshal service announcement", zap.Error(err))
+	//		continue
+	//	}
+	//
+	//	switch service.Service.Prefix {
+	//	case config.Etcd.Domain.Prefix:
+	//		domainConnectionPool[service.Id] = service
+	//
+	//	case config.Etcd.Notification.Prefix:
+	//		notificationConnectionPool[service.Id] = service
+	//
+	//	case config.Etcd.SMTP.Prefix:
+	//		smtpConnectionPool[service.Id] = service
+	//
+	//	case config.Etcd.API.Prefix:
+	//		apiConnectionPool[service.Id] = service
+	//	}
+	//}
+	//
+	//connectionPoolLock.Unlock()
+	//RunCallbacks()
 	return nil
 }
 
 func KeepConnectionPoolsAlive(ctx context.Context, service structs.ServiceConfig) {
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				zap.L().Warn("Context done, stopping connection pool refresh", zap.Error(ctx.Err()), zap.String("service", service.Prefix))
-				return
-
-			default:
-				err := BuildConnectionPools(ctx, GetEtcdClient(), service)
-				if err != nil {
-					zap.L().Error("failed to build connection pools", zap.Error(err))
-				}
-				time.Sleep(time.Duration(config.Etcd.ConnectionPool.RefreshInterval) * time.Second)
-			}
-		}
-	}()
+	//go func() {
+	//	for {
+	//		select {
+	//		case <-ctx.Done():
+	//			zap.L().Warn("Context done, stopping connection pool refresh", zap.Error(ctx.Err()), zap.String("service", service.Prefix))
+	//			return
+	//
+	//		default:
+	//			err := BuildConnectionPools(ctx, GetEtcdClient(), service)
+	//			if err != nil {
+	//				zap.L().Error("failed to build connection pools", zap.Error(err))
+	//			}
+	//			time.Sleep(time.Duration(config.Etcd.ConnectionPool.RefreshInterval) * time.Second)
+	//		}
+	//	}
+	//}()
 }
 
 type GrpcConnection struct {

@@ -4,7 +4,10 @@ type ServiceConfig struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 	Prefix   string `yaml:"prefix"`
-	TTL      int64  `yaml:"ttl"`
+
+	TTL       int64 `yaml:"ttl"`
+	Heartbeat int64 `yaml:"heartbeat"`
+	TimeOut   int64 `yaml:"timeout"`
 }
 
 type ConnectionPoolConfig struct {

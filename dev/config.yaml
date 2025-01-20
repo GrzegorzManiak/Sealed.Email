@@ -61,24 +61,32 @@ etcd:
         password: 'root'
         prefix: '/dev/services/domain'
         ttl: 30
+        heartbeat: 25
+        timeout: 5
 
     notification:
         username: 'root'
         password: 'root'
         prefix: '/dev/services/notification'
         ttl: 30
+        heartbeat: 25
+        timeout: 5
 
     smtp:
         username: 'root'
         password: 'root'
         prefix: '/dev/services/smtp'
         ttl: 30
+        heartbeat: 25
+        timeout: 5
 
     api:
         username: 'root'
         password: 'root'
         prefix: '/dev/services/api'
         ttl: 30
+        heartbeat: 25
+        timeout: 5
 
 certificates:
     # -- For development, we turn off authentication

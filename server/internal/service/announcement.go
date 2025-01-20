@@ -1,99 +1,126 @@
 package service
 
 import (
-	"context"
 	"fmt"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 	"time"
 )
 
-func RegisterServiceWithLease(ctx context.Context, client *clientv3.Client, key string, value string, ttl int64) (clientv3.LeaseID, error) {
-	lease, err := client.Grant(ctx, ttl)
+func (e *EtcdService) registerLease() (clientv3.LeaseID, error) {
+	client, err := e.GetClient()
 	if err != nil {
-		return 0, fmt.Errorf("failed to create lease for key %s: %w", key, err)
+		return 0, fmt.Errorf("failed to get etcd client: %w", err)
 	}
-
-	_, err = client.Put(ctx, key, value, clientv3.WithLease(lease.ID))
+	lease, err := client.Grant(e.ctx, e.ans.Service.TTL)
 	if err != nil {
-		return 0, fmt.Errorf("failed to register key %s: %w", key, err)
+		return 0, fmt.Errorf("failed to register lease: %w", err)
 	}
-
-	zap.L().Info("Key registered", zap.String("key", key), zap.String("value", value))
-	return lease.ID, nil
+	e.lease = lease.ID
+	return e.lease, nil
 }
 
-func AnnounceService(ctx context.Context, client *clientv3.Client, serviceAnnouncement Announcement, value string) (clientv3.LeaseID, error) {
-	if err := EnsureEtcdConnection(serviceAnnouncement.Service); err != nil {
-		return 0, fmt.Errorf("failed to ensure etcd connection: %w", err)
+func (e *EtcdService) registerKeyValue(key string, value string) error {
+	if e.lease == 0 {
+		return fmt.Errorf("lease not registered")
 	}
 
-	key := serviceAnnouncement.BuildID()
-	ttl := serviceAnnouncement.Service.TTL
+	client, err := e.GetClient()
+	if err != nil {
+		return fmt.Errorf("failed to get etcd client: %w", err)
+	}
 
-	return RegisterServiceWithLease(ctx, client, key, value, ttl)
+	_, err = client.Put(e.ctx, key, value, clientv3.WithLease(e.lease))
+	if err != nil {
+		return fmt.Errorf("failed to register key %s: %w", key, err)
+	}
+
+	return nil
 }
 
-func KeepServiceAnnouncementAlive(ctx context.Context, serviceAnnouncement Announcement, unique bool) error {
-	marshaledService, err := serviceAnnouncement.Marshal()
+func (e *EtcdService) registerService() error {
+	zap.L().Info("Lease not registered, attempting to register lease for service", zap.String("service", e.ans.Service.Prefix))
+	_, err := e.registerLease()
+	if err != nil {
+		return fmt.Errorf("failed to register lease for service: %w", err)
+	}
+
+	// -- Register the key-value pair with the lease
+	marshaledService, err := e.ans.Marshal()
 	if err != nil {
 		return fmt.Errorf("failed to marshal service announcement: %w", err)
 	}
 
-	leaseID, err := AnnounceService(ctx, GetEtcdClient(), serviceAnnouncement, marshaledService)
-	if err != nil {
-		return fmt.Errorf("failed to register service %s: %w", serviceAnnouncement.Service.Prefix, err)
+	key := e.ans.BuildID()
+	if err := e.registerKeyValue(key, marshaledService); err != nil {
+		return fmt.Errorf("failed to register key-value pair: %w", err)
 	}
 
-	go func() {
-		lease, err := GetEtcdClient().KeepAlive(ctx, leaseID)
-		if err != nil {
-			zap.L().Error("failed to start KeepAlive for service", zap.String("service", serviceAnnouncement.Service.Prefix), zap.Error(err))
-			return
-		}
+	zap.L().Info("Key registered", zap.String("key", key), zap.String("value", marshaledService))
+	return nil
+}
 
+func (e *EtcdService) keepAlive() error {
+	go func() {
 		for {
+
+			// -- Check if the context is done
 			select {
-			case <-ctx.Done():
-				zap.L().Info("Context done, stopping KeepAlive for service", zap.String("service", serviceAnnouncement.Service.Prefix))
+			case <-e.ctx.Done():
+				zap.L().Info("Context done, stopping KeepAlive for service", zap.String("service", e.ans.Service.Prefix))
 				return
 
-			case resp, ok := <-lease:
-				if !ok {
-					zap.L().Error("KeepAlive channel closed, Attempting to reconnect KeepAlive for service", zap.String("service", serviceAnnouncement.Service.Prefix))
-					err = EnsureEtcdConnection(serviceAnnouncement.Service)
-					if err != nil {
-						zap.L().Panic("failed to ensure etcd connection", zap.Error(err))
-					}
+			default:
+				zap.L().Info("Starting KeepAlive for service", zap.String("service", e.ans.Service.Prefix))
 
-					client := GetEtcdClient()
-					if client == nil {
-						zap.L().Panic("failed to get etcd client")
-					}
+				// -- Ensure that the client is instantiated & connected
+				if err := e.EnsureConnection(); err != nil {
+					zap.L().Warn("failed to ensure etcd connection", zap.Error(err))
+					e.sleep(e.ans.Service.TimeOut)
+					continue
+				}
 
-					leaseID, err = AnnounceService(ctx, client, serviceAnnouncement, marshaledService)
-					if err != nil {
-						zap.L().Panic("failed to restart KeepAlive for service", zap.String("service", serviceAnnouncement.Service.Prefix), zap.Error(err))
-					}
+				client, err := e.GetClient()
+				if err != nil {
+					zap.L().Warn("failed to get etcd client", zap.Error(err))
+					e.sleep(e.ans.Service.TimeOut)
+					continue
+				}
 
-					lease, err = client.KeepAlive(ctx, leaseID)
-					if err != nil {
-						zap.L().Error("failed to restart KeepAlive for service", zap.String("service", serviceAnnouncement.Service.Prefix), zap.Error(err))
+				// -- Register the service
+				err = e.registerService()
+				if err != nil {
+					zap.L().Warn("failed to register service", zap.String("service", e.ans.Service.Prefix), zap.Error(err))
+					e.sleep(e.ans.Service.TimeOut)
+					continue
+				}
+
+				// -- Send a keep alive signal
+				aliveChanel, err := client.KeepAlive(e.ctx, e.lease)
+				if err != nil {
+					zap.L().Warn("failed to send keep alive signal for service", zap.String("service", e.ans.Service.Prefix), zap.Error(err))
+					e.sleep(e.ans.Service.TimeOut)
+					continue
+				}
+
+				for {
+					_, ok := <-aliveChanel
+					if !ok {
+						zap.L().Warn("KeepAlive channel closed, Attempting to reconnect KeepAlive for service", zap.String("service", e.ans.Service.Prefix))
+						break
 					}
 				}
 
-				// FYI: KeepAlive handles the TTL, we just check if it failed (And restart it)
-				timeout := serviceAnnouncement.Service.TTL
-				if resp != nil {
-					// -- We want to use the TTL from the response, but sometimes we dont
-					//    get a response.
-					timeout = resp.TTL
-				}
-				sleepFor := (time.Duration(timeout) * time.Second) / 3
-				time.Sleep(sleepFor)
+				zap.L().Info("KeepAlive failed, attempting to reconnect KeepAlive for service", zap.String("service", e.ans.Service.Prefix))
+				e.lease = 0
+				e.sleep(e.ans.Service.TimeOut)
 			}
 		}
 	}()
 
 	return nil
+}
+
+func (e *EtcdService) sleep(seconds int64) {
+	time.Sleep(time.Duration(seconds) * time.Second)
 }

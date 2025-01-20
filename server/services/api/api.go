@@ -47,12 +47,9 @@ func Start() {
 	}
 
 	etcdContext := context.Background()
-	if err := ServiceProvider.InstantiateEtcdClient(config.Etcd.API); err != nil {
-		zap.L().Panic("failed to instantiate etcd client", zap.Error(err))
-	}
-
-	if err := ServiceProvider.KeepServiceAnnouncementAlive(etcdContext, serviceAnnouncement, false); err != nil {
-		zap.L().Panic("failed to keep service announcement alive", zap.Error(err))
+	_, err = ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
+	if err != nil {
+		zap.L().Panic("failed to create etcd service", zap.Error(err))
 	}
 
 	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
