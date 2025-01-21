@@ -31,6 +31,7 @@ func AddDomainToVerificationQueue(ctx context.Context, connPool *service.Pools, 
 	})
 
 	if err != nil {
+		conn.Working = false
 		return helpers.NewServerError(err.Error(), "Failed to queue DNS verification!")
 	}
 
