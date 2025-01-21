@@ -17,7 +17,7 @@ import (
 func Start() {
 	zap.L().Info("Starting smtp service")
 
-	client.ExampleSendMail_plainAuth()
+	client.ExampleDial()
 
 	queueDatabaseConnection := SmtpDatabase.InitiateConnection()
 	primaryDatabaseConnection := PrimaryDatabase.InitiateConnection()

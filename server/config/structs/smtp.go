@@ -29,4 +29,5 @@ type SmtpConfig struct {
 	MaxRecipients     int    `yaml:"maxRecipients"`
 	AllowInsecureAuth bool   `yaml:"allowInsecureAuth"`
 	MaxLineLength     int    `yaml:"maxLineLength"`
+	SpfHardFail       bool   `yaml:"spfHardFail"`
 }

@@ -2,6 +2,7 @@ package server
 
 import (
 	"blitiri.com.ar/go/spf"
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"go.uber.org/zap"
 	"net"
 	"strings"
@@ -27,5 +28,5 @@ func ValidateMailFromSpf(ipStr, from, host string) (spf.Result, error) {
 }
 
 func SpfShouldBlock(result spf.Result) bool {
-	return result == spf.Fail || result == spf.SoftFail
+	return (result == spf.Fail || result == spf.SoftFail) && config.Smtp.SpfHardFail
 }

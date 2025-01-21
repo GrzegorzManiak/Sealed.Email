@@ -143,3 +143,4 @@ smtp:
   maxRecipients: 100
   allowInsecureAuth: true
   maxLineLength: 2000
+  spfHardFail: false
