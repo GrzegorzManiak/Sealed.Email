@@ -8,7 +8,6 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
-	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/client"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/grpc"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/server"
 	"go.uber.org/zap"
@@ -17,7 +16,7 @@ import (
 func Start() {
 	zap.L().Info("Starting smtp service")
 
-	client.ExampleDial()
+	//client.ExampleDial()
 
 	queueDatabaseConnection := SmtpDatabase.InitiateConnection()
 	primaryDatabaseConnection := PrimaryDatabase.InitiateConnection()

@@ -10,7 +10,7 @@ import (
 
 func ExampleDial() {
 	// Connect to the remote SMTP server.
-	c, err := smtp.Dial("mail.example.com:25")
+	c, err := smtp.Dial("doom.mx.noise.email:25")
 	if err != nil {
 		log.Fatal(err)
 	}
