@@ -6,8 +6,8 @@ const domain = 'hello';
 const randomString = Math.random().toString(36).substring(2);
 
 const register = false;
-const domainSweep = false;
-const inboxSweep = true;
+const domainSweep = true;
+const inboxSweep = false;
 
 if (register) {
     console.log(`Registering as ${username}`);

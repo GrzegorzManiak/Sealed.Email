@@ -2,13 +2,14 @@ package domainVerify
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/middleware"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
+func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB, connPool *service.Pools) {
 	data, sessionErr := middleware.SessionManagerMiddleware(ctx, SessionFilter, databaseConnection)
 	if sessionErr != nil {
 		helpers.ErrorResponse(ctx, sessionErr)
@@ -21,7 +22,7 @@ func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
 		return
 	}
 
-	output, err := handler(input, ctx, data.Content.UserID, databaseConnection)
+	output, err := handler(input, ctx, data.Content.UserID, databaseConnection, connPool)
 	if err != nil {
 		zap.L().Debug("Error handler", zap.Error(err), zap.Any("input", input), zap.Any("output", output))
 		helpers.ErrorResponse(ctx, err)

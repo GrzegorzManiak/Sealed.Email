@@ -8,7 +8,6 @@ import (
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/middleware"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/routes"
-	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/gin-contrib/pprof"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
@@ -28,11 +27,6 @@ func Start() {
 	pprof.Register(router, "debug/")
 
 	databaseConnection := PrimaryDatabase.InitiateConnection()
-	routes.RegisterRoutes(router, databaseConnection)
-	routes.LoginRoutes(router, databaseConnection)
-	routes.DomainRoutes(router, databaseConnection)
-	routes.InboxRoutes(router, databaseConnection)
-	routes.DevRoutes(router, databaseConnection)
 
 	serviceUUID, err := uuid.NewUUID()
 	if err != nil {
@@ -47,13 +41,21 @@ func Start() {
 	}
 
 	etcdContext := context.Background()
-	_, err = ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
+	etcdService, err := ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
 	if err != nil {
 		zap.L().Panic("failed to create etcd service", zap.Error(err))
 	}
 
-	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
-	ServiceProvider.RegisterCallback("filler", services.PoolCallback)
+	connPool, err := ServiceProvider.NewPools(etcdContext, etcdService, config.Certificates.API)
+	if err != nil {
+		zap.L().Panic("failed to create distributed service", zap.Error(err))
+	}
+
+	routes.RegisterRoutes(router, databaseConnection)
+	routes.LoginRoutes(router, databaseConnection)
+	routes.DomainRoutes(router, databaseConnection, connPool)
+	routes.InboxRoutes(router, databaseConnection)
+	routes.DevRoutes(router, databaseConnection)
 
 	err = router.Run(fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port))
 	if err != nil {

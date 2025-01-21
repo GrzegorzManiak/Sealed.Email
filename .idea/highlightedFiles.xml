@@ -5,6 +5,7 @@
       <node color="7" path="$PROJECT_DIR$/dev" />
       <node color="11" path="$PROJECT_DIR$/docs" />
       <node color="4" path="$PROJECT_DIR$/server/config" />
+      <node color="9" path="$PROJECT_DIR$/server/database" />
       <node color="8" path="$PROJECT_DIR$/server/proto" />
       <node color="5" path="$PROJECT_DIR$/server/services/api" />
       <node color="1" path="$PROJECT_DIR$/server/services/api/handlers/dev" />

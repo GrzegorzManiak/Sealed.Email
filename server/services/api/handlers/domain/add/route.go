@@ -2,13 +2,14 @@ package domainAdd
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/middleware"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
+func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB, connPool *service.Pools) {
 	sessionClaims, sessionErr := middleware.SessionManagerMiddleware(ctx, SessionFilter, databaseConnection)
 	if sessionErr != nil {
 		helpers.ErrorResponse(ctx, sessionErr)
@@ -27,7 +28,7 @@ func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
 		return
 	}
 
-	output, err := handler(input, ctx, databaseConnection, &user)
+	output, err := handler(input, ctx, databaseConnection, connPool, &user)
 	if err != nil {
 		zap.L().Debug("Error handler", zap.Error(err), zap.Any("input", input), zap.Any("user", user), zap.Any("output", output))
 		helpers.ErrorResponse(ctx, err)

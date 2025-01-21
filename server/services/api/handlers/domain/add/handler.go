@@ -4,13 +4,14 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *models.User) (*Output, helpers.AppError) {
+func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, connPool *service.Pools, user *models.User) (*Output, helpers.AppError) {
 	domain, err := helpers.TrimDomain(data.Domain)
 	if err != nil {
 		return nil, helpers.NewUserError("The domain name you provided is invalid.", "Invalid domain name!")
@@ -26,7 +27,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *m
 	}
 
 	// -- USER CAN RE-VERIFY, NO NEED TO RETURN ERROR
-	err = services.AddDomainToVerificationQueue(ctx, domainModel)
+	err = services.AddDomainToVerificationQueue(ctx, connPool, domainModel)
 	sentVerification := true
 	if err != nil {
 		zap.L().Warn("failed to send verification request", zap.Error(err))

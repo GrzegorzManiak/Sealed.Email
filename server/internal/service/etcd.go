@@ -118,8 +118,11 @@ func (e *EtcdService) EnsureConnection() error {
 	return nil
 }
 
-func (e *EtcdService) GetAllKeys(ctx context.Context, client *clientv3.Client) ([]*mvccpb.KeyValue, error) {
-	resp, err := client.Get(ctx, Prefix, clientv3.WithPrefix())
+func (e *EtcdService) GetAllKeys(ctx context.Context) ([]*mvccpb.KeyValue, error) {
+	if e.client == nil {
+		return nil, fmt.Errorf("etcd client is not initialized")
+	}
+	resp, err := e.client.Get(ctx, Prefix, clientv3.WithPrefix())
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve keys with prefix %s: %w", Prefix, err)
 	}

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	domainAdd "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/add"
 	domainDelete "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/delete"
 	domainGet "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/get"
@@ -12,10 +13,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func DomainRoutes(router *gin.Engine, databaseConnection *gorm.DB) {
+func DomainRoutes(router *gin.Engine, databaseConnection *gorm.DB, connPool *service.Pools) {
 	fmt.Println("Registering routes for: login")
 	router.POST("/api/domain/add", func(ctx *gin.Context) {
-		domainAdd.ExecuteRoute(ctx, databaseConnection)
+		domainAdd.ExecuteRoute(ctx, databaseConnection, connPool)
 	})
 	router.DELETE("/api/domain/delete", func(ctx *gin.Context) {
 		domainDelete.ExecuteRoute(ctx, databaseConnection)
@@ -24,7 +25,7 @@ func DomainRoutes(router *gin.Engine, databaseConnection *gorm.DB) {
 		domainModify.ExecuteRoute(ctx, databaseConnection)
 	})
 	router.PUT("/api/domain/refresh", func(ctx *gin.Context) {
-		domainRefresh.ExecuteRoute(ctx, databaseConnection)
+		domainRefresh.ExecuteRoute(ctx, databaseConnection, connPool)
 	})
 	router.GET("/api/domain/list", func(ctx *gin.Context) {
 		domainList.ExecuteRoute(ctx, databaseConnection)

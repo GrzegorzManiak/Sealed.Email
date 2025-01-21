@@ -59,8 +59,6 @@ func Start() {
 		zap.L().Panic("failed to create etcd service", zap.Error(err))
 	}
 
-	ServiceProvider.KeepConnectionPoolsAlive(etcdContext, config.Etcd.API)
-
 	zap.L().Info("Smtp service started", zap.String("service_id", ServiceID))
 	if err := grpcServer.Serve(listener); err != nil {
 		zap.L().Panic("failed to serve gRPC server", zap.Error(err))
