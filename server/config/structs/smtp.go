@@ -21,6 +21,7 @@ type SmtpConfig struct {
 	Certificates  ServiceCertificates `yaml:"certificates"`
 	Ports         SmtpPorts           `yaml:"ports"`
 
+	PortTimeout       int    `yaml:"portTimeout"`
 	Address           string `yaml:"address"`
 	Domain            string `yaml:"domain"`
 	WriteTimeout      int    `yaml:"writeTimeout"`

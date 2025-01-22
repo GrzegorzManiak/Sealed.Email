@@ -137,6 +137,8 @@ smtp:
 
   address: 'localhost:%d'
   domain: 'doom.mx.noise.email'
+
+  portTimeout: 3
   writeTimeout: 100
   readTimeout: 100
   maxMessageBytes: 10000000 # 10MB
