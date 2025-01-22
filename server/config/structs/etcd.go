@@ -7,7 +7,7 @@ type ServiceConfig struct {
 
 	TTL       int64 `yaml:"ttl"`
 	Heartbeat int64 `yaml:"heartbeat"`
-	TimeOut   int64 `yaml:"timeout"`
+	TimeOut   int   `yaml:"timeout"`
 }
 
 type ConnectionPoolConfig struct {

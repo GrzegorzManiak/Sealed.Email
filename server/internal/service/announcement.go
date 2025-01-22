@@ -2,9 +2,9 @@ package service
 
 import (
 	"fmt"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
-	"time"
 )
 
 func (e *EtcdService) registerLease() (clientv3.LeaseID, error) {
@@ -76,14 +76,14 @@ func (e *EtcdService) keepAlive() error {
 				// -- Ensure that the client is instantiated & connected
 				if err := e.EnsureConnection(); err != nil {
 					zap.L().Warn("failed to ensure etcd connection", zap.Error(err))
-					e.sleep(e.ans.Service.TimeOut)
+					helpers.Sleep(e.ans.Service.TimeOut)
 					continue
 				}
 
 				client, err := e.GetClient()
 				if err != nil {
 					zap.L().Warn("failed to get etcd client", zap.Error(err))
-					e.sleep(e.ans.Service.TimeOut)
+					helpers.Sleep(e.ans.Service.TimeOut)
 					continue
 				}
 
@@ -91,7 +91,7 @@ func (e *EtcdService) keepAlive() error {
 				err = e.registerService()
 				if err != nil {
 					zap.L().Warn("failed to register service", zap.String("service", e.ans.Service.Prefix), zap.Error(err))
-					e.sleep(e.ans.Service.TimeOut)
+					helpers.Sleep(e.ans.Service.TimeOut)
 					continue
 				}
 
@@ -99,7 +99,7 @@ func (e *EtcdService) keepAlive() error {
 				aliveChanel, err := client.KeepAlive(e.ctx, e.lease)
 				if err != nil {
 					zap.L().Warn("failed to send keep alive signal for service", zap.String("service", e.ans.Service.Prefix), zap.Error(err))
-					e.sleep(e.ans.Service.TimeOut)
+					helpers.Sleep(e.ans.Service.TimeOut)
 					continue
 				}
 
@@ -113,14 +113,10 @@ func (e *EtcdService) keepAlive() error {
 
 				zap.L().Info("KeepAlive failed, attempting to reconnect KeepAlive for service", zap.String("service", e.ans.Service.Prefix))
 				e.lease = 0
-				e.sleep(e.ans.Service.TimeOut)
+				helpers.Sleep(e.ans.Service.TimeOut)
 			}
 		}
 	}()
 
 	return nil
-}
-
-func (e *EtcdService) sleep(seconds int64) {
-	time.Sleep(time.Duration(seconds) * time.Second)
 }
