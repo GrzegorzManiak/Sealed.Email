@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"crypto/tls"
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 	"go.uber.org/zap"
 )
@@ -14,6 +15,7 @@ func BuildTlsConfig(certs structs.ServiceCertificates) (tlsConfig *tls.Config, e
 
 	tlsConfig = &tls.Config{
 		Certificates: []tls.Certificate{cert},
+		ServerName:   config.Smtp.Domain,
 		ClientAuth:   tls.VerifyClientCertIfGiven,
 	}
 

@@ -136,7 +136,7 @@ smtp:
     startTls: 49102 # 587
 
   address: 'localhost:%d'
-  domain: 'mx.noise.email'
+  domain: 'doom.mx.noise.email'
   writeTimeout: 100
   readTimeout: 100
   maxMessageBytes: 10000000 # 10MB
