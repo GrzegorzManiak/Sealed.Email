@@ -19,16 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SmtpService_SendEncryptedEmail_FullMethodName = "/smtp.SmtpService/SendEncryptedEmail"
-	SmtpService_SendPublicEmail_FullMethodName    = "/smtp.SmtpService/SendPublicEmail"
+	SmtpService_SendEmail_FullMethodName = "/smtp.SmtpService/SendEmail"
 )
 
 // SmtpServiceClient is the client API for SmtpService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SmtpServiceClient interface {
-	SendEncryptedEmail(ctx context.Context, in *EncryptedEmail, opts ...grpc.CallOption) (*SendEmailResponse, error)
-	SendPublicEmail(ctx context.Context, in *PublicEmail, opts ...grpc.CallOption) (*SendEmailResponse, error)
+	SendEmail(ctx context.Context, in *Email, opts ...grpc.CallOption) (*SendEmailResponse, error)
 }
 
 type smtpServiceClient struct {
@@ -39,20 +37,10 @@ func NewSmtpServiceClient(cc grpc.ClientConnInterface) SmtpServiceClient {
 	return &smtpServiceClient{cc}
 }
 
-func (c *smtpServiceClient) SendEncryptedEmail(ctx context.Context, in *EncryptedEmail, opts ...grpc.CallOption) (*SendEmailResponse, error) {
+func (c *smtpServiceClient) SendEmail(ctx context.Context, in *Email, opts ...grpc.CallOption) (*SendEmailResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SendEmailResponse)
-	err := c.cc.Invoke(ctx, SmtpService_SendEncryptedEmail_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *smtpServiceClient) SendPublicEmail(ctx context.Context, in *PublicEmail, opts ...grpc.CallOption) (*SendEmailResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SendEmailResponse)
-	err := c.cc.Invoke(ctx, SmtpService_SendPublicEmail_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, SmtpService_SendEmail_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +51,7 @@ func (c *smtpServiceClient) SendPublicEmail(ctx context.Context, in *PublicEmail
 // All implementations must embed UnimplementedSmtpServiceServer
 // for forward compatibility.
 type SmtpServiceServer interface {
-	SendEncryptedEmail(context.Context, *EncryptedEmail) (*SendEmailResponse, error)
-	SendPublicEmail(context.Context, *PublicEmail) (*SendEmailResponse, error)
+	SendEmail(context.Context, *Email) (*SendEmailResponse, error)
 	mustEmbedUnimplementedSmtpServiceServer()
 }
 
@@ -75,11 +62,8 @@ type SmtpServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedSmtpServiceServer struct{}
 
-func (UnimplementedSmtpServiceServer) SendEncryptedEmail(context.Context, *EncryptedEmail) (*SendEmailResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendEncryptedEmail not implemented")
-}
-func (UnimplementedSmtpServiceServer) SendPublicEmail(context.Context, *PublicEmail) (*SendEmailResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendPublicEmail not implemented")
+func (UnimplementedSmtpServiceServer) SendEmail(context.Context, *Email) (*SendEmailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendEmail not implemented")
 }
 func (UnimplementedSmtpServiceServer) mustEmbedUnimplementedSmtpServiceServer() {}
 func (UnimplementedSmtpServiceServer) testEmbeddedByValue()                     {}
@@ -102,38 +86,20 @@ func RegisterSmtpServiceServer(s grpc.ServiceRegistrar, srv SmtpServiceServer) {
 	s.RegisterService(&SmtpService_ServiceDesc, srv)
 }
 
-func _SmtpService_SendEncryptedEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EncryptedEmail)
+func _SmtpService_SendEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Email)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SmtpServiceServer).SendEncryptedEmail(ctx, in)
+		return srv.(SmtpServiceServer).SendEmail(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: SmtpService_SendEncryptedEmail_FullMethodName,
+		FullMethod: SmtpService_SendEmail_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmtpServiceServer).SendEncryptedEmail(ctx, req.(*EncryptedEmail))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _SmtpService_SendPublicEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PublicEmail)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SmtpServiceServer).SendPublicEmail(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: SmtpService_SendPublicEmail_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SmtpServiceServer).SendPublicEmail(ctx, req.(*PublicEmail))
+		return srv.(SmtpServiceServer).SendEmail(ctx, req.(*Email))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -146,12 +112,8 @@ var SmtpService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*SmtpServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SendEncryptedEmail",
-			Handler:    _SmtpService_SendEncryptedEmail_Handler,
-		},
-		{
-			MethodName: "SendPublicEmail",
-			Handler:    _SmtpService_SendPublicEmail_Handler,
+			MethodName: "SendEmail",
+			Handler:    _SmtpService_SendEmail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
