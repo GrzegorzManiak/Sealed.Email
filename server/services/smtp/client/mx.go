@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-var MaxMxRecords = 25
+var MaxMxRecords = 15
 
 func FetchMX(domain string) ([]*net.MX, error) {
 	mxRecords, err := net.LookupMX(domain)

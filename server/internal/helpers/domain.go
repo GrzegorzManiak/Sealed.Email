@@ -113,3 +113,18 @@ func IsValidPublicIPV6(domain string) bool {
 		!ip.IsLinkLocalMulticast() &&
 		!ip.IsPrivate()
 }
+
+func ExtractDomainFromEmail(email string) (string, error) {
+	domain := ""
+	if !strings.Contains(email, "@") {
+		domain = email
+	} else {
+		domain = strings.SplitN(email, "@", 2)[1]
+	}
+
+	if ValidateEmailDomain(domain) {
+		return domain, nil
+	}
+
+	return "", fmt.Errorf("invalid domain")
+}

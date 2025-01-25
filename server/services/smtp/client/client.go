@@ -1,83 +1,80 @@
 package client
 
 import (
-	"fmt"
-	"github.com/emersion/go-sasl"
+	"crypto/tls"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	SmtpProto "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
 	"github.com/emersion/go-smtp"
-	"log"
-	"strings"
+	"go.uber.org/zap"
 )
 
-func ExampleDial() {
-	// Connect to the remote SMTP server.
-	c, err := smtp.Dial("doom.mx.noise.email:25")
+func attemptDial(domain string, certs *tls.Config) (*smtp.Client, error) {
+	mxRecords, err := FetchMX(domain)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	// Set the sender and recipient first
-	if err := c.Mail("sender@example.org", nil); err != nil {
-		log.Fatal(err)
-	}
-	if err := c.Rcpt("recipient@example.net", nil); err != nil {
-		log.Fatal(err)
+	for _, mx := range mxRecords {
+		c, err := dial(mx.Host, certs)
+		if err != nil {
+			zap.L().Debug("Failed to dial", zap.Error(err))
+			continue
+		}
+		return c, nil
 	}
 
-	// Send the email body.
+	return nil, nil
+}
+
+func attemptSendEmail(certs *tls.Config, email *SmtpProto.Email, to string) error {
+	domain, err := helpers.ExtractDomainFromEmail(to)
+	if err != nil {
+		zap.L().Debug("Failed to extract domain from email", zap.Error(err))
+		return err
+	}
+
+	c, err := attemptDial(domain, certs)
+	if err != nil {
+		zap.L().Debug("Failed to dial", zap.Error(err))
+		return err
+	}
+
+	if err := c.Mail(email.From, nil); err != nil {
+		zap.L().Debug("Failed to send MAIL command", zap.Error(err))
+		return err
+	}
+
+	for _, recipient := range email.To {
+		if err := c.Rcpt(recipient, nil); err != nil {
+			zap.L().Debug("Failed to send RCPT command", zap.Error(err))
+			return err
+		}
+	}
+
 	wc, err := c.Data()
 	if err != nil {
-		log.Fatal(err)
+		zap.L().Debug("Failed to send DATA command", zap.Error(err))
+		return err
 	}
-	_, err = fmt.Fprintf(wc, "This is the email body")
+
+	_, err = wc.Write(email.Body)
 	if err != nil {
-		log.Fatal(err)
+		zap.L().Debug("Failed to write email body", zap.Error(err))
+		return err
 	}
+
 	err = wc.Close()
 	if err != nil {
-		log.Fatal(err)
+		zap.L().Debug("Failed to close write closer", zap.Error(err))
+		return err
 	}
 
-	// Send the QUIT command and close the connection.
 	err = c.Quit()
 	if err != nil {
-		log.Fatal(err)
+		zap.L().Debug("Failed to send QUIT command", zap.Error(err))
+		return err
 	}
-}
 
-// variables to make ExamplePlainAuth compile, without adding
-// unnecessary noise there.
-var (
-	from       = "gopher@example.net"
-	msg        = strings.NewReader("dummy message")
-	recipients = []string{"foo@example.com"}
-)
-
-func ExampleSendMail_plainAuth() {
-	// hostname is used by PlainAuth to validate the TLS certificate.
-	//hostname := "doom.mx.noise.email"
-	//auth := sasl.NewPlainClient("", "user@beta.noise.email", "password")
-
-	//err := smtp.SendMail(hostname+":25", nil, from, recipients, msg)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-
-	//emailClient := smtp.Client{}
-}
-
-func ExampleSendMail() {
-	// Set up authentication information.
-	auth := sasl.NewPlainClient("", "user@example.com", "password")
-
-	// Connect to the server, authenticate, set the sender and recipient,
-	// and send the email all in one step.
-	to := []string{"recipient@example.net"}
-	msg := strings.NewReader("To: recipient@example.net\r\n" +
-		"Subject: discount Gophers!\r\n" +
-		"\r\n" +
-		"This is the email body.\r\n")
-	err := smtp.SendMail("beta.noise.email:25", auth, "sender@example.org", to, msg)
-	if err != nil {
-		log.Fatal(err)
-	}
+	zap.L().Debug("Email sent successfully")
+	return nil
 }
