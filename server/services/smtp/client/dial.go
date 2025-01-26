@@ -15,6 +15,7 @@ func addPort(domain string, port string) string {
 
 func dialStartTls(domain string, certs *tls.Config) (*smtp.Client, error) {
 	domain = addPort(domain, "587")
+	zap.L().Debug("Dialing (StartTLS)", zap.String("domain", domain))
 	c, err := smtp.DialStartTLS(domain, certs)
 	if err != nil {
 		return nil, err
@@ -24,6 +25,7 @@ func dialStartTls(domain string, certs *tls.Config) (*smtp.Client, error) {
 
 func dialPlain(domain string) (*smtp.Client, error) {
 	domain = addPort(domain, "25")
+	zap.L().Debug("Dialing (Plain)", zap.String("domain", domain))
 	c, err := smtp.Dial(domain)
 	if err != nil {
 		return nil, err

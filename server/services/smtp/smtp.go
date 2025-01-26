@@ -38,16 +38,16 @@ func Start() {
 		config.Smtp.OutboundQueue.MaxConcurrent,
 	)
 
-	certs, err := helpers.BuildTlsConfig(config.Smtp.Certificates)
-	if err != nil {
-		zap.L().Panic("failed to build tls config", zap.Error(err))
-	}
+	//certs, err := helpers.BuildTlsConfig(config.Smtp.Certificates)
+	//if err != nil {
+	//	zap.L().Panic("failed to build tls config", zap.Error(err))
+	//}
 
 	go queue.Dispatcher(
 		queueContext,
 		queueDatabaseConnection,
 		outboundQueue,
-		func(entry *queue.Entry) int8 { return client.Worker(certs, entry, queueDatabaseConnection) })
+		func(entry *queue.Entry) int8 { return client.Worker(nil, entry, queueDatabaseConnection) })
 
 	server.StartServers(inboundQueue, queueDatabaseConnection)
 
