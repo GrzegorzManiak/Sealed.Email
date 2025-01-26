@@ -36,20 +36,17 @@ func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, to string)
 		zap.L().Debug("Failed to extract domain from email", zap.Error(err))
 		return err
 	}
-	zap.L().Debug("Extracted domain from email", zap.String("domain", domain))
 
 	c, err := attemptDial(domain, certs)
 	if err != nil {
 		zap.L().Debug("Failed to dial", zap.Error(err))
 		return err
 	}
-	zap.L().Debug("Dial successful")
 
 	if err := c.Mail(email.From, nil); err != nil {
 		zap.L().Debug("Failed to send MAIL command", zap.Error(err))
 		return err
 	}
-	zap.L().Debug("Sent MAIL command")
 
 	for _, recipient := range email.To {
 		if err := c.Rcpt(recipient, nil); err != nil {
@@ -63,14 +60,12 @@ func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, to string)
 		zap.L().Debug("Failed to send DATA command", zap.Error(err))
 		return err
 	}
-	zap.L().Debug("Sent DATA command")
 
 	_, err = wc.Write(email.Body)
 	if err != nil {
 		zap.L().Debug("Failed to write email body", zap.Error(err))
 		return err
 	}
-	zap.L().Debug("Wrote email body")
 
 	err = wc.Close()
 	if err != nil {
