@@ -39,10 +39,10 @@ func dial(domain string, certs *tls.Config) (*smtp.Client, error) {
 		return c, nil
 	}
 
+	zap.L().Debug("Failed to dial (StartTLS)", zap.Error(err))
 	helpers.Sleep(config.Smtp.PortTimeout)
 	c, err = dialPlain(domain)
 	if err != nil {
-		zap.L().Debug("Failed to dial (Plain)", zap.Error(err))
 		return nil, err
 	}
 
