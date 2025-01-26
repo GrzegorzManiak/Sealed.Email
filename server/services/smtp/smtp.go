@@ -5,7 +5,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	SmtpDatabase "github.com/GrzegorzManiak/NoiseBackend/database/smtp"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	//"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
@@ -67,7 +67,7 @@ func Start() {
 	}
 
 	etcdContext := context.Background()
-	_, err = ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
+	_, err := ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
 	if err != nil {
 		zap.L().Panic("failed to create etcd service", zap.Error(err))
 	}
