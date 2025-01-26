@@ -16,8 +16,6 @@ import (
 func Start() {
 	zap.L().Info("Starting smtp service")
 
-	//client.ExampleDial()
-
 	queueDatabaseConnection := SmtpDatabase.InitiateConnection()
 	primaryDatabaseConnection := PrimaryDatabase.InitiateConnection()
 
@@ -63,23 +61,3 @@ func Start() {
 		zap.L().Panic("failed to serve gRPC server", zap.Error(err))
 	}
 }
-
-//
-// -- Quick setup to send email
-//
-
-// netcat localhost 50152 // -- no tls
-// openssl s_client -connect smtp.gmail.com:25 -starttls smtp // -- with tls
-
-// EHLO doom.mx.noise.email
-// MAIL FROM: <balls@beta.noise.email>
-// RCPT TO: <gregamaniak@gmail.com>
-// DATA
-// Subject: Test email
-// From: Balls <balls@beta.noise.email>
-// Date: Tue, 3 Jan 2025 15:04:05 -0700
-// To: Greg <gregamaniak@gmail.com>
-//
-// This is a test email.
-// .
-// QUIT

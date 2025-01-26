@@ -12,10 +12,9 @@ func (s *Session) createQueueEntry() (*queue.Entry, error) {
 	entry, err := queue.Initiate(config.Smtp.InboundQueue.RetryMax,
 		config.Smtp.InboundQueue.RetryInterval,
 		config.Smtp.InboundQueue.Name,
-		models.InboundEmailId{EmailId: s.Id})
+		models.QueueEmailId{EmailId: s.Id})
 
 	entry.RefID = fmt.Sprintf("%s:%s:%s", s.Id, s.Mode, s.From)
-
 	return entry, err
 }
 
