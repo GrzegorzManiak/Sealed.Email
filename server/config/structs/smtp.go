@@ -2,7 +2,7 @@ package structs
 
 type SmtpQueueConfig struct {
 	Name          string `yaml:"name"`
-	RetryMax      int64  `yaml:"retryMax"`
+	MaxRetry      int64  `yaml:"maxRetry"`
 	RetryInterval int64  `yaml:"retryInterval"`
 	MaxConcurrent int    `yaml:"maxConcurrent"`
 	BatchSize     int    `yaml:"batchSize"`

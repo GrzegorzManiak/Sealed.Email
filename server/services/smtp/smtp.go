@@ -8,6 +8,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
+	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/client"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/grpc"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/server"
 	"go.uber.org/zap"
@@ -18,7 +19,9 @@ func Start() {
 
 	queueDatabaseConnection := SmtpDatabase.InitiateConnection()
 	primaryDatabaseConnection := PrimaryDatabase.InitiateConnection()
+	queueContext := context.Background()
 
+	zap.L().Debug("Creating inbound queue", zap.Any("config", config.Smtp.InboundQueue))
 	inboundQueue := queue.NewQueue(
 		queueDatabaseConnection,
 		config.Smtp.InboundQueue.Name,
@@ -26,12 +29,19 @@ func Start() {
 		config.Smtp.InboundQueue.MaxConcurrent,
 	)
 
+	zap.L().Debug("Creating outbound queue", zap.Any("config", config.Smtp.OutboundQueue))
 	outboundQueue := queue.NewQueue(
 		queueDatabaseConnection,
 		config.Smtp.OutboundQueue.Name,
 		config.Smtp.OutboundQueue.BatchTimeout,
 		config.Smtp.OutboundQueue.MaxConcurrent,
 	)
+
+	go queue.Dispatcher(
+		queueContext,
+		queueDatabaseConnection,
+		outboundQueue,
+		func(entry *queue.Entry) int8 { return client.Worker(entry, queueDatabaseConnection) })
 
 	server.StartServers(inboundQueue, queueDatabaseConnection)
 

@@ -21,7 +21,7 @@ func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSV
 		}, nil
 	}
 
-	entry, err := queue.Initiate(config.Domain.Service.RetryMax, config.Domain.Service.RetryInterval, services.QueueName, database.VerificationQueue{
+	entry, err := queue.Initiate(config.Domain.Service.MaxRetry, config.Domain.Service.RetryInterval, services.QueueName, database.VerificationQueue{
 		DomainName:      cleanDomain,
 		DkimPublicKey:   req.DkimPublicKey,
 		TxtVerification: req.TxtVerificationCode,

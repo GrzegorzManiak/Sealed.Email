@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Session) createQueueEntry() (*queue.Entry, error) {
-	entry, err := queue.Initiate(config.Smtp.InboundQueue.RetryMax,
+	entry, err := queue.Initiate(config.Smtp.InboundQueue.MaxRetry,
 		config.Smtp.InboundQueue.RetryInterval,
 		config.Smtp.InboundQueue.Name,
 		models.QueueEmailId{EmailId: s.Id})
