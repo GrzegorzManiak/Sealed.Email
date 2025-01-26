@@ -2,8 +2,8 @@ package client
 
 import (
 	"crypto/tls"
+	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
-	SmtpProto "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
 	"github.com/emersion/go-smtp"
 	"go.uber.org/zap"
 )
@@ -20,13 +20,16 @@ func attemptDial(domain string, certs *tls.Config) (*smtp.Client, error) {
 			zap.L().Debug("Failed to dial", zap.Error(err))
 			continue
 		}
+
+		zap.L().Debug("Dial successful")
 		return c, nil
 	}
 
+	zap.L().Debug("Failed to dial (no MX records)")
 	return nil, nil
 }
 
-func attemptSendEmail(certs *tls.Config, email *SmtpProto.Email, to string) error {
+func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, to string) error {
 	domain, err := helpers.ExtractDomainFromEmail(to)
 	if err != nil {
 		zap.L().Debug("Failed to extract domain from email", zap.Error(err))
