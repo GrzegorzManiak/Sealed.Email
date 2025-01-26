@@ -6,6 +6,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/emersion/go-smtp"
+	"go.uber.org/zap"
 )
 
 func addPort(domain string, port string) string {
@@ -32,18 +33,16 @@ func dialPlain(domain string) (*smtp.Client, error) {
 
 func dial(domain string, certs *tls.Config) (*smtp.Client, error) {
 
-	// -- Try to dial with StartTLS first
 	c, err := dialStartTls(domain, certs)
 	if err == nil {
+		zap.L().Debug("Dial successful (StartTLS)")
 		return c, nil
 	}
 
-	// -- Sleep for a while
 	helpers.Sleep(config.Smtp.PortTimeout)
-
-	// -- If StartTLS fails, try to dial without it
 	c, err = dialPlain(domain)
 	if err != nil {
+		zap.L().Debug("Failed to dial (Plain)", zap.Error(err))
 		return nil, err
 	}
 

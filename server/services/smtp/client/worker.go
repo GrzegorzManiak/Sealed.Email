@@ -25,19 +25,22 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 		zap.L().Debug("Failed to unmarshal email id", zap.Error(err))
 		return 2
 	}
+	zap.L().Debug("Unmarshalled email id", zap.Any("emailId", emailId))
 
 	email, err := getEmailById(emailId.EmailId, queueDatabaseConnection)
 	if err != nil {
 		zap.L().Debug("Failed to get email by id", zap.Error(err))
 		return 2
 	}
+	zap.L().Debug("Got email by id", zap.Any("email", email))
 
 	for _, to := range email.To {
+		zap.L().Debug("Sending email", zap.Any("email", email), zap.String("to", to))
 		if err := attemptSendEmail(certs, email, to); err != nil {
 			zap.L().Debug("Failed to send email", zap.Error(err))
 			return 2
 		}
 	}
-
+	zap.L().Debug("Email sent", zap.Any("email", email))
 	return 1
 }

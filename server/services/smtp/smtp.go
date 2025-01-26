@@ -38,7 +38,7 @@ func Start() {
 		config.Smtp.OutboundQueue.MaxConcurrent,
 	)
 
-	certs, err := helpers.BuildTlsConfig(config.Certificates.SMTP)
+	certs, err := helpers.BuildTlsConfig(config.Smtp.Certificates)
 	if err != nil {
 		zap.L().Panic("failed to build tls config", zap.Error(err))
 	}
