@@ -4,8 +4,8 @@
 
 1. [x] Domain adding
 2. [x] Domain DNS verification
-3. [ ] Domain Management
-4. [ ] Remove reminince of rate limiting (Will be done in nginx)
+3. [x] Domain Management
+4. [x] Remove reminince of rate limiting (Will be done in nginx)
 5. [x] Fix domain queue
 6. [x] Fix login verify collisions
 7. [ ] Add localization tags to errors
