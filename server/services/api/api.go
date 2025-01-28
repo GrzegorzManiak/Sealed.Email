@@ -56,6 +56,7 @@ func Start() {
 	routes.DomainRoutes(router, databaseConnection, connPool)
 	routes.InboxRoutes(router, databaseConnection)
 	routes.DevRoutes(router, databaseConnection)
+	routes.EmailRoutes(router, databaseConnection, connPool)
 
 	err = router.Run(fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port))
 	if err != nil {

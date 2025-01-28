@@ -47,7 +47,7 @@ domain:
 
 etcd:
     endpoints:
-        - 'http://localhost:2379'
+        - 'http://etcd.noise.email:2379'
 
     connectionPool:
         refreshInterval: 2 # dev only

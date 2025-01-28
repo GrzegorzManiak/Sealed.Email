@@ -6,7 +6,7 @@ const domain = 'hello';
 const randomString = Math.random().toString(36).substring(2);
 
 const register = false;
-const domainSweep = true;
+const domainSweep = false;
 const inboxSweep = false;
 
 if (register) {
@@ -66,3 +66,22 @@ if (inboxSweep) {
     const anInbox = await API.Inbox.GetInbox(session, domainService, lastInboxID);
     console.log("Got inbox:", anInbox.InboxName);
 }
+
+const domainId = 'TWXjSnVnc6+HQ/WUZaJA6vl3DdkyvNHuowp3TcevrbM=';
+const inboxId = 'IyOXkStPYLd8oxd58xV5zTY+iTqDfKdseT8zwFnkqa8=';
+
+const domainService = await API.DomainService.Decrypt(session, await API.Domain.GetDomain(session, domainId));
+const inbox = await API.Inbox.GetInbox(session, domainService, inboxId);
+
+const sentEmail = await API.Email.SendPlainEmail(session, {
+    domainID: domainService.DomainID,
+    bcc: [],
+    cc: [],
+    body: 'Test email',
+    from: 'hello@beta.noise.email',
+    to: 'x00189661@mytudublin.ie',
+    subject: 'Test email',
+    signature: ''
+});
+
+// console.log(inbox.InboxName);

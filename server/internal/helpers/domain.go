@@ -128,3 +128,20 @@ func ExtractDomainFromEmail(email string) (string, error) {
 
 	return "", fmt.Errorf("invalid domain")
 }
+
+func CompareDomains(domain1 string, domain2 string) bool {
+	domain1 = strings.ToLower(domain1)
+	domain2 = strings.ToLower(domain2)
+
+	t1, err := TrimDomain(domain1)
+	if err != nil {
+		return false
+	}
+
+	t2, err := TrimDomain(domain2)
+	if err != nil {
+		return false
+	}
+
+	return t1 == t2
+}

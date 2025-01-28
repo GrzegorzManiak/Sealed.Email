@@ -20,6 +20,9 @@ const Endpoints: { [key: string]: [string, string] } = {
     INBOX_DELETE:   [`${ROOT}/inbox/delete`, 'DELETE'],
     INBOX_LIST:     [`${ROOT}/inbox/list`, 'GET'],
     INBOX_MODIFY:   [`${ROOT}/inbox/modify`, 'PUT'],
+
+    EMAIL_SEND_PLAIN: [`${ROOT}/email/send/plain`, 'POST'],
+    EMAIL_SEND_ENCRYPTED: [`${ROOT}/email/send/encrypted`, 'POST'],
 };
 
 const ServerName: string = 'NoiseEmailServer>V1.0.0';
