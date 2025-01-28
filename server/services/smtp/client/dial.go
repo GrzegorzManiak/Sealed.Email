@@ -13,8 +13,8 @@ func addPort(domain string, port string) string {
 	return fmt.Sprintf("%s:%s", domain, port)
 }
 
-func dialStartTls(domain string, certs *tls.Config) (*smtp.Client, error) {
-	domain = addPort(domain, "25")
+func dialStartTls(domain string, certs *tls.Config, port string) (*smtp.Client, error) {
+	domain = addPort(domain, port)
 	zap.L().Debug("Dialing (StartTLS)", zap.String("domain", domain))
 	c, err := smtp.DialStartTLS(domain, certs)
 	if err != nil {
@@ -35,9 +35,15 @@ func dialPlain(domain string) (*smtp.Client, error) {
 
 func dial(domain string, certs *tls.Config) (*smtp.Client, error) {
 
-	c, err := dialStartTls(domain, certs)
+	c, err := dialStartTls(domain, certs, "25")
 	if err == nil {
-		zap.L().Debug("Dial successful (StartTLS)")
+		zap.L().Debug("Dial successful (StartTLS port 25)")
+		return c, nil
+	}
+
+	c, err = dialStartTls(domain, certs, "587")
+	if err == nil {
+		zap.L().Debug("Dial successful (StartTLS port 587)")
 		return c, nil
 	}
 
