@@ -27,10 +27,10 @@ func (i Inbox) EscapeDisplayName() string {
 
 func (i Inbox) String() string {
 	if i.DisplayName == "" {
-		return i.Email
+		return helpers.NormalizeEmail(i.Email)
 	}
 
-	return fmt.Sprintf("%s <%s>", i.EscapeDisplayName(), i.Email)
+	return fmt.Sprintf("%s <%s>", i.EscapeDisplayName(), helpers.NormalizeEmail(i.Email))
 }
 
 func (h Headers) From(from Inbox) {

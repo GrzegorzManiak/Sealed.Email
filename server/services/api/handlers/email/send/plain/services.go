@@ -53,16 +53,14 @@ func sendEmail(
 		return helpers.NewServerError("Failed to sign email. Please try again later.", "Failed to sign email")
 	}
 
-	err = email.Email(data.Context, data.ConnectionPool, &smtpService.Email{
+	if err := email.Send(data.Context, data.ConnectionPool, &smtpService.Email{
 		From:      input.From.Email,
 		To:        recipients,
 		Body:      []byte(signedEmail),
 		Version:   "1.0",
 		MessageId: messageId,
 		Encrypted: false,
-	})
-
-	if err != nil {
+	}); err != nil {
 		return helpers.NewServerError("Failed to send email. Please try again later.", "Failed to send email")
 	}
 
