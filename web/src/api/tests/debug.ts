@@ -53,10 +53,10 @@ const sentEmail = await API.Email.SendPlainEmail(session, {
     domainID: domainService.DomainID,
     bcc: [],
     cc: [],
-    body: 'Test email',
+    body: 'Yooooooooo This is actually working',
     from: 'hello@beta.noise.email',
-    to: 'x00189661@mytudublin.ie',
-    subject: 'Test email',
+    to: 'hello@beta.noise.email',
+    subject: 'Test email Account id: ' + randomString,
     signature: ''
 });
 

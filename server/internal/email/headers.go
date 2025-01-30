@@ -76,6 +76,10 @@ func (h Headers) Add(key, value string) {
 	}
 }
 
+func (h Headers) AddHeader(header Header) {
+	h[header.Key] = header
+}
+
 func (h Headers) Get(key string) (Header, bool) {
 	key = strings.ToLower(key)
 	v, ok := h[key]

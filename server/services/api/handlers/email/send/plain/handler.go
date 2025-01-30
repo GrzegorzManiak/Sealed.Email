@@ -26,15 +26,23 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 		return nil, helpers.NewUserError("From email domain does not match the domain you have verified.", "Invalid from email address")
 	}
 
-	headers := createBasicSmtpHeaders(input.From, input.To, input.Cc)
-	messageId := createMessageID(fromDomain.Domain)
-	headers = append(headers, createSmtpBodyHeader("Message-ID", messageId))
-	body := createSmtpBody(headers, input.Body)
+	headers := &email.Headers{}
+	headers.From(input.From)
+	headers.To(input.To)
+	headers.Cc(input.Cc)
+	headers.Date()
+	headers.Subject(input.Subject)
+	messageId := headers.MessageId(fromDomain.Domain)
+
+	signedEmail, err := email.SignEmailWithDkim(headers, input.Body, fromDomain.Domain, fromDomain.DKIMPrivateKey)
+	if err != nil {
+		return nil, helpers.NewServerError("Failed to sign email. Please try again later.", "Failed to sign email")
+	}
 
 	err = email.Email(data.Context, data.ConnectionPool, &smtpService.Email{
 		From:          input.From,
 		To:            []string{input.To},
-		Body:          []byte(body),
+		Body:          []byte(signedEmail),
 		DkimSignature: "",
 		Version:       "1.0.0",
 		InReplyTo:     "",
