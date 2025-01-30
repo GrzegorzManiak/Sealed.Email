@@ -148,6 +148,5 @@ smtp:
   maxMessageBytes: 10000000 # 10MB
   maxRecipients: 100
   allowInsecureAuth: true
-  skipTLSVerify: true
   maxLineLength: 2000
   spfHardFail: false

@@ -31,5 +31,4 @@ type SmtpConfig struct {
 	AllowInsecureAuth bool   `yaml:"allowInsecureAuth"`
 	MaxLineLength     int    `yaml:"maxLineLength"`
 	SpfHardFail       bool   `yaml:"spfHardFail"`
-	SkipTlsVerify     bool   `yaml:"skipTLSVerify"`
 }
