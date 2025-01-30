@@ -1,9 +1,10 @@
 import Session from "../session/session";
 import {DomainDnsData, DomainFull, DomainRefID} from "../api/domain";
 import {Compress, Decompress, Decrypt, Encrypt, NewKey} from "../symetric";
-import {BigIntToByteArray, EncodeToBase64, GetCurve, Hash} from "gowl-client-lib";
+import {BigIntToByteArray, EncodeToBase64, GetCurve, Hash, HighEntropyRandom} from "gowl-client-lib";
 import {CurrentCurve} from "../constants";
 import {DecodeFromBase64} from "../common";
+import {PlainEmail} from "../api/email";
 
 class Domain {
     private readonly _session: Session;
@@ -63,6 +64,35 @@ class Domain {
         if (typeof key !== 'string') key = EncodeToBase64(key);
         const decompressedKey = Decompress(DecodeFromBase64(key));
         return await Decrypt(decompressedKey, this._decryptedRootKey);
+    }
+
+    public async SignData(data: string): Promise<{ signature: string, nonce: string }> {
+        const nonce = EncodeToBase64(NewKey(32));
+        const hash = BigIntToByteArray(await Hash(data + nonce));
+        const curve = GetCurve(CurrentCurve);
+        const signature = curve.sign(hash, this._decryptedRootKey);
+        const bytes = signature.toCompactRawBytes();
+        return { signature: EncodeToBase64(bytes), nonce };
+    }
+
+    public async SignEmail(email: PlainEmail): Promise<{ signature: string, nonce: string }> {
+        function formatInbox(inbox: { email: string, displayName: string }): string {
+            return `${inbox.displayName}<${inbox.email}>`.toLowerCase();
+        }
+
+        const ccs = email.cc.map(formatInbox)
+            .sort((a, b) => a.localeCompare(b))
+            .join(',');
+
+        const data = [
+            formatInbox(email.from),
+            formatInbox(email.to),
+            ccs,
+            email.subject,
+            email.body,
+        ].join('\n');
+
+        return await this.SignData(data);
     }
 
     public get DomainID(): DomainRefID { return this._domainID; }

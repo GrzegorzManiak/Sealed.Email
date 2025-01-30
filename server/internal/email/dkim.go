@@ -25,6 +25,7 @@ var NoiseExtensionHeaderOrder = []NoiseExtensionHeader{
 	NoiseVersion,
 	NoiseEncryptionKey,
 	NoiseSignature,
+	NoiseNonce,
 }
 
 var DkimHeaderSet = map[string]bool{}

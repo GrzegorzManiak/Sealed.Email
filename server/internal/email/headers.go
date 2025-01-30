@@ -45,6 +45,7 @@ var (
 	NoiseVersion       NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-version", "X-Noise-Version"}
 	NoiseEncryptionKey NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-encryption-key", "X-Noise-Encryption-Key"}
 	NoiseSignature     NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-signature", "X-Noise-Signature"}
+	NoiseNonce         NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-nonce", "X-Noise-Nonce"}
 )
 
 var RequiredHeaders = []WellKnownHeader{
