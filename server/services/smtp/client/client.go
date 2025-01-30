@@ -18,6 +18,7 @@ func attemptDial(domain string, certs *tls.Config) (*smtp.Client, error) {
 
 	for _, mx := range mxRecords {
 		c, err := dial(mx.Host, certs)
+
 		if err != nil {
 			zap.L().Debug("Failed to dial", zap.Error(err))
 			continue
