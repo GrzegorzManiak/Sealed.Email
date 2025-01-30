@@ -8,7 +8,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 )
 
-func handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
+func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 	domain, appError := getDomain(data.User, input.DomainID, data.DatabaseConnection)
 	if appError != nil {
 		return nil, appError

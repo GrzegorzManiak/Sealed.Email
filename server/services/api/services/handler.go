@@ -19,6 +19,7 @@ type BaseRoute struct {
 type Handler struct {
 	*BaseRoute
 	User        *models.User
+	Session     *session.Claims
 	Context     *gin.Context
 	UserFetched bool
 }
@@ -37,7 +38,7 @@ func ExecuteRoute[InputType any, OutputType any](
 	}
 
 	// -- Input validation
-	input, err := helpers.ValidateBodyData[InputType](ctx)
+	input, err := helpers.ValidateInputData[InputType](ctx)
 	if err != nil {
 		helpers.ErrorResponse(ctx, err)
 		return
@@ -63,6 +64,7 @@ func ExecuteRoute[InputType any, OutputType any](
 		Context:     ctx,
 		User:        &user,
 		UserFetched: userFetched,
+		Session:     sessionClaims,
 	})
 
 	if handlerErr != nil {

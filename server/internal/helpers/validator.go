@@ -8,27 +8,22 @@ import (
 
 var validate = validator.New()
 
-func ValidateInputData[Input interface{}](ctx *gin.Context) (*Input, AppError) {
-	var input Input
-	if err := ctx.ShouldBindJSON(&input); err != nil {
+func ValidateInputData[T interface{}](ctx *gin.Context) (*T, AppError) {
+	var input T
+
+	if err := ctx.ShouldBindHeader(&input); err != nil {
 		return nil, DataValidationError(err.Error())
 	}
-
-	if err := validate.Struct(&input); err != nil {
-		return nil, DataValidationError(err.Error())
-	}
-
-	return &input, nil
-}
-
-func ValidateQueryParams[Input interface{}](ctx *gin.Context) (*Input, AppError) {
-	var input Input
 
 	if err := ctx.ShouldBindQuery(&input); err != nil {
 		return nil, DataValidationError(err.Error())
 	}
 
-	if err := validate.Struct(&input); err != nil {
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		return nil, DataValidationError(err.Error())
+	}
+
+	if err := validate.Struct(input); err != nil {
 		return nil, DataValidationError(err.Error())
 	}
 
@@ -39,6 +34,7 @@ func ValidateOutputData[Output any](output *Output) AppError {
 	if err := validate.Struct(output); err != nil {
 		return DataValidationError(err.Error())
 	}
+
 	return nil
 }
 
