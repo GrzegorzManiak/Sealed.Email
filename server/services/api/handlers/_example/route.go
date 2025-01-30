@@ -15,7 +15,7 @@ func ExecuteRoute(ctx *gin.Context, databaseConnection *gorm.DB) {
 		return
 	}
 
-	input, err := helpers.ValidateInputData[Input](ctx)
+	input, err := helpers.ValidateBodyData[Input](ctx)
 	if err != nil {
 		helpers.ErrorResponse(ctx, err)
 		return
