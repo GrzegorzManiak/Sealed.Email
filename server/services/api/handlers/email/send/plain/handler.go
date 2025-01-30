@@ -1,23 +1,18 @@
 package plain
 
 import (
-	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, connPool *service.Pools, user *models.User) (*Output, helpers.AppError) {
-
-	fromProvidedDomain, err := helpers.ExtractDomainFromEmail(data.From)
+func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
+	fromProvidedDomain, err := helpers.ExtractDomainFromEmail(input.From)
 	if err != nil {
 		return nil, helpers.NewUserError(err.Error(), "Invalid from email address")
 	}
 
-	fromDomain, appErr := getDomain(user, data.DomainID, databaseConnection)
+	fromDomain, appErr := getDomain(data.User, input.DomainID, data.DatabaseConnection)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -30,14 +25,14 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, connPoo
 		return nil, helpers.NewUserError("From email domain does not match the domain you have verified.", "Invalid from email address")
 	}
 
-	headers := createBasicSmtpHeaders(data.From, data.To, data.Cc)
+	headers := createBasicSmtpHeaders(input.From, input.To, input.Cc)
 	messageId := createMessageID(fromDomain.Domain)
 	headers = append(headers, createSmtpBodyHeader("Message-ID", messageId))
-	body := createSmtpBody(headers, data.Body)
+	body := createSmtpBody(headers, input.Body)
 
-	err = services.SendEmail(ctx, connPool, &smtpService.Email{
-		From:          data.From,
-		To:            []string{data.To},
+	err = services.SendEmail(data.Context, data.ConnectionPool, &smtpService.Email{
+		From:          input.From,
+		To:            []string{input.To},
 		Body:          []byte(body),
 		DkimSignature: "",
 		Version:       "1.0.0",
