@@ -2,9 +2,9 @@ package domainModify
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
-	"github.com/gin-gonic/gin"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 )
 
-func handler(data *Input, ctx *gin.Context) (*Output, helpers.AppError) {
+func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 	return nil, nil
 }

@@ -2,16 +2,14 @@ package domainGet
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
-	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	domainAdd "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/add"
 	domainList "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/domain/list"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 )
 
-func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB, user *models.User) (*Output, helpers.AppError) {
-	domain, appError := getDomain(user, data.DomainID, databaseConnection)
+func handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
+	domain, appError := getDomain(data.User, input.DomainID, data.DatabaseConnection)
 	if appError != nil {
 		return nil, appError
 	}
