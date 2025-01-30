@@ -19,4 +19,6 @@ type OutboundEmail struct {
 	InReplyTo     string
 	References    pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
 	Encrypted     bool
+
+	SentSuccessfully pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
 }

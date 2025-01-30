@@ -8,6 +8,8 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"slices"
+	"strings"
 )
 
 func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.OutboundEmail, error) {
@@ -19,9 +21,10 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Out
 	return email, nil
 }
 
-func GroupRecipients(email *models.OutboundEmail) (map[string][]string, error) {
+func GroupRecipients(email *models.OutboundEmail, sentSuccessfully []string) (map[string][]string, error) {
 	groupedRecipients := make(map[string][]string)
 	for _, recipient := range email.To {
+		recipient = strings.ToLower(recipient)
 		domain, err := helpers.ExtractDomainFromEmail(recipient)
 		if err != nil {
 			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
@@ -30,6 +33,10 @@ func GroupRecipients(email *models.OutboundEmail) (map[string][]string, error) {
 
 		if _, ok := groupedRecipients[domain]; !ok {
 			groupedRecipients[domain] = []string{}
+		}
+
+		if slices.Contains(sentSuccessfully, recipient) {
+			continue
 		}
 
 		groupedRecipients[domain] = append(groupedRecipients[domain], recipient)
@@ -70,18 +77,28 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 	}
 	zap.L().Debug("Got email by id", zap.Any("email", email))
 
-	groupedRecipients, err := GroupRecipients(email)
+	groupedRecipients, err := GroupRecipients(email, email.SentSuccessfully)
 	if err != nil {
 		zap.L().Debug("Failed to group recipients", zap.Error(err))
 		return 2
 	}
 
+	var sentSuccessfully []string
 	for domain, recipients := range groupedRecipients {
 		zap.L().Debug("Sending email to domain", zap.String("domain", domain), zap.Any("recipients", recipients))
 		if err := BatchSendEmails(certs, email, domain, recipients); err != nil {
 			zap.L().Debug("Failed to batch send emails", zap.Error(err))
 			return 2
+		} else {
+			zap.L().Debug("Batch sent successfully")
+			sentSuccessfully = append(sentSuccessfully, domain)
 		}
+	}
+
+	email.SentSuccessfully = sentSuccessfully
+	if err := queueDatabaseConnection.Save(email).Error; err != nil {
+		zap.L().Debug("Failed to save email", zap.Error(err))
+		return 2
 	}
 
 	zap.L().Debug("Email sent", zap.Any("email", email))
