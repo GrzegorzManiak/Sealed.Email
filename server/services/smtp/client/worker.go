@@ -43,7 +43,7 @@ func BatchSendEmails(certs *tls.Config, email *models.OutboundEmail, domain stri
 		batch = append(batch, recipient)
 		if config.Smtp.MaxOutboundRecipients == i+1 || i+1 == len(recipients) {
 			zap.L().Debug("Sending batch of emails", zap.Any("batch", batch), zap.String("domain", domain))
-			if err := attemptSendEmail(certs, email, domain); err != nil {
+			if err := attemptSendEmail(certs, email, domain, batch); err != nil {
 				zap.L().Debug("Failed to send email", zap.Error(err))
 				return err
 			}

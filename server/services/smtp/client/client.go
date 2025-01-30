@@ -31,7 +31,7 @@ func attemptDial(domain string, certs *tls.Config) (*smtp.Client, error) {
 	return nil, nil
 }
 
-func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, domain string) error {
+func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, domain string, recipients []string) error {
 
 	c, err := attemptDial(domain, certs)
 	if err != nil {
@@ -44,7 +44,7 @@ func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, domain str
 		return err
 	}
 
-	for _, recipient := range email.To {
+	for _, recipient := range recipients {
 		if err := c.Rcpt(recipient, nil); err != nil {
 			zap.L().Debug("Failed to send RCPT command", zap.Error(err))
 			return err
