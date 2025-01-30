@@ -1,8 +1,8 @@
 <script lang="ts">
     import {cn, Sleep} from "$lib/utils";
     import {onMount} from "svelte";
-    import {throwToast} from "$lib/toasts";
-
+    import EyeClosed from 'lucide-svelte/icons/eye-closed';
+	import EyeOpen from 'lucide-svelte/icons/eye';
     import LoaderIcon from 'lucide-svelte/icons/loader-circle';
 
     import { Button } from '$shadcn/button';
@@ -12,10 +12,25 @@
 
     import * as API from '$api/lib';
     import {redirect, redirectIfLoggedIn} from "$lib/redirect";
+	import {cubicInOut} from "svelte/easing";
 
     let className: string | undefined | null = undefined;
     export { className as class };
     let isLoading = false;
+
+	let errorBoxTitle: string = '';
+	let errorBoxMessage: string = '';
+	let errorBoxVisible: boolean = false;
+
+	function setErrorBox(title: string, message: string) {
+        errorBoxTitle = title;
+        errorBoxMessage = message;
+        errorBoxVisible = true;
+	}
+
+	function closeErrorBox() {
+        errorBoxVisible = false;
+    }
 
     // -- Account Details --
     let username: string = '';
@@ -49,7 +64,7 @@
         if (acceptedTermsError) errorMessages.push('You must accept the terms and conditions');
 
         const isError = usernameError || passwordError || acceptedTermsError || confirmPasswordError;
-        if (isError) throwToast('You have the following errors', errorMessages.join('; '));
+        if (isError) setErrorBox('You have the following errors', errorMessages.join('; '));
         return isError;
     }
 
@@ -69,6 +84,7 @@
         }
 
         try {
+			closeErrorBox();
             API.Session.ClearSessionCookie();
             await API.Register.RegisterUser(username, password);
             return await redirect('/authentication/login', {
@@ -79,12 +95,17 @@
         }
 
         catch (error) {
-            API.GenericError.fromUnknown(error).toast();
+            const parsedError = API.GenericError.fromUnknown(error);
+            setErrorBox(parsedError.title, parsedError.message);
             return await finish();
         }
     }
 
-    onMount(() => {
+	onMount(() => {
+		errorBoxTitle = '';
+		errorBoxMessage = '';
+		errorBoxVisible = false;
+
         isLoading = false;
         username = '';
         password = '';
@@ -105,6 +126,25 @@
     <!-- Main form -->
     <form on:submit|preventDefault={submitDetails}>
         <div class='grid gap-2'>
+
+            <!-- Error Box -->
+            {#if errorBoxVisible}
+                <div class='bg-red-950 text-red-300 p-2 rounded-md transition-transform'>
+                    <div class='flex items center justify-between '>
+                        <h2 class='text-sm font-semibold'>{errorBoxTitle}</h2>
+                        <button class='text-red-300' on:click={closeErrorBox} type="button">
+                            {#if errorBoxVisible}
+                                <EyeOpen class='w-4 h-4' />
+                            {:else}
+                                <EyeClosed class='w-4 h-4' />
+                            {/if}
+                        </button>
+                    </div>
+                    <p class='text-sm'>{
+                        errorBoxMessage
+                    }</p>
+                </div>
+            {/if}
 
             <!-- Break -->
             <div class='relative'>

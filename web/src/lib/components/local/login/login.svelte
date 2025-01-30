@@ -11,12 +11,28 @@
     import { Label } from '$shadcn/label';
     import * as API from "$api/lib";
     import {redirect, redirectIfLoggedIn} from "$lib/redirect";
-
+	import EyeClosed from 'lucide-svelte/icons/eye-closed';
+	import EyeOpen from 'lucide-svelte/icons/eye';
+    
     let className: string | undefined | null = undefined;
     export { className as class };
     let isLoading = false;
 
-    // -- Account Details --
+	let errorBoxTitle: string = '';
+	let errorBoxMessage: string = '';
+	let errorBoxVisible: boolean = false;
+
+	function setErrorBox(title: string, message: string) {
+		errorBoxTitle = title;
+		errorBoxMessage = message;
+		errorBoxVisible = true;
+	}
+
+	function closeErrorBox() {
+		errorBoxVisible = false;
+	}
+
+	// -- Account Details --
     let username: string = '';
     let usernameError: boolean = false;
 
@@ -33,7 +49,7 @@
         if (passwordError) errorMessages.push('Password must be at least 8 characters long');
 
         const isError = usernameError || passwordError;
-        if (isError) throwToast('You have the following errors', errorMessages.join('; '));
+        if (isError) setErrorBox('You have the following errors', errorMessages.join('; '));
         return isError;
     }
 
@@ -53,7 +69,8 @@
         }
 
         try {
-            API.Session.ClearSessionCookie();
+			closeErrorBox();
+			API.Session.ClearSessionCookie();
             const result = await API.Login.Login(username, password);
             const session = new API.Session(result);
             await session.DecryptKeys();
@@ -66,12 +83,17 @@
         }
 
         catch (error) {
-            API.GenericError.fromUnknown(error).toast();
+			const parsedError =  API.GenericError.fromUnknown(error);
+			setErrorBox(parsedError.title, parsedError.message);
             return await finish();
         }
     }
 
     onMount(() => {
+		errorBoxTitle = '';
+		errorBoxMessage = '';
+		errorBoxVisible = false;
+
         isLoading = false;
         username = '';
         password = '';
@@ -86,6 +108,25 @@
     <!-- Main form -->
     <form on:submit|preventDefault={submitDetails}>
         <div class='grid gap-2'>
+
+            <!-- Error Box -->
+            {#if errorBoxVisible}
+                <div class='bg-red-950 text-red-300 p-2 rounded-md transition-transform'>
+                    <div class='flex items center justify-between '>
+                        <h2 class='text-sm font-semibold'>{errorBoxTitle}</h2>
+                        <button class='text-red-300' on:click={closeErrorBox} type="button">
+                            {#if errorBoxVisible}
+                                <EyeOpen class='w-4 h-4' />
+                            {:else}
+                                <EyeClosed class='w-4 h-4' />
+                            {/if}
+                        </button>
+                    </div>
+                    <p class='text-sm'>{
+                        errorBoxMessage
+                    }</p>
+                </div>
+            {/if}
 
             <!-- Break -->
             <div class='relative'>
