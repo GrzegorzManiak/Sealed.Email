@@ -21,14 +21,15 @@ type SmtpConfig struct {
 	Certificates  ServiceCertificates `yaml:"certificates"`
 	Ports         SmtpPorts           `yaml:"ports"`
 
-	PortTimeout       int    `yaml:"portTimeout"`
-	Address           string `yaml:"address"`
-	Domain            string `yaml:"domain"`
-	WriteTimeout      int    `yaml:"writeTimeout"`
-	ReadTimeout       int    `yaml:"readTimeout"`
-	MaxMessageBytes   int64  `yaml:"maxMessageBytes"`
-	MaxRecipients     int    `yaml:"maxRecipients"`
-	AllowInsecureAuth bool   `yaml:"allowInsecureAuth"`
-	MaxLineLength     int    `yaml:"maxLineLength"`
-	SpfHardFail       bool   `yaml:"spfHardFail"`
+	PortTimeout           int    `yaml:"portTimeout"`
+	Address               string `yaml:"address"`
+	Domain                string `yaml:"domain"`
+	WriteTimeout          int    `yaml:"writeTimeout"`
+	ReadTimeout           int    `yaml:"readTimeout"`
+	MaxMessageBytes       int64  `yaml:"maxMessageBytes"`
+	MaxRecipients         int    `yaml:"maxRecipients"`
+	AllowInsecureAuth     bool   `yaml:"allowInsecureAuth"`
+	MaxLineLength         int    `yaml:"maxLineLength"`
+	SpfHardFail           bool   `yaml:"spfHardFail"`
+	MaxOutboundRecipients int    `yaml:"maxOutboundRecipients"`
 }

@@ -42,16 +42,22 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 		return nil, helpers.NewServerError("Failed to sign email. Please try again later.", "Failed to sign email")
 	}
 
+	to := []string{input.To.Email}
+	for _, cc := range input.Cc {
+		to = append(to, cc.Email)
+	}
+
+	for _, bcc := range input.Bcc {
+		to = append(to, bcc.Email)
+	}
+
 	err = email.Email(data.Context, data.ConnectionPool, &smtpService.Email{
-		From:          input.From.Email,
-		To:            []string{input.To.Email},
-		Body:          []byte(signedEmail),
-		DkimSignature: "",
-		Version:       "1.0.0",
-		InReplyTo:     "",
-		References:    nil,
-		MessageId:     messageId,
-		Encrypted:     false,
+		From:      input.From.Email,
+		To:        to,
+		Body:      []byte(signedEmail),
+		Version:   "1.0",
+		MessageId: messageId,
+		Encrypted: false,
 	})
 
 	if err != nil {

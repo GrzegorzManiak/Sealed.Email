@@ -2,7 +2,9 @@ package client
 
 import (
 	"crypto/tls"
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -15,6 +17,39 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Out
 		return nil, err
 	}
 	return email, nil
+}
+
+func GroupRecipients(email *models.OutboundEmail) (map[string][]string, error) {
+	groupedRecipients := make(map[string][]string)
+	for _, recipient := range email.To {
+		domain, err := helpers.ExtractDomainFromEmail(recipient)
+		if err != nil {
+			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
+			return nil, err
+		}
+
+		if _, ok := groupedRecipients[domain]; !ok {
+			groupedRecipients[domain] = []string{}
+		}
+
+		groupedRecipients[domain] = append(groupedRecipients[domain], recipient)
+	}
+	return groupedRecipients, nil
+}
+
+func BatchSendEmails(certs *tls.Config, email *models.OutboundEmail, domain string, recipients []string) error {
+	var batch []string
+	for i, recipient := range recipients {
+		batch = append(batch, recipient)
+		if config.Smtp.MaxOutboundRecipients == i+1 || i+1 == len(recipients) {
+			if err := attemptSendEmail(certs, email, domain); err != nil {
+				zap.L().Debug("Failed to send email", zap.Error(err))
+				return err
+			}
+			batch = []string{}
+		}
+	}
+	return nil
 }
 
 func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm.DB) int8 {
@@ -34,13 +69,19 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 	}
 	zap.L().Debug("Got email by id", zap.Any("email", email))
 
-	for _, to := range email.To {
-		zap.L().Debug("Sending email", zap.Any("email", email), zap.String("to", to))
-		if err := attemptSendEmail(certs, email, to); err != nil {
-			zap.L().Debug("Failed to send email", zap.Error(err))
+	groupedRecipients, err := GroupRecipients(email)
+	if err != nil {
+		zap.L().Debug("Failed to group recipients", zap.Error(err))
+		return 2
+	}
+
+	for domain, recipients := range groupedRecipients {
+		if err := BatchSendEmails(certs, email, domain, recipients); err != nil {
+			zap.L().Debug("Failed to batch send emails", zap.Error(err))
 			return 2
 		}
 	}
+
 	zap.L().Debug("Email sent", zap.Any("email", email))
 	return 1
 }

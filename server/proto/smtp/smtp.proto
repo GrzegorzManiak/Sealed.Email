@@ -10,10 +10,7 @@ message Email {
   string from = 1;
   repeated string to = 2;
   bytes body = 3;
-  string dkimSignature = 4;
   string version = 5;
-  string inReplyTo = 6;
-  repeated string references = 7;
   string messageId = 8;
   bool encrypted = 9;
 }

@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/grzegorzmaniak/go-smtp"
 	"go.uber.org/zap"
 )
@@ -32,12 +31,7 @@ func attemptDial(domain string, certs *tls.Config) (*smtp.Client, error) {
 	return nil, nil
 }
 
-func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, to string) error {
-	domain, err := helpers.ExtractDomainFromEmail(to)
-	if err != nil {
-		zap.L().Debug("Failed to extract domain from email", zap.Error(err))
-		return err
-	}
+func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, domain string) error {
 
 	c, err := attemptDial(domain, certs)
 	if err != nil {
@@ -83,7 +77,6 @@ func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, to string)
 
 	zap.L().Debug("Email sent successfully",
 		zap.Any("email", email),
-		zap.String("to", to),
 		zap.String("domain", domain),
 		zap.Any("hello", config.Smtp.Domain))
 

@@ -147,6 +147,7 @@ smtp:
   readTimeout: 100
   maxMessageBytes: 10000000 # 10MB
   maxRecipients: 100
+  maxOutboundRecipients: 50
   allowInsecureAuth: true
   maxLineLength: 2000
   spfHardFail: false
