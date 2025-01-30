@@ -2,23 +2,21 @@ package devSession
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
-	"github.com/GrzegorzManiak/NoiseBackend/services/api/session"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 )
 
-func handler(ctx *gin.Context, session *session.Claims, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
+func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 	return &Output{
-		ContentSessionID: session.Content.SessionID,
-		ContentUserID:    session.Content.UserID,
+		ContentSessionID: data.Session.Content.SessionID,
+		ContentUserID:    data.Session.Content.UserID,
 
-		Token:     session.Token,
-		Signature: session.Signature,
+		Token:     data.Session.Token,
+		Signature: data.Session.Signature,
 
-		HeaderVersion: session.Header.Ver,
-		HeaderGroup:   session.Header.Group,
-		HeaderEat:     session.Header.ExpiresAt,
-		HeaderCat:     session.Header.CreatedAt,
-		HeaderRat:     session.Header.RefreshAt,
+		HeaderVersion: data.Session.Header.Ver,
+		HeaderGroup:   data.Session.Header.Group,
+		HeaderEat:     data.Session.Header.ExpiresAt,
+		HeaderCat:     data.Session.Header.CreatedAt,
+		HeaderRat:     data.Session.Header.RefreshAt,
 	}, nil
 }
