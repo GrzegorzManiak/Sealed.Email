@@ -115,6 +115,7 @@ func IsValidPublicIPV6(domain string) bool {
 }
 
 func ExtractDomainFromEmail(email string) (string, error) {
+	email = strings.ToLower(email)
 	domain := ""
 	if !strings.Contains(email, "@") {
 		domain = email
@@ -144,4 +145,12 @@ func CompareDomains(domain1 string, domain2 string) bool {
 	}
 
 	return t1 == t2
+}
+
+func NormalizeEmail(email string) string {
+	username := strings.SplitN(email, "@", 2)[0]
+	username = strings.ToLower(username)
+	username = strings.Trim(username, " ")
+	domain, _ := ExtractDomainFromEmail(email)
+	return fmt.Sprintf("%s@%s", username, domain)
 }
