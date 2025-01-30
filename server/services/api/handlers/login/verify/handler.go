@@ -6,15 +6,14 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/session"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"time"
 )
 
-func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Output, helpers.AppError) {
+func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 	userVerify := models2.UserVerify{}
-	dbErr := databaseConnection.Where("p_id = ?", data.PID).First(&userVerify)
+	dbErr := data.DatabaseConnection.Where("p_id = ?", input.PID).First(&userVerify)
 	if dbErr.Error != nil {
 		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
@@ -24,7 +23,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 	}
 
 	user := models2.User{}
-	dbErr = databaseConnection.Where("id = ?", userVerify.UserID).First(&user)
+	dbErr = data.DatabaseConnection.Where("id = ?", userVerify.UserID).First(&user)
 	if dbErr.Error != nil {
 		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
@@ -38,7 +37,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
-	clientValidate, err := parseClientValidate(data)
+	clientValidate, err := parseClientValidate(input)
 	if err != nil {
 		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
@@ -58,7 +57,7 @@ func handler(data *Input, ctx *gin.Context, databaseConnection *gorm.DB) (*Outpu
 		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
-	_, err = session.IssueAndSetSessionToken(ctx, user, databaseConnection)
+	_, err = session.IssueAndSetSessionToken(data.Context, user, data.DatabaseConnection)
 	if err != nil {
 		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
