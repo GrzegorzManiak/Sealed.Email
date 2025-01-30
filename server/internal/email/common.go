@@ -1,20 +1,52 @@
 package email
 
 import (
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"strings"
 )
 
-func (h Headers) From(from string) {
-	h.Add("From", from)
+type Inbox struct {
+	DisplayName string `json:"displayName" validate:"lte=100"`
+	Email       string `json:"email" validate:"required,email"`
 }
 
-func (h Headers) To(to string) {
-	h.Add("To", to)
+// EscapeDisplayName / RFC 5322 p45
+func (i Inbox) EscapeDisplayName() string {
+	specialChars := `()<>[]:;@\,."`
+	needsQuoting := strings.ContainsAny(i.DisplayName, specialChars+" ")
+
+	if needsQuoting {
+		i.DisplayName = strings.ReplaceAll(i.DisplayName, `\`, `\\`)
+		i.DisplayName = strings.ReplaceAll(i.DisplayName, `"`, `\"`)
+		return fmt.Sprintf(`"%s"`, i.DisplayName)
+	}
+
+	return i.DisplayName
 }
 
-func (h Headers) Cc(cc []string) {
-	h.Add("Cc", strings.Join(cc, ", "))
+func (i Inbox) String() string {
+	if i.DisplayName == "" {
+		return i.Email
+	}
+
+	return fmt.Sprintf("%s <%s>", i.EscapeDisplayName(), i.Email)
+}
+
+func (h Headers) From(from Inbox) {
+	h.Add("From", from.String())
+}
+
+func (h Headers) To(to Inbox) {
+	h.Add("To", to.String())
+}
+
+func (h Headers) Cc(cc []Inbox) {
+	ccStrings := make([]string, len(cc))
+	for i, c := range cc {
+		ccStrings[i] = c.String()
+	}
+	h.Add("Cc", strings.Join(ccStrings, ", "))
 }
 
 func (h Headers) Date() {
@@ -29,4 +61,18 @@ func (h Headers) MessageId(domain string) string {
 	messageId := "<" + helpers.GeneratePublicId() + "@" + domain + ">"
 	h.Add("Message-ID", messageId)
 	return messageId
+}
+
+func (h Headers) ReplyTo(replyTo Inbox) {
+	h.Add("Reply-To", replyTo.String())
+}
+
+func (h Headers) InReplyTo(inReplyTo string) {
+	h.Add("In-Reply-To", inReplyTo)
+}
+
+func (h Headers) NoiseSignature(signature string, nonce string) {
+	h.Add("X-Noise-Signature", signature)
+	h.Add("X-Noise-Version", "1.0")
+	h.Add("X-Noise-Nonce", nonce)
 }

@@ -49,15 +49,28 @@ if (domainSweep) await API.Domain.AddDomain(session, randomString + 'test.grzego
 const domainId = 'TWXjSnVnc6+HQ/WUZaJA6vl3DdkyvNHuowp3TcevrbM=';
 const domainService = await API.DomainService.Decrypt(session, await API.Domain.GetDomain(session, domainId));
 
-const sentEmail = await API.Email.SendPlainEmail(session, {
+const email = {
     domainID: domainService.DomainID,
     bcc: [],
     cc: [],
-    body: 'Yooooooooo This is actually working',
-    from: 'hello@beta.noise.email',
-    to: 'gregamaniak@gmail.com',
-    subject: 'Test email Account id: ' + randomString,
-    signature: ''
+    body: 'God damn i have to rewrite the DKIM shit',
+    from: {
+        displayName: '',
+        email: 'hello@beta.noise.email'
+    },
+    to: {
+        displayName: '',
+        email: 'gregamaniak@gmail.com'
+    },
+    subject: 'My bad Bruh',
+    signature: '',
+    nonce: ''
+}
+
+
+const sentEmail = await API.Email.SendPlainEmail(session, {
+    ...email,
+    ...await domainService.SignEmail(email)
 });
 
 console.log('Sent email:', sentEmail);

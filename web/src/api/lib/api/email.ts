@@ -4,18 +4,24 @@ import {HandleRequest} from "./common";
 import {Endpoints} from "../constants";
 import {ClientError} from "../errors";
 
+type Inbox = {
+    displayName: string;
+    email: string;
+};
+
 type PlainEmail = {
     domainID: DomainRefID;
-    from: string;
+    from: Inbox;
 
-    to: string;
-    cc: string[];
-    bcc: string[];
+    to: Inbox;
+    cc: Inbox[];
+    bcc: Inbox[];
 
     subject: string;
     body: string;
 
     signature: string;
+    nonce: string;
 }
 
 const SendPlainEmail = async (session: Session, email: PlainEmail): Promise<void> => {
