@@ -8,6 +8,12 @@ import (
 	"gorm.io/gorm"
 )
 
+func usernameExists(username string, databaseConnection *gorm.DB) bool {
+	var user models.User
+	databaseConnection.Where("uid = ?", username).First(&user)
+	return user.UID != ""
+}
+
 func registerUser(
 	data *Input,
 	registeredUser *owl.RegistrationResponse,

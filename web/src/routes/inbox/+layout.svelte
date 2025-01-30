@@ -1,4 +1,3 @@
-<script src="../../api/tests/debug.ts"></script>
 <script lang="ts">
     import NavBarButton from "@/inbox/navBarButton.svelte";
     import StorageIndicator from "@/inbox/storageIndicator.svelte";

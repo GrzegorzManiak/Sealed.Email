@@ -16,7 +16,6 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 	proof := crypto.B64DecodeBytes(input.Proof)
 	publicKey, err := cryptography.ByteArrToECDSAPublicKey(config.CURVE, crypto.B64DecodeBytes(input.PublicKey))
 	if err != nil {
-
 		return nil, helpers.NewServerError(fmt.Sprintf("Error converting public key: %v", err), "Oops! Something went wrong")
 	}
 
@@ -32,6 +31,10 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 
 	if err != nil {
 		return nil, helpers.NewServerError(fmt.Sprintf("Error initializing server: %v", err), "Oops! Something went wrong")
+	}
+
+	if usernameExists(input.User, data.DatabaseConnection) {
+		return nil, helpers.NewUserError("Sorry, that username is already taken. Please try another.", "Username taken")
 	}
 
 	registeredUser := owlServer.RegisterUser()
