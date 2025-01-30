@@ -24,6 +24,7 @@ func Email(ctx context.Context, connPool *service.Pools, email *smtpService.Emai
 
 	stub := smtpService.NewSmtpServiceClient(conn.Conn)
 	sent, err := stub.SendEmail(ctx, email)
+	zap.L().Debug("Email sent to SMTP service", zap.Any("grpc IP", conn.Conn.Target()), zap.Any("email", email))
 
 	if err != nil {
 		zap.L().Debug("Failed to queue email", zap.Error(err))
