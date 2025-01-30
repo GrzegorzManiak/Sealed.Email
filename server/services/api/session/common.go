@@ -64,10 +64,6 @@ type APIConfiguration struct {
 	SessionRequired bool
 	Allow           []string
 	Block           []string
-
-	RateLimit  bool
-	BucketSize int
-	RefillRate float64
 }
 
 func FindSession(sessionID string, databaseConnection *gorm.DB) (models.Session, error) {

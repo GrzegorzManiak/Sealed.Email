@@ -3,7 +3,7 @@ package domainAdd
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
-	Domain           string `json:"domain" validate:"fqdn,min=6"`
+	Domain           string `json:"domain" validate:"required,fqdn,min=6"`
 	SymmetricRootKey string `json:"symmetricRootKey" validate:"Encrypted-B64-Key"`
 }
 

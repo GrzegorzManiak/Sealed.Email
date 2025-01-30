@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -12,19 +13,21 @@ func ValidateInputData[T interface{}](ctx *gin.Context) (*T, AppError) {
 	var input T
 
 	if err := ctx.ShouldBindHeader(&input); err != nil {
-		return nil, DataValidationError(err.Error())
+		return nil, DataValidationError(fmt.Sprintf("header: %s", err.Error()))
 	}
 
 	if err := ctx.ShouldBindQuery(&input); err != nil {
-		return nil, DataValidationError(err.Error())
+		return nil, DataValidationError(fmt.Sprintf("query: %s", err.Error()))
 	}
 
-	if err := ctx.ShouldBindJSON(&input); err != nil {
-		return nil, DataValidationError(err.Error())
+	if ctx.Request.Method != "GET" && ctx.Request.Method != "DELETE" {
+		if err := ctx.ShouldBindJSON(&input); err != nil {
+			return nil, DataValidationError(fmt.Sprintf("json: %s", err.Error()))
+		}
 	}
 
 	if err := validate.Struct(input); err != nil {
-		return nil, DataValidationError(err.Error())
+		return nil, DataValidationError(fmt.Sprintf("struct: %s", err.Error()))
 	}
 
 	return &input, nil

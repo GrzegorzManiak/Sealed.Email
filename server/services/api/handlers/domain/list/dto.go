@@ -4,12 +4,12 @@ import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
 	Page    int `form:"page" validate:"gte=0,lte=100"`
-	PerPage int `form:"perPage" validate:"gte=3,lte=15"`
+	PerPage int `form:"perPage" validate:"required,gte=3,lte=15"`
 }
 
 type Output struct {
 	Domains []Domain `json:"domains"`
-	Total   int64    `json:"total"`
+	Total   int64    `json:"total" validate:"gte=0,lte=1000"`
 }
 
 type Domain struct {

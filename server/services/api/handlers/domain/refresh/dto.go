@@ -3,7 +3,7 @@ package domainVerify
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
-	DomainID string `json:"domainID"`
+	DomainID string `json:"domainID" validate:"required,PublicID"`
 }
 
 type Output struct {

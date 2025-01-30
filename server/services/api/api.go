@@ -8,6 +8,7 @@ import (
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/middleware"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/routes"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/gin-contrib/pprof"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
@@ -51,12 +52,16 @@ func Start() {
 		zap.L().Panic("failed to create distributed service", zap.Error(err))
 	}
 
-	routes.RegisterRoutes(router, databaseConnection)
-	routes.LoginRoutes(router, databaseConnection)
-	routes.DomainRoutes(router, databaseConnection, connPool)
-	routes.InboxRoutes(router, databaseConnection)
-	routes.DevRoutes(router, databaseConnection)
-	routes.EmailRoutes(router, databaseConnection, connPool)
+	baseRoute := &services.BaseRoute{
+		DatabaseConnection: databaseConnection,
+		ConnectionPool:     connPool,
+	}
+
+	routes.RegisterRoutes(router, baseRoute)
+	routes.LoginRoutes(router, baseRoute)
+	routes.DomainRoutes(router, baseRoute)
+	routes.DevRoutes(router, baseRoute)
+	routes.EmailRoutes(router, baseRoute)
 
 	err = router.Run(fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port))
 	if err != nil {

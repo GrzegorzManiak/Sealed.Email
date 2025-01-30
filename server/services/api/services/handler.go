@@ -33,6 +33,7 @@ func ExecuteRoute[InputType any, OutputType any](
 	// -- Session management
 	sessionClaims, sessionErr := middleware.SessionManagerMiddleware(ctx, sessionFilter, baseRoute.DatabaseConnection)
 	if sessionErr != nil {
+		zap.L().Debug("Error SessionManagerMiddleware", zap.Error(sessionErr))
 		helpers.ErrorResponse(ctx, sessionErr)
 		return
 	}
@@ -40,6 +41,7 @@ func ExecuteRoute[InputType any, OutputType any](
 	// -- Input validation
 	input, err := helpers.ValidateInputData[InputType](ctx)
 	if err != nil {
+		zap.L().Debug("Error ValidateInputData", zap.Error(err), zap.Any("input", input))
 		helpers.ErrorResponse(ctx, err)
 		return
 	}
@@ -51,6 +53,7 @@ func ExecuteRoute[InputType any, OutputType any](
 	if sessionFilter.SessionRequired {
 		user, err = sessionClaims.FetchUser(baseRoute.DatabaseConnection)
 		if err != nil {
+			zap.L().Debug("Error FetchUser", zap.Error(err))
 			helpers.ErrorResponse(ctx, err)
 			return
 		}
@@ -69,14 +72,14 @@ func ExecuteRoute[InputType any, OutputType any](
 
 	if handlerErr != nil {
 		zap.L().Debug("Error handler", zap.Error(err), zap.Any("input", input), zap.Any("user", user))
-		helpers.ErrorResponse(ctx, err)
+		helpers.ErrorResponse(ctx, handlerErr)
 		return
 	}
 
 	// -- Output validation
 	if outErr := helpers.ValidateOutputData(output); outErr != nil {
 		zap.L().Debug("Error ValidateOutputData", zap.Error(outErr), zap.Any("output", output))
-		helpers.ErrorResponse(ctx, err)
+		helpers.ErrorResponse(ctx, outErr)
 		return
 	}
 
