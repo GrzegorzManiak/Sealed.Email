@@ -13,10 +13,15 @@ func BuildTlsConfig(certs structs.ServiceCertificates) (tlsConfig *tls.Config, e
 		zap.L().Panic("failed to load certificate", zap.Error(err))
 	}
 
+	authMode := tls.RequireAndVerifyClientCert
+	if config.Smtp.SkipTlsVerify {
+		authMode = tls.VerifyClientCertIfGiven
+	}
+
 	tlsConfig = &tls.Config{
 		Certificates: []tls.Certificate{cert},
 		ServerName:   config.Smtp.Domain,
-		ClientAuth:   tls.VerifyClientCertIfGiven,
+		ClientAuth:   authMode,
 	}
 
 	return tlsConfig, nil
