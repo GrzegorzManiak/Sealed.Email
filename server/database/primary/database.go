@@ -31,7 +31,6 @@ func AutoMigrateTables(databaseConnection *gorm.DB) {
 	databaseConnection.AutoMigrate(&models2.Session{})
 	databaseConnection.AutoMigrate(&models2.User{})
 	databaseConnection.AutoMigrate(&models2.UserDomain{})
-	databaseConnection.AutoMigrate(&models2.UserInbox{})
 	databaseConnection.AutoMigrate(&models2.UserHold{})
 	databaseConnection.AutoMigrate(&models2.UserQuota{})
 }

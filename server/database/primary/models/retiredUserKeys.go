@@ -29,13 +29,3 @@ type RetiredUserDomainKey struct {
 	DKIMEncryptedPrivateKey     *string
 	EncryptedRootKey            string
 }
-
-type RetiredUserInboxKey struct {
-	gorm.Model
-	UserID uint
-
-	Version             uint
-	PublicKey           string
-	EncryptedPrivateKey string
-	EncryptedRootKey    string
-}
