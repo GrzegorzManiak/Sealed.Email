@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -15,7 +14,7 @@ func TestData(t *testing.T) {
 		reader := strings.NewReader(testData)
 
 		s := Session{
-			Headers: headers.CreateHeaderContext(),
+			Headers: CreateHeaderContext(),
 		}
 
 		err := s.Data(reader)
@@ -41,7 +40,7 @@ func TestData(t *testing.T) {
 		reader := strings.NewReader(testData)
 
 		s := Session{
-			Headers: headers.CreateHeaderContext(),
+			Headers: CreateHeaderContext(),
 		}
 
 		err := s.Data(reader)
@@ -64,7 +63,7 @@ func TestData(t *testing.T) {
 		reader := strings.NewReader(testData)
 
 		s := Session{
-			Headers: headers.CreateHeaderContext(),
+			Headers: CreateHeaderContext(),
 		}
 
 		err := s.Data(reader)
@@ -79,7 +78,7 @@ func TestData(t *testing.T) {
 		reader := strings.NewReader(testData)
 
 		s := Session{
-			Headers: headers.CreateHeaderContext(),
+			Headers: CreateHeaderContext(),
 		}
 
 		err := s.Data(reader)

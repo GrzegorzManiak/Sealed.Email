@@ -1,4 +1,4 @@
-package headers
+package email
 
 import (
 	"fmt"

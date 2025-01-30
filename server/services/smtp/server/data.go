@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/email"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/services"
 	"go.uber.org/zap"
 	"io"
@@ -65,14 +65,14 @@ func ProcessHeaders(data string, session *Session) error {
 
 	if len(strings.TrimSpace(data)) == 0 {
 		session.Headers.Finished = true
-		if !session.Headers.Data.Has(headers.RequiredHeaders) {
+		if !session.Headers.Data.Has(email.RequiredHeaders) {
 			return fmt.Errorf("missing required headers")
 		}
 		return nil
 	}
 
 	lastHeader, _ := session.Headers.Data.Get(session.Headers.LastHeader)
-	header, value, err := headers.ParseHeader(data, lastHeader)
+	header, value, err := email.ParseHeader(data, lastHeader)
 	if err != nil {
 		return nil
 	}

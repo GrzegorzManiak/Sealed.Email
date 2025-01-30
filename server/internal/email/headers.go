@@ -1,4 +1,4 @@
-package headers
+package email
 
 import "strings"
 
@@ -20,12 +20,6 @@ type Header struct {
 }
 
 type Headers map[string]Header
-
-type HeaderContext struct {
-	Data       Headers
-	Finished   bool
-	LastHeader string
-}
 
 const (
 	HeaderUnknown        HeaderStatus = iota
@@ -108,11 +102,13 @@ func (h Headers) Marshal() []byte {
 	return bytes
 }
 
-func CreateHeaderContext() HeaderContext {
-	return HeaderContext{
-		Data:     make(Headers),
-		Finished: false,
+func (h Headers) Stringify() string {
+	var str strings.Builder
+	for _, v := range h {
+		formatted := FormatSmtpHeader(&v)
+		str.WriteString(formatted)
 	}
+	return str.String()
 }
 
 func GetWellKnownHeader(h string) WellKnownHeader {
@@ -157,4 +153,28 @@ func GetNoiseExtensionHeader(h string) NoiseExtensionHeader {
 	default:
 		return NoiseExtensionHeader{}
 	}
+}
+
+func FormatSmtpHeader(header *Header) string {
+	escapedValue := strings.ReplaceAll(header.Value, "\n", "")
+	escapedValue = strings.ReplaceAll(escapedValue, "\r", "")
+	escapedValue = strings.ReplaceAll(escapedValue, "\"", "\\\"")
+	formatted := header.Key + ": " + escapedValue
+
+	var foldedHeader strings.Builder
+	lineLength := 0
+	for i, char := range formatted {
+		if lineLength == 76 {
+			foldedHeader.WriteString("\r\n ")
+			lineLength = 1
+		}
+		foldedHeader.WriteRune(char)
+		lineLength++
+
+		if i == len(formatted)-1 {
+			foldedHeader.WriteString("\r\n")
+		}
+	}
+
+	return foldedHeader.String()
 }

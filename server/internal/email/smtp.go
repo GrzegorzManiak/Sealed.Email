@@ -1,4 +1,4 @@
-package services
+package email
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func SendEmail(ctx context.Context, connPool *service.Pools, email *smtpService.Email) helpers.AppError {
+func Email(ctx context.Context, connPool *service.Pools, email *smtpService.Email) helpers.AppError {
 	pool, err := connPool.GetPool(config.Etcd.SMTP.Prefix)
 	if err != nil {
 		zap.L().Debug("Failed to get smtp pool", zap.Error(err))

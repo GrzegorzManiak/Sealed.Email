@@ -6,7 +6,6 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
-	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/headers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/services"
 	"github.com/emersion/go-smtp"
 	"go.uber.org/zap"
@@ -16,7 +15,7 @@ import (
 )
 
 type Session struct {
-	Headers            headers.HeaderContext
+	Headers            HeaderContext
 	SpfResult          spf.Result
 	Id                 string
 	InboundQueue       *queue.Queue
@@ -91,7 +90,7 @@ func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
 
 func (s *Session) Reset() {
 	zap.L().Debug("Resetting session", zap.String("id", s.Id))
-	s.Headers = headers.CreateHeaderContext()
+	s.Headers = CreateHeaderContext()
 	s.RawData = nil
 	s.From = ""
 	s.To = make(map[string]bool)

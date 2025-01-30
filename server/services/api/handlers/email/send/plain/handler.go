@@ -1,6 +1,7 @@
 package plain
 
 import (
+	"github.com/GrzegorzManiak/NoiseBackend/internal/email"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
@@ -30,7 +31,7 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 	headers = append(headers, createSmtpBodyHeader("Message-ID", messageId))
 	body := createSmtpBody(headers, input.Body)
 
-	err = services.SendEmail(data.Context, data.ConnectionPool, &smtpService.Email{
+	err = email.Email(data.Context, data.ConnectionPool, &smtpService.Email{
 		From:          input.From,
 		To:            []string{input.To},
 		Body:          []byte(body),

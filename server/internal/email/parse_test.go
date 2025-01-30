@@ -1,4 +1,4 @@
-package headers
+package email
 
 import (
 	"github.com/stretchr/testify/assert"

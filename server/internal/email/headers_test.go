@@ -1,20 +1,9 @@
-package headers
+package email
 
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
-
-func TestCreateHeaderContext(t *testing.T) {
-	t.Run("TestCreateHeaderContext", func(t *testing.T) {
-		t.Parallel()
-
-		hc := CreateHeaderContext()
-		assert.Equal(t, hc.LastHeader, "", "LastHeader should be empty")
-		assert.Equal(t, len(hc.Data), 0, "Headers should be empty")
-		assert.False(t, hc.Finished, "Finished should be false")
-	})
-}
 
 func TestHeaders_Add(t *testing.T) {
 	t.Run("TestHeaders_Add unknown", func(t *testing.T) {
