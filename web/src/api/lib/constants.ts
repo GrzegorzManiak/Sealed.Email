@@ -15,12 +15,6 @@ const Endpoints: { [key: string]: [string, string] } = {
     DOMAIN_MODIFY:  [`${ROOT}/domain/modify`, 'PUT'],
     DOMAIN_REFRESH:  [`${ROOT}/domain/refresh`, 'PUT'],
 
-    INBOX_ADD:      [`${ROOT}/inbox/add`, 'POST'],
-    INBOX_GET:      [`${ROOT}/inbox/get`, 'GET'],
-    INBOX_DELETE:   [`${ROOT}/inbox/delete`, 'DELETE'],
-    INBOX_LIST:     [`${ROOT}/inbox/list`, 'GET'],
-    INBOX_MODIFY:   [`${ROOT}/inbox/modify`, 'PUT'],
-
     EMAIL_SEND_PLAIN: [`${ROOT}/email/send/plain`, 'POST'],
     EMAIL_SEND_ENCRYPTED: [`${ROOT}/email/send/encrypted`, 'POST'],
 };

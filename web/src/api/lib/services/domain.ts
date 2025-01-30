@@ -4,7 +4,6 @@ import {Compress, Decompress, Decrypt, Encrypt, NewKey} from "../symetric";
 import {BigIntToByteArray, EncodeToBase64, GetCurve, Hash} from "gowl-client-lib";
 import {CurrentCurve} from "../constants";
 import {DecodeFromBase64} from "../common";
-import {InboxKeys} from "../api/inbox";
 
 class Domain {
     private readonly _session: Session;
@@ -52,27 +51,6 @@ class Domain {
     public async CreateEmailHash(email: string): Promise<string> {
         const hash = BigIntToByteArray(await Hash(`${email}@${this._domain}`));
         return EncodeToBase64(hash);
-    }
-
-    public async CreateInboxKeys(inboxName: string): Promise<InboxKeys> {
-        inboxName = inboxName.toLowerCase();
-        inboxName = inboxName.trim();
-        
-        const symmetricRootKey = NewKey();
-        const curve = GetCurve(CurrentCurve);
-        const asymmetricPrivateKey = curve.utils.randomPrivateKey();
-        const asymmetricPublicKey = curve.getPublicKey(asymmetricPrivateKey);
-        const encryptedSymmetricRootKey = await this.EncryptKey(symmetricRootKey);
-        const encryptedAsymmetricPrivateKey = await Encrypt(EncodeToBase64(asymmetricPrivateKey), symmetricRootKey);
-        const encryptedEmailName = await this.EncryptKey(inboxName);
-
-        return {
-            emailHash: await this.CreateEmailHash(inboxName),
-            symmetricRootKey: encryptedSymmetricRootKey,
-            asymmetricPrivateKey: EncodeToBase64(Compress(encryptedAsymmetricPrivateKey)),
-            asymmetricPublicKey: EncodeToBase64(asymmetricPublicKey),
-            encryptedEmailName: encryptedEmailName
-        }
     }
 
     public async EncryptKey(key: Uint8Array | string): Promise<string> {
