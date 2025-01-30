@@ -2,15 +2,14 @@ package routes
 
 import (
 	"fmt"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/service"
-	plainSend "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/email/send/plain"
+	sendPlain "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/email/send/plain"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-func EmailRoutes(router *gin.Engine, databaseConnection *gorm.DB, connPool *service.Pools) {
+func EmailRoutes(router *gin.Engine, baseRoute *services.BaseRoute) {
 	fmt.Println("Registering routes for: email")
 	router.POST("/api/email/send/plain", func(ctx *gin.Context) {
-		plainSend.ExecuteRoute(ctx, databaseConnection, connPool)
+		services.ExecuteRoute[sendPlain.Input, sendPlain.Output](ctx, baseRoute, sendPlain.SessionFilter, sendPlain.Handler)
 	})
 }

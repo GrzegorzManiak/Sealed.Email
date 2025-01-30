@@ -3,13 +3,13 @@ package routes
 import (
 	"fmt"
 	devSession "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/dev/session"
+	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-func DevRoutes(router *gin.Engine, databaseConnection *gorm.DB) {
+func DevRoutes(router *gin.Engine, baseRoute *services.BaseRoute) {
 	fmt.Println("Registering routes for: dev")
 	router.GET("/api/dev/session", func(ctx *gin.Context) {
-		devSession.ExecuteRoute(ctx, databaseConnection)
+		services.ExecuteRoute[devSession.Input, devSession.Output](ctx, baseRoute, devSession.SessionFilter, devSession.Handler)
 	})
 }
