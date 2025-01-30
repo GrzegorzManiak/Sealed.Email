@@ -86,6 +86,11 @@ func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, to string)
 		return err
 	}
 
-	zap.L().Debug("Email sent successfully")
+	zap.L().Debug("Email sent successfully",
+		zap.Any("email", email),
+		zap.String("to", to),
+		zap.String("domain", domain),
+		zap.Any("hello", config.Smtp.Domain))
+
 	return nil
 }
