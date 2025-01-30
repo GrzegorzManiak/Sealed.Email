@@ -51,12 +51,19 @@ const domainService = await API.DomainService.Decrypt(session, await API.Domain.
 
 const email = {
     domainID: domainService.DomainID,
-    bcc: [],
-    cc: [{
-        displayName: '',
-        email: 'x00189661@mytudublin.ie'
-    }],
-    body: 'God damn i have to rewrite the DKIM shit',
+    bcc: [
+        {
+            displayName: '',
+            email: 'ap3xdigital@gmail.com'
+        }
+    ],
+    cc: [
+        {
+            displayName: '',
+            email: 'x00189661@mytudublin.ie'
+        }
+    ],
+    body: 'God damn i have to rewrite same DKIM shit',
     from: {
         displayName: '',
         email: 'hello@beta.noise.email'
@@ -65,7 +72,7 @@ const email = {
         displayName: '',
         email: 'gregamaniak@gmail.com'
     },
-    subject: 'My bad Bruh',
+    subject: 'CC and BCC Test! \r\nSubject: hello round2',
     signature: '',
     nonce: ''
 }
