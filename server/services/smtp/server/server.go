@@ -5,7 +5,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
-	"github.com/emersion/go-smtp"
+	"github.com/grzegorzmaniak/go-smtp"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"time"

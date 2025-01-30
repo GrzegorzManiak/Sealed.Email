@@ -55,7 +55,7 @@ const sentEmail = await API.Email.SendPlainEmail(session, {
     cc: [],
     body: 'Yooooooooo This is actually working',
     from: 'hello@beta.noise.email',
-    to: 'hello@beta.noise.email',
+    to: 'test-ep2lggylu@srv1.mail-tester.com',
     subject: 'Test email Account id: ' + randomString,
     signature: ''
 });

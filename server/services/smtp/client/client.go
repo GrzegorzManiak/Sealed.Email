@@ -5,7 +5,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
-	"github.com/emersion/go-smtp"
+	"github.com/grzegorzmaniak/go-smtp"
 	"go.uber.org/zap"
 )
 
@@ -42,12 +42,6 @@ func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, to string)
 	c, err := attemptDial(domain, certs)
 	if err != nil {
 		zap.L().Debug("Failed to dial", zap.Error(err))
-		return err
-	}
-
-	err = c.Hello(config.Smtp.Domain)
-	if err != nil {
-		zap.L().Debug("Failed to send HELO command", zap.Error(err))
 		return err
 	}
 

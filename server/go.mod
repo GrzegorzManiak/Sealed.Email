@@ -5,16 +5,18 @@ go 1.22.0
 toolchain go1.23.1
 
 require (
+	blitiri.com.ar/go/spf v1.5.1
 	github.com/GrzegorzManiak/GOWL v1.1.2
-	github.com/emersion/go-smtp v0.21.3
+	github.com/emersion/go-msgauth v0.6.8
 	github.com/gin-contrib/pprof v1.5.0
 	github.com/gin-contrib/zap v1.1.4
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/google/uuid v1.6.0
+	github.com/grzegorzmaniak/go-smtp v1.0.2
+	github.com/lib/pq v1.10.9
 	github.com/miekg/dns v1.1.62
 	github.com/stretchr/testify v1.9.0
-	github.com/wttw/spf v0.0.0-20241010163440-f73f6c1495a5
 	go.etcd.io/etcd/api/v3 v3.5.16
 	go.etcd.io/etcd/client/v3 v3.5.16
 	go.uber.org/zap v1.27.0
@@ -27,7 +29,6 @@ require (
 )
 
 require (
-	blitiri.com.ar/go/spf v1.5.1 // indirect
 	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
@@ -35,7 +36,6 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/emersion/go-msgauth v0.6.8 // indirect
 	github.com/emersion/go-sasl v0.0.0-20200509203442-7bfe0ed36a21 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -49,7 +49,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-sqlite3 v1.14.23 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
