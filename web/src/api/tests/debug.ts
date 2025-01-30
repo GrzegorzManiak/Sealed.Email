@@ -54,13 +54,15 @@ const email = {
     signature: '',
     nonce: '',
 
-    from:   { displayName: '', email: 'hello@beta.noise.email' },
-    to:     { displayName: '', email: 'gregamaniak@gmail.com' },
-    cc:     [{ displayName: '', email: 'x00189661@mytudublin.ie' }],
-    bcc:    [{ displayName: '', email: 'ap3xdigital@gmail.com' }],
+    from:   { displayName: 'Grzegorz Maniak <ADMIN@beta.noise.email>, ADMIN@beta.noise.email', email: 'hello@beta.noise.email' },
+    to:     { displayName: 'Grzegorz Maniak', email: 'gregamaniak@gmail.com' },
+    // cc:     [{ displayName: '', email: 'x00189661@mytudublin.ie' }],
+    // bcc:    [{ displayName: '', email: 'ap3xdigital@gmail.com' }],
+    cc:     [],
+    bcc:    [],
 
-    subject: 'CC and BCC Test! \r\nSubject: hello round2',
-    body: 'God damn i have to rewrite same DKIM shit',
+    subject: 'I am a dwarf and i am digging a hole!!',
+    body: 'Diggy diggy hole!!',
 }
 
 

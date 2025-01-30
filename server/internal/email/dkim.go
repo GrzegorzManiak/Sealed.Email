@@ -83,6 +83,9 @@ func SignEmailWithDkim(headers *Headers, body string, domain string, dkimKey str
 		Domain:   domain,
 		Selector: "default",
 		Signer:   privateKey,
+
+		BodyCanonicalization:   dkim.CanonicalizationRelaxed,
+		HeaderCanonicalization: dkim.CanonicalizationSimple,
 	}
 
 	var b bytes.Buffer

@@ -13,16 +13,14 @@ type Inbox struct {
 
 // EscapeDisplayName / RFC 5322 p45
 func (i Inbox) EscapeDisplayName() string {
-	specialChars := `()<>[]:;@\,."`
-	needsQuoting := strings.ContainsAny(i.DisplayName, specialChars+" ")
+	escapeChars := []string{"(", ")", "<", ">", "[", "]", ":", ";", "@", ",", ".", "\""}
+	escapedDisplayName := i.DisplayName
 
-	if needsQuoting {
-		i.DisplayName = strings.ReplaceAll(i.DisplayName, `\`, `\\`)
-		i.DisplayName = strings.ReplaceAll(i.DisplayName, `"`, `\"`)
-		return fmt.Sprintf(`"%s"`, i.DisplayName)
+	for _, c := range escapeChars {
+		escapedDisplayName = strings.ReplaceAll(escapedDisplayName, c, "\\"+c)
 	}
 
-	return i.DisplayName
+	return escapedDisplayName
 }
 
 func (i Inbox) String() string {
