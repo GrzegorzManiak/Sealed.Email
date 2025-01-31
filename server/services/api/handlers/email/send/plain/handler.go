@@ -24,9 +24,12 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 		return nil, helpers.NewUserError("From email domain does not match the domain you have verified.", "Invalid from email address")
 	}
 
-	if err := sendEmail(input, data, fromDomain); err != nil {
-		return nil, err
+	messageId, err := sendEmail(input, data, fromDomain)
+	if err != nil {
+		return nil, helpers.NewServerError(err.Error(), "Failed to send email")
 	}
 
-	return &Output{}, nil
+	return &Output{
+		MessageID: messageId,
+	}, nil
 }

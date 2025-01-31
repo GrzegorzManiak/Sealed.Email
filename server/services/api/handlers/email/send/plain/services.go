@@ -58,20 +58,20 @@ func sendEmail(
 	input *Input,
 	data *services.Handler,
 	fromDomain *models.UserDomain,
-) helpers.AppError {
+) (string, helpers.AppError) {
 	cc, bcc := email.CleanRecipients(input.To, input.Cc, input.Bcc)
 	recipients := email.CombineRecipients(input.To, cc, bcc)
 	headers := &email.Headers{}
 
 	messageId, err := setHeaders(headers, input, fromDomain)
 	if err != nil {
-		return helpers.NewUserError(err.Error(), "Failed to set headers")
+		return "", helpers.NewUserError(err.Error(), "Failed to set headers")
 	}
 
 	zap.L().Debug("Email headers", zap.Any("headers", headers))
 	signedEmail, err := email.SignEmailWithDkim(headers, input.Body, fromDomain.Domain, fromDomain.DKIMPrivateKey)
 	if err != nil {
-		return helpers.NewServerError("Failed to sign email. Please try again later.", "Failed to sign email")
+		return "", helpers.NewServerError("Failed to sign email. Please try again later.", "Failed to sign email")
 	}
 
 	if err := email.Send(data.Context, data.ConnectionPool, &smtpService.Email{
@@ -82,8 +82,8 @@ func sendEmail(
 		MessageId: messageId,
 		Encrypted: false,
 	}); err != nil {
-		return helpers.NewServerError("Failed to send email. Please try again later.", "Failed to send email")
+		return "", helpers.NewServerError("Failed to send email. Please try again later.", "Failed to send email")
 	}
 
-	return nil
+	return messageId, nil
 }

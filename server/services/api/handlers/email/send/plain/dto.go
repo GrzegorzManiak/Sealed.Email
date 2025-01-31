@@ -24,6 +24,7 @@ type Input struct {
 }
 
 type Output struct {
+	MessageID string `json:"messageID"`
 }
 
 var SessionFilter = &session.APIConfiguration{
