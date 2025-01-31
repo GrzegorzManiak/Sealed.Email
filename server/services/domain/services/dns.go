@@ -36,6 +36,9 @@ func MatchTxtRecords(challenge string, dnsRecords []dns.RR) bool {
 
 		for _, txt := range txtRecord.Txt {
 			if txt == challenge {
+				zap.L().Debug("Matched DNS record",
+					zap.String("challenge", challenge),
+					zap.String("txt", txt))
 				return true
 			}
 		}
