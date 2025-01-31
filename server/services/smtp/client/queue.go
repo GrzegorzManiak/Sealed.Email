@@ -30,12 +30,10 @@ func insertOutboundEmail(email *smtp.Email, id string, entry *queue.Entry, db *g
 		From:      email.From,
 		To:        email.To,
 
-		Body:          email.Body,
-		InReplyTo:     email.InReplyTo,
-		References:    email.References,
-		Encrypted:     email.Encrypted,
-		DkimSignature: email.DkimSignature,
-		Version:       1,
+		Body:      email.Body,
+		Encrypted: email.Encrypted,
+		Version:   1,
+		Challenge: email.Challenge,
 	}
 
 	if err := db.Create(&outboundEmail).Error; err != nil {

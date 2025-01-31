@@ -13,6 +13,7 @@ message Email {
   string version = 5;
   string messageId = 8;
   bool encrypted = 9;
+  string challenge = 10;
 }
 
 message SendEmailResponse {

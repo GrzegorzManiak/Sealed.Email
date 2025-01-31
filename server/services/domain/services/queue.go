@@ -18,14 +18,8 @@ func Worker(entry *queue.Entry, primaryDatabaseConnection *gorm.DB) int8 {
 	}
 
 	zap.L().Debug("Processing verification queue", zap.Any("entry", entry))
-	dnsRecords, err := FetchDnsRecords(data.DomainName)
-	if err != nil {
-		zap.L().Debug("Failed to fetch DNS records", zap.Error(err))
-		return 2
-	}
-
-	if !MatchTxtRecords(data.TxtVerification, dnsRecords) {
-		zap.L().Debug("Failed to match TXT records", zap.Any("data", data), zap.Any("dnsRecords", dnsRecords))
+	if err := VerifyDns(data.DomainName, data.TxtVerification); err != nil {
+		zap.L().Error("Failed to delete entry", zap.Error(err))
 		return 2
 	}
 

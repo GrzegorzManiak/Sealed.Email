@@ -6,6 +6,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
+	"github.com/GrzegorzManiak/NoiseBackend/services/domain/services"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"slices"
@@ -80,6 +81,17 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 	groupedRecipients, err := GroupRecipients(email, email.SentSuccessfully)
 	if err != nil {
 		zap.L().Debug("Failed to group recipients", zap.Error(err))
+		return 2
+	}
+
+	fromDomain, err := helpers.ExtractDomainFromEmail(email.From)
+	if err != nil {
+		zap.L().Debug("Failed to extract domain from email", zap.Error(err))
+		return 2
+	}
+
+	if err := services.VerifyDns(fromDomain, email.Challenge); err != nil {
+		zap.L().Error("Failed to delete entry", zap.Error(err))
 		return 2
 	}
 

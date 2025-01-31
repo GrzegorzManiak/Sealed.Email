@@ -53,7 +53,7 @@ const email = {
     domainID: domainService.DomainID,
     signature: '',
     nonce: '',
-    inReplyTo: '<z4gDXg3w2rUcOaExHgR282EvMUSaWEONDlzT4leZWcI=@beta.noise.email>',
+    inReplyTo: '<01020194bbe53ba1-2eea6b7a-a607-49dd-b392-7c3f012c9fe5-000000@eu-west-1.amazonses.com>',
 
 
     from:   { displayName: 'Greg your beloved', email: 'hello@beta.noise.email' },
@@ -63,8 +63,8 @@ const email = {
     bcc:    [],
     cc:    [],
 
-    subject: 'Re: Test email',
-    body: 'more testin, maybe this will add as a reply',
+    subject: 'Re: Your refund for "Bague ambre et argent" is on its way',
+    body: 'Bruhh wtf lol',
 }
 
 

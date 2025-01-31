@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
@@ -40,4 +41,17 @@ func MatchTxtRecords(challenge string, dnsRecords []dns.RR) bool {
 	}
 
 	return false
+}
+
+func VerifyDns(domain string, challenge string) error {
+	dnsRecords, err := FetchDnsRecords(domain)
+	if err != nil {
+		return err
+	}
+
+	if !MatchTxtRecords(challenge, dnsRecords) {
+		return fmt.Errorf("failed to match DNS records")
+	}
+
+	return nil
 }

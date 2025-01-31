@@ -11,14 +11,12 @@ type OutboundEmail struct {
 	RefID     string `gorm:"uniqueIndex"`
 	MessageId string `gorm:"index"`
 
-	From          string
-	To            pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
-	Body          []byte
-	DkimSignature string
-	Version       int
-	InReplyTo     string
-	References    pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
-	Encrypted     bool
+	From      string
+	To        pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
+	Body      []byte
+	Version   int
+	Encrypted bool
+	Challenge string
 
 	SentSuccessfully pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
 }
