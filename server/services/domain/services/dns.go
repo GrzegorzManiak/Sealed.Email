@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/miekg/dns"
 	"go.uber.org/zap"
 )
@@ -44,6 +45,11 @@ func MatchTxtRecords(challenge string, dnsRecords []dns.RR) bool {
 }
 
 func VerifyDns(domain string, challenge string) error {
+	domain, err := helpers.TrimDomain(domain)
+	if err != nil {
+		return err
+	}
+
 	dnsRecords, err := FetchDnsRecords(domain)
 	if err != nil {
 		return err

@@ -53,7 +53,7 @@ const email = {
     domainID: domainService.DomainID,
     signature: '',
     nonce: '',
-    inReplyTo: '<01020194bbe53ba1-2eea6b7a-a607-49dd-b392-7c3f012c9fe5-000000@eu-west-1.amazonses.com>',
+    inReplyTo: '',
 
 
     from:   { displayName: 'Greg your beloved', email: 'hello@beta.noise.email' },

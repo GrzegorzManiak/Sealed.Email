@@ -91,7 +91,7 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 	}
 
 	if err := services.VerifyDns(fromDomain, email.Challenge); err != nil {
-		zap.L().Error("Failed to delete entry", zap.Error(err))
+		zap.L().Error("Failed to verify dns", zap.Error(err))
 		return 2
 	}
 
