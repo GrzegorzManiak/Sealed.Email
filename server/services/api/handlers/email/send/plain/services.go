@@ -78,6 +78,7 @@ func sendEmail(
 		From:      input.From.Email,
 		To:        recipients,
 		Body:      []byte(signedEmail),
+		Challenge: fromDomain.TxtChallenge,
 		Version:   "1.0",
 		MessageId: messageId,
 		Encrypted: false,

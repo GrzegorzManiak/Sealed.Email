@@ -41,6 +41,7 @@ func MatchTxtRecords(challenge string, dnsRecords []dns.RR) bool {
 		}
 	}
 
+	zap.L().Debug("Failed to match DNS records", zap.Any("dnsRecords", dnsRecords))
 	return false
 }
 
