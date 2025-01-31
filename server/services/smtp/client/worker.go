@@ -90,7 +90,7 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 		return 2
 	}
 
-	if err := services.VerifyDns(fromDomain, email.Challenge); err != nil {
+	if err = services.VerifyDns(fromDomain, email.Challenge); err != nil {
 		zap.L().Debug("Failed to verify dns", zap.Error(err))
 		return 2
 	}
