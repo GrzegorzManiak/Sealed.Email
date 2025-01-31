@@ -24,6 +24,10 @@ func TrimDomain(domain string) (string, error) {
 	return domain, nil
 }
 
+func RemoveTrailingDot(domain string) string {
+	return strings.TrimSuffix(domain, ".")
+}
+
 func BuildChallengeTemplate(domain string, txtChallenge string) string {
 	return fmt.Sprintf(
 		config.Domain.ChallengeTemplate,

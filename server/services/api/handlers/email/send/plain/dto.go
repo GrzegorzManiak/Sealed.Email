@@ -13,6 +13,9 @@ type Input struct {
 	Cc   []email.Inbox `json:"cc" validate:"dive,required"`
 	Bcc  []email.Inbox `json:"bcc" validate:"dive,required"`
 
+	InReplyTo  string   `json:"inReplyTo" validate:"omitempty,gte=10,lte=200"`
+	References []string `json:"references" validate:"omitempty,dive,gte=10,lte=1000"`
+
 	Subject string `json:"subject" validate:"required,gte=1,lte=200"`
 	Body    string `json:"body" validate:"required,gte=1,lte=10000"`
 

@@ -53,16 +53,18 @@ const email = {
     domainID: domainService.DomainID,
     signature: '',
     nonce: '',
+    inReplyTo: '<z4gDXg3w2rUcOaExHgR282EvMUSaWEONDlzT4leZWcI=@beta.noise.email>',
 
-    from:   { displayName: 'Grzegorz Maniak <ADMIN@beta.noise.email>, ADMIN@beta.noise.email', email: 'hello@beta.noise.email' },
+
+    from:   { displayName: 'Greg your beloved', email: 'hello@beta.noise.email' },
     to:     { displayName: 'Grzegorz Maniak', email: 'gregamaniak@gmail.com' },
-    // cc:     [{ displayName: '', email: 'x00189661@mytudublin.ie' }],
+    // cc:     [{ displayName: 'Greg Maniak', email: 'x00189661@mytudublin.ie' }],
     // bcc:    [{ displayName: '', email: 'ap3xdigital@gmail.com' }],
-    cc:     [],
     bcc:    [],
+    cc:    [],
 
-    subject: 'I am a dwarf and i am digging a hole!!',
-    body: 'Diggy diggy hole!!',
+    subject: 'Re: Test email',
+    body: 'more testin, maybe this will add as a reply',
 }
 
 

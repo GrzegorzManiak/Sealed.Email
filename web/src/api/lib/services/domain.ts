@@ -90,6 +90,7 @@ class Domain {
             ccs,
             email.subject,
             email.body,
+            email.inReplyTo,
         ].join('\n');
 
         return await this.SignData(data);

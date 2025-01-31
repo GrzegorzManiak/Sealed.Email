@@ -40,6 +40,9 @@ func (h Headers) To(to Inbox) {
 }
 
 func (h Headers) Cc(cc []Inbox) {
+	if len(cc) == 0 {
+		return
+	}
 	ccStrings := make([]string, len(cc))
 	for i, c := range cc {
 		ccStrings[i] = c.String()
@@ -56,7 +59,7 @@ func (h Headers) Subject(subject string) {
 }
 
 func (h Headers) MessageId(domain string) string {
-	messageId := "<" + helpers.GeneratePublicId() + "@" + domain + ">"
+	messageId := "<" + helpers.GeneratePublicId() + "@" + helpers.RemoveTrailingDot(domain) + ">"
 	h.Add("Message-ID", messageId)
 	return messageId
 }
@@ -65,8 +68,28 @@ func (h Headers) ReplyTo(replyTo Inbox) {
 	h.Add("Reply-To", replyTo.String())
 }
 
-func (h Headers) InReplyTo(inReplyTo string) {
+func (h Headers) InReplyTo(inReplyTo string) error {
+	if inReplyTo == "" {
+		return nil
+	}
+	if err := ValidateMessageId(inReplyTo); err != nil {
+		return err
+	}
 	h.Add("In-Reply-To", inReplyTo)
+	return nil
+}
+
+func (h Headers) References(references []string) error {
+	if len(references) == 0 {
+		return nil
+	}
+	for _, r := range references {
+		if err := ValidateMessageId(r); err != nil {
+			return err
+		}
+	}
+	h.Add("References", strings.Join(references, " "))
+	return nil
 }
 
 func (h Headers) NoiseSignature(signature string, nonce string) {

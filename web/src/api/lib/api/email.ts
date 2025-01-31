@@ -12,6 +12,7 @@ type Inbox = {
 type PlainEmail = {
     domainID: DomainRefID;
     from: Inbox;
+    inReplyTo: string;
 
     to: Inbox;
     cc: Inbox[];
