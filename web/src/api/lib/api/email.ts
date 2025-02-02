@@ -4,10 +4,34 @@ import {HandleRequest} from "./common";
 import {Endpoints} from "../constants";
 import {ClientError} from "../errors";
 
+type EncryptedInbox = {
+    displayName: string;
+    emailHash: string;
+    publicKey: string;
+}
+
+type ComputedEncryptedInbox = {
+    encryptedEmailKey: string;
+    nonce: string;
+} & EncryptedInbox;
+
+type EncryptedEmail = {
+    domainID: DomainRefID;
+    from: EncryptedInbox;
+    inReplyTo: string;
+
+    to: EncryptedInbox;
+    cc: EncryptedInbox[];
+    bcc: EncryptedInbox[];
+
+    subject: string;
+    body: string;
+}
+
 type Inbox = {
     displayName: string;
     email: string;
-};
+}
 
 type PlainEmail = {
     domainID: DomainRefID;
@@ -20,12 +44,14 @@ type PlainEmail = {
 
     subject: string;
     body: string;
-
-    signature: string;
-    nonce: string;
 }
 
-const SendPlainEmail = async (session: Session, email: PlainEmail): Promise<void> => {
+type SignedPlainEmail = {
+    signature: string;
+    nonce: string;
+} & PlainEmail;
+
+const SendPlainEmail = async (session: Session, email: SignedPlainEmail): Promise<void> => {
     await HandleRequest<void>({
         session,
         body: email,
@@ -42,4 +68,9 @@ export {
     SendPlainEmail,
     
     type PlainEmail,
+    type SignedPlainEmail,
+    type EncryptedEmail,
+    type EncryptedInbox,
+    type ComputedEncryptedInbox,
+    type Inbox
 }

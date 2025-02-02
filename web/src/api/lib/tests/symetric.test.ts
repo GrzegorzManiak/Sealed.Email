@@ -37,19 +37,26 @@ test("Decrypt", async () => {
 	expect(decrypted).toBe(data);
 });
 
-test("Compress", async () => {
-	const key = Sym.NewKey();
-	const data = "Hello, world!";
-	const encrypted = await Sym.Encrypt(data, key);
-	const compressed = Sym.Compress(encrypted);
-	expect(compressed).toBeTruthy();
+test('should compress and decompress data correctly', () => {
+	const encryptedData = {
+		iv: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+		data: [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+	};
+
+	const compressedData = Sym.Compress(encryptedData);
+	const decompressedData = Sym.Decompress(compressedData);
+	expect(decompressedData.iv).toEqual(encryptedData.iv);
+	expect(decompressedData.data).toEqual(encryptedData.data);
 });
 
-test("Decompress", async () => {
-	const key = Sym.NewKey();
-	const data = "Hello, world!";
-	const encrypted = await Sym.Encrypt(data, key);
-	const compressed = Sym.Compress(encrypted);
-	const decompressed = Sym.Decompress(compressed);
-	expect(decompressed).toBeTruthy();
+test('should handle empty data arrays', () => {
+	const encryptedData = {
+		iv: [],
+		data: []
+	};
+
+	const compressedData = Sym.Compress(encryptedData);
+	const decompressedData = Sym.Decompress(compressedData);
+	expect(decompressedData.iv).toEqual(encryptedData.iv);
+	expect(decompressedData.data).toEqual(encryptedData.data);
 });

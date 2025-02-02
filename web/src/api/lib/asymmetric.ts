@@ -1,7 +1,8 @@
 import {CurrentCurve} from "./constants";
 import {NewKey} from "./symetric";
-import {BigIntToByteArray, BytesToBigInt, GetCurve, Hash, HighEntropyRandom} from "gowl-client-lib";
+import {BigIntToByteArray, BytesToBigInt, GetCurve, Hash} from "gowl-client-lib";
 import {DecodeFromBase64} from "./common";
+import * as Sym from "./symetric";
 
 type Signature = {
 	nonce: string;
@@ -15,8 +16,8 @@ function GenerateKeyPair(curve= GetCurve(CurrentCurve)) {
 }
 
 function EncodeToBase64(data: Uint8Array | string) {
-	if (typeof data === 'string') return data;
-	return Buffer.from(data).toString('base64');
+	if (typeof data === 'string') return Buffer.from(data).toString('base64');
+	else return Buffer.from(data).toString('base64');
 }
 
 function NonceHash(data: string, nonce: string) {
@@ -52,6 +53,28 @@ async function SharedKey(priv: Uint8Array, pub: Uint8Array, curve = GetCurve(Cur
 	return curve.getSharedSecret(BytesToBigInt(priv), pub);
 }
 
+async function Encrypt(
+	data: string | Uint8Array,
+	sharedKey: Uint8Array
+): Promise<string> {
+	const stringData = EncodeToBase64(data);
+	const sizedKey = await Hash(sharedKey);
+	const encrypted = await Sym.Encrypt(stringData, BigIntToByteArray(sizedKey));
+	const bytes = Sym.Compress(encrypted);
+	return EncodeToBase64(bytes);
+}
+
+async function Decrypt(
+	data: string | Uint8Array,
+	sharedKey: Uint8Array
+): Promise<string> {
+	const bytes = data instanceof Uint8Array ? data : DecodeFromBase64(data);
+	const decompressed = Sym.Decompress(bytes);
+	const sizedKey = await Hash(sharedKey);
+	const decrypted = await Sym.Decrypt(decompressed, BigIntToByteArray(sizedKey));
+	return Buffer.from(decrypted, 'base64').toString();
+}
+
 export {
 	GenerateKeyPair,
 	SignData,
@@ -59,6 +82,8 @@ export {
 	DecompressSignature,
 	VerifySignature,
 	SharedKey,
+	Encrypt,
+	Decrypt,
 
 	type Signature
 }

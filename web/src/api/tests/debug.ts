@@ -46,31 +46,31 @@ if (domainSweep) await API.Domain.AddDomain(session, randomString + 'test.grzego
 });
 
 
-const domainId = 'TWXjSnVnc6+HQ/WUZaJA6vl3DdkyvNHuowp3TcevrbM=';
-const domainService = await API.DomainService.Decrypt(session, await API.Domain.GetDomain(session, domainId));
-
-const email = {
-    domainID: domainService.DomainID,
-    signature: '',
-    nonce: '',
-    inReplyTo: '',
-
-
-    from:   { displayName: 'Greg your beloved', email: 'hello@beta.noise.email' },
-    to:     { displayName: 'Grzegorz Maniak', email: 'gregamaniak@gmail.com' },
-    // cc:     [{ displayName: 'Greg Maniak', email: 'x00189661@mytudublin.ie' }],
-    // bcc:    [{ displayName: '', email: 'ap3xdigital@gmail.com' }],
-    bcc:    [],
-    cc:    [],
-
-    subject: 'Re: Your refund for "Bague ambre et argent" is on its way',
-    body: 'Bruhh wtf lol',
-}
-
-
-const sentEmail = await API.Email.SendPlainEmail(session, {
-    ...email,
-    ...await domainService.SignEmail(email)
-});
-
-console.log('Sent email:', sentEmail);
+// const domainId = 'TWXjSnVnc6+HQ/WUZaJA6vl3DdkyvNHuowp3TcevrbM=';
+// const domainService = await API.DomainService.Decrypt(session, await API.Domain.GetDomain(session, domainId));
+// console.log('Domain service:', domainService);
+// const email = {
+//     domainID: domainService.DomainID,
+//     signature: '',
+//     nonce: '',
+//     inReplyTo: '',
+//
+//
+//     from:   { displayName: 'Greg your beloved', email: 'hello@beta.noise.email' },
+//     to:     { displayName: '', email: 'test-e9u8xwz7m@srv1.mail-tester.com' },
+//     // cc:     [{ displayName: 'Greg Maniak', email: 'x00189661@mytudublin.ie' }],
+//     // bcc:    [{ displayName: '', email: 'ap3xdigital@gmail.com' }],
+//     bcc:    [],
+//     cc:    [],
+//
+//     subject: 'Re: Your refund for "Bague ambre et argent" is on its way',
+//     body: 'Bruhh wtf lol',
+// }
+//
+//
+// const sentEmail = await API.Email.SendPlainEmail(session, {
+//     ...email,
+//     ...await domainService.SignEmail(email)
+// });
+//
+// console.log('Sent email:', sentEmail);

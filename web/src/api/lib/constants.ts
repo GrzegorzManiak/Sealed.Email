@@ -21,11 +21,15 @@ const Endpoints: { [key: string]: [string, string] } = {
 
 const ServerName: string = 'NoiseEmailServer>V1.0.0';
 const CurrentCurve: SupportedCurves = SupportedCurves.P256;
+const ALG = 'AES-GCM'
+const IV_LENGTH = 12;
 
 export {
     CurrentCurve,
     ServerName,
     Endpoints,
     COOKIE_NAME,
-    ROOT
+    IV_LENGTH,
+    ROOT,
+    ALG
 }
