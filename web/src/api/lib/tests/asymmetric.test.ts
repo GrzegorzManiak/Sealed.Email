@@ -51,6 +51,7 @@ test("Encrypt / Decrypt", async () => {
 	const keyPair = Asym.GenerateKeyPair();
 	const data = "Hello, world!";
 
+
 	const shared = await Asym.SharedKey(keyPair.priv, keyPair.pub);
 
 	const encrypted = await Asym.Encrypt(data, shared);
@@ -77,4 +78,20 @@ test("Encrypt / Decrypt, Alice / Bob", async () => {
 	const decrypted = await Asym.Decrypt(encrypted, sharedBob);
 
 	expect(decrypted).toBe(data);
+});
+
+test("Same Key, Same Data, Different Results", async () => {
+	const keyPair = Asym.GenerateKeyPair();
+	const data = "Hello, world!";
+	const shared = await Asym.SharedKey(keyPair.priv, keyPair.pub);
+
+	const encrypted1 = await Asym.Encrypt(data, shared);
+	const encrypted2 = await Asym.Encrypt(data, shared);
+
+	expect(encrypted1).not.toBe(encrypted2);
+
+	const decrypted1 = await Asym.Decrypt(encrypted1, shared);
+	const decrypted2 = await Asym.Decrypt(encrypted2, shared);
+
+	expect(decrypted1).toBe(decrypted2);
 });

@@ -1,4 +1,6 @@
 export { default as Session } from "./session/session";
+export * as Sym from "./symetric";
+export * as Asym from "./asymmetric";
 
 // -- Raw API's
 export * as Login from "./auth/login";
