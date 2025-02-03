@@ -31,6 +31,7 @@ async function ProcessDetails(username: string, password: string) {
     return { usernameHash, passwordHash };
 }
 
+
 function DecodeFromBase64(base64String: string): Uint8Array {
     const binaryString = atob(base64String);
     const len = binaryString.length;

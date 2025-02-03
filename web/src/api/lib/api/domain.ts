@@ -3,8 +3,12 @@ import Session from "../session/session";
 import {Endpoints} from "../constants";
 import {ClientError, GenericError} from "../errors";
 import {NewKey} from "../symetric";
-import {EncodeToBase64} from "gowl-client-lib";
+import {BytesToBigInt, EncodeToBase64} from "gowl-client-lib";
 import {HandleRequest} from "./common";
+import * as Asym from "../asymmetric";
+import * as Sym from "../symetric";
+import {DecodeFromBase64} from "../common";
+
 
 //
 // -- Types
@@ -33,12 +37,14 @@ type DomainBrief = {
     dateAdded: number;
     catchAll: boolean;
     version: number;
+    symmetricRootKey: string;
+    publicKey: string;
+    encryptedPrivateKey: string;
 }
 
 type DomainFull = {
     domainID: DomainRefID;
     dns: DomainDnsData;
-    symmetricRootKey: string;
 } & DomainBrief;
 
 type DomainListResponse = {
@@ -69,9 +75,20 @@ const AddDomain = async (session: Session, domain: string): Promise<AddDomainRes
     const domainKey = NewKey();
     const symmetricRootKey = await session.EncryptKey(domainKey);
 
+    const key = Asym.GenerateKeyPair();
+    const encryptedKey = await Sym.Encrypt(EncodeToBase64(key.priv), domainKey);
+    const compressedKey = Sym.Compress(encryptedKey);
+    const signature = await Asym.SignData(domain, key.priv);
+
     return HandleRequest<AddDomainResponse>({
         session,
-        body: {domain, symmetricRootKey},
+        body: {
+            domain,
+            symmetricRootKey,
+            publicKey: EncodeToBase64(key.pub),
+            encryptedPrivateKey: EncodeToBase64(compressedKey),
+            proofOfPossession: signature,
+        },
         endpoint: Endpoints.DOMAIN_ADD,
         fallbackError: new ClientError(
             'Failed to add domain',

@@ -1,25 +1,51 @@
+
 import * as API from '../lib';
-//
-// const username = '1234';
-// const password = 'Test';
-// const domain = 'hello';
-// const randomString = Math.random().toString(36).substring(2);
-//
-// const register = false;
-// const domainSweep = false;
-//
-// if (register) {
-//     console.log(`Registering as ${username}`);
-//     const newUser = await API.Register.RegisterUser(username, password);
-//     if (newUser instanceof API.GenericError) {
-//         console.log(newUser);
-//     }
+import {EncodeToBase64} from "gowl-client-lib";
+
+const username = 'test';
+const password = 'test';
+
+
+// console.log(`Registering as ${username}`);
+// const newUser = await API.Register.RegisterUser(username, password);
+// if (newUser instanceof API.GenericError) {
+//     console.log(newUser);
 // }
+
+
+console.log(`Logging in as ${username}`);
+const session = new API.Session(await API.Login.Login(username, password), true);
+await session.DecryptKeys();
+console.log("Session token:", session.Token);
+
+// const domains = await API.Domain.GetDomainList(session, 0, 10);
+// console.log('Domains:', domains);
+
+
+// await API.Domain.AddDomain(session, 'beta.noise.email')
+
+
+
+const domainId = 'X0a/eJjvB7vnxLPA3yLnaiiCELkhEW7884e4YG5cTRQ=';
+const domain = await API.Domain.GetDomain(session, domainId);
+const domainService = await API.DomainService.Decrypt(session, domain);
+
+// const emailKey = API.Sym.NewKey();
 //
-// console.log(`Logging in as ${username}`);
-// const session = new API.Session(await API.Login.Login(username, password), true);
-// await session.DecryptKeys();
-// console.log("Session token:", session.Token);
+// const recipientA = API.Asym.GenerateKeyPair();
+// const inboxA = await API.EncryptedInbox.Create(
+//     domainService,
+//     'test@beta.noise.email',
+//     'Test',
+//     EncodeToBase64(recipientA.pub),
+//     EncodeToBase64(emailKey)
+// );
+//
+// const sender = await domainService.GetSender(emailKey, 'Greg', 'Grzegorz Maniak')
+//
+// const email = new API.EncryptedEmail(domainService, sender, inboxA, 'Test', 'Hello world!');
+
+
 //
 // if (domainSweep) await API.Domain.AddDomain(session, randomString + 'test.grzegorz.ie').then(async(domain) => {
 //
@@ -75,45 +101,45 @@ import * as API from '../lib';
 //
 // console.log('Sent email:', sentEmail);
 
-const emailKey = API.Sym.NewKey();
-
-const recipientA = API.Asym.GenerateKeyPair();
-const recipientB = API.Asym.GenerateKeyPair();
-const recipientC = API.Asym.GenerateKeyPair();
-
-const Sender = API.Asym.GenerateKeyPair();
-
-const [PubA, PubB, PubC] = [recipientA.pub, recipientB.pub, recipientC.pub];
-
-const [
-    SharedA, SharedB, SharedC
-] = [
-    await API.Asym.SharedKey(Sender.priv, PubA),
-    await API.Asym.SharedKey(Sender.priv, PubB),
-    await API.Asym.SharedKey(Sender.priv, PubC),
-];
-
-const [
-    EncryptedA, EncryptedB, EncryptedC
-] = [
-    await API.Asym.Encrypt(emailKey, SharedA),
-    await API.Asym.Encrypt(emailKey, SharedB),
-    await API.Asym.Encrypt(emailKey, SharedC),
-];
-
-
-
-const [PrivA, PrivB, PrivC] = [recipientA.priv, recipientB.priv, recipientC.priv];
-
-const [
-    DecryptedA, DecryptedB, DecryptedC
-] = [
-    await API.Asym.Decrypt(EncryptedA, await API.Asym.SharedKey(PrivA, Sender.pub)),
-    await API.Asym.Decrypt(EncryptedB, await API.Asym.SharedKey(PrivB, Sender.pub)),
-    await API.Asym.Decrypt(EncryptedC, await API.Asym.SharedKey(PrivC, Sender.pub)),
-];
-
-console.log('Email key:', emailKey);
-console.log('Encrypted A:', DecryptedA);
-console.log('Encrypted B:', DecryptedB);
-console.log('Encrypted C:', DecryptedC);
+// const emailKey = API.Sym.NewKey();
+//
+// const recipientA = API.Asym.GenerateKeyPair();
+// const recipientB = API.Asym.GenerateKeyPair();
+// const recipientC = API.Asym.GenerateKeyPair();
+//
+// const Sender = API.Asym.GenerateKeyPair();
+//
+// const [PubA, PubB, PubC] = [recipientA.pub, recipientB.pub, recipientC.pub];
+//
+// const [
+//     SharedA, SharedB, SharedC
+// ] = [
+//     await API.Asym.SharedKey(Sender.priv, PubA),
+//     await API.Asym.SharedKey(Sender.priv, PubB),
+//     await API.Asym.SharedKey(Sender.priv, PubC),
+// ];
+//
+// const [
+//     EncryptedA, EncryptedB, EncryptedC
+// ] = [
+//     await API.Asym.Encrypt(emailKey, SharedA),
+//     await API.Asym.Encrypt(emailKey, SharedB),
+//     await API.Asym.Encrypt(emailKey, SharedC),
+// ];
+//
+//
+//
+// const [PrivA, PrivB, PrivC] = [recipientA.priv, recipientB.priv, recipientC.priv];
+//
+// const [
+//     DecryptedA, DecryptedB, DecryptedC
+// ] = [
+//     await API.Asym.Decrypt(EncryptedA, await API.Asym.SharedKey(PrivA, Sender.pub)),
+//     await API.Asym.Decrypt(EncryptedB, await API.Asym.SharedKey(PrivB, Sender.pub)),
+//     await API.Asym.Decrypt(EncryptedC, await API.Asym.SharedKey(PrivC, Sender.pub)),
+// ];
+//
+// console.log('Email key:', emailKey);
+// console.log('Encrypted A:', DecryptedA);
+// console.log('Encrypted B:', DecryptedB);
+// console.log('Encrypted C:', DecryptedC);

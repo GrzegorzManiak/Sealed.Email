@@ -1,11 +1,12 @@
+
 import Session from "../session/session";
 import {DomainDnsData, DomainFull, DomainRefID} from "../api/domain";
 import {Compress, Decompress, Decrypt, Encrypt, NewKey} from "../symetric";
-import {CompressSignature, Signature, SignData} from "../asymmetric";
+import { SignData} from "../asymmetric";
 import {BigIntToByteArray, EncodeToBase64, GetCurve, Hash, HighEntropyRandom} from "gowl-client-lib";
-import {CurrentCurve} from "../constants";
 import {DecodeFromBase64} from "../common";
-import {ComputedEncryptedInbox, EncryptedInbox, PlainEmail} from "../api/email";
+import {ComputedEncryptedInbox, PlainEmail} from "../api/email";
+import EncryptedInbox from "./encryptedInbox";
 
 class Domain {
     private readonly _session: Session;
@@ -16,6 +17,8 @@ class Domain {
 
     private _symmetricRootKey: string;
     private _decryptedRootKey: Uint8Array;
+    private _publicKey: string;
+    private _privateKey: Uint8Array;
 
     private _dns: DomainDnsData;
     private _version: number;
@@ -25,7 +28,8 @@ class Domain {
     public constructor(
         session: Session,
         domain: DomainFull,
-        decryptedRootKey: Uint8Array
+        decryptedRootKey: Uint8Array,
+        privateKey: Uint8Array,
     ) {
         this._session = session;
         this._domainRaw = domain;
@@ -35,19 +39,29 @@ class Domain {
 
         this._symmetricRootKey = domain.symmetricRootKey;
         this._decryptedRootKey = decryptedRootKey;
+        this._publicKey = domain.publicKey;
+        this._privateKey = privateKey;
 
         this._dns = domain.dns;
         this._version = domain.version;
         this._verified = domain.verified;
         this._catchAll = domain.catchAll;
+
     }
 
     public static async Decrypt(
         session: Session,
         domain: DomainFull
     ): Promise<Domain> {
-        const rootKey = await session.DecryptKey(domain.symmetricRootKey);
-        return new Domain(session, domain, DecodeFromBase64(rootKey));
+        const encodedRootKey = await session.DecryptKey(domain.symmetricRootKey);
+        const rootKey = DecodeFromBase64(encodedRootKey);
+
+        const decodedPrivateKey = DecodeFromBase64(domain.encryptedPrivateKey);
+        const decompressedPrivateKey = Decompress(decodedPrivateKey);
+        const encodedPrivateKey = await Decrypt(decompressedPrivateKey, rootKey);
+        const privateKey = DecodeFromBase64(encodedPrivateKey);
+
+        return new Domain(session, domain, rootKey, privateKey);
     }
 
     public async EncryptKey(key: Uint8Array | string): Promise<string> {
@@ -63,14 +77,7 @@ class Domain {
     }
 
     public async SignData(data: string): Promise<string> {
-        return CompressSignature(await SignData(data, this._decryptedRootKey));
-    }
-
-    public async CreateKey(recipients: EncryptedInbox[]): Promise<ComputedEncryptedInbox[]> {
-        const key = NewKey();
-        const curve = GetCurve(CurrentCurve);
-
-        return []
+        return await SignData(data, this._decryptedRootKey);
     }
 
     public async SignEmail(email: PlainEmail): Promise<string> {
@@ -92,6 +99,22 @@ class Domain {
         ].join('\n');
 
         return await this.SignData(data);
+    }
+
+    public FormatEmail(user: string): string {
+        user = user.toLowerCase();
+        user.replace(/[^a-z0-9]/g, '');
+        return `${user}@${this._domain}`;
+    }
+    
+    public async GetSender(emailKey: Uint8Array, user: string, displayName: string = ''): Promise<EncryptedInbox> {
+        return EncryptedInbox.Create(
+            this,
+            this.FormatEmail(user),
+            displayName,
+            this._publicKey,
+            EncodeToBase64(emailKey)
+        );
     }
 
     public get DomainID(): DomainRefID { return this._domainID; }
