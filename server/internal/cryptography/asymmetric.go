@@ -25,7 +25,7 @@ func ByteArrToECDSAPublicKey(curve elliptic.Curve, publicKey []byte) (*ecdsa.Pub
 	}, nil
 }
 
-func VerifyMessage(publicKey *ecdsa.PublicKey, message string, signature []byte) bool {
+func VerifyMessageBytes(publicKey *ecdsa.PublicKey, message []byte, signature []byte) bool {
 	if len(signature) != 64 {
 		return false
 	}
@@ -33,7 +33,11 @@ func VerifyMessage(publicKey *ecdsa.PublicKey, message string, signature []byte)
 	r := new(big.Int).SetBytes(signature[:32])
 	s := new(big.Int).SetBytes(signature[32:])
 
-	return ecdsa.Verify(publicKey, []byte(message), r, s)
+	return ecdsa.Verify(publicKey, message, r, s)
+}
+
+func VerifyMessage(publicKey *ecdsa.PublicKey, message string, signature []byte) bool {
+	return VerifyMessageBytes(publicKey, []byte(message), signature)
 }
 
 func SignMessage(privateKey *ecdsa.PrivateKey, message string) ([]byte, error) {
