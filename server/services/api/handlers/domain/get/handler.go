@@ -16,14 +16,16 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 
 	return &Output{
 		Domain: domainList.Domain{
-			DomainID:  domain.PID,
-			Domain:    domain.Domain,
-			Verified:  domain.Verified,
-			DateAdded: domain.CreatedAt.Unix(),
-			CatchAll:  domain.CatchAll,
-			Version:   domain.Version,
+			DomainID:            domain.PID,
+			Domain:              domain.Domain,
+			Verified:            domain.Verified,
+			DateAdded:           domain.CreatedAt.Unix(),
+			CatchAll:            domain.CatchAll,
+			Version:             domain.Version,
+			EncryptedPrivateKey: domain.EncryptedPrivateKey,
+			PublicKey:           domain.PublicKey,
+			SymmetricRootKey:    domain.SymmetricRootKey,
 		},
-		SymmetricRootKey: domain.SymmetricRootKey,
 		DNS: &domainAdd.DNSRecords{
 			DKIM:         helpers.BuildDKIMRecord(domain.Domain, domain.DKIMPublicKey),
 			MX:           config.Domain.MxRecords,

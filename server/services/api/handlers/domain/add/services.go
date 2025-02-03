@@ -1,6 +1,7 @@
 package domainAdd
 
 import (
+	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
@@ -12,8 +13,8 @@ import (
 
 func insertDomain(
 	user *models.User,
-	domain string,
-	privateKey string,
+	input *Input,
+	formattedDomain string,
 	databaseConnection *gorm.DB,
 ) (*models.UserDomain, helpers.AppError) {
 	kp, err := generateDKIMKeyPair()
@@ -26,7 +27,7 @@ func insertDomain(
 		PID:    PID,
 		UserID: user.ID,
 
-		Domain:   domain,
+		Domain:   formattedDomain,
 		Verified: false,
 		CatchAll: false,
 
@@ -35,8 +36,10 @@ func insertDomain(
 		DKIMPrivateKey:    kp.EncodePrivateKey(),
 		TxtChallenge:      config.Domain.ChallengePrefix + "=" + helpers.GeneratePublicId(),
 
-		Version:          1,
-		SymmetricRootKey: privateKey,
+		Version:             1,
+		SymmetricRootKey:    input.SymmetricRootKey,
+		PublicKey:           input.PublicKey,
+		EncryptedPrivateKey: input.EncryptedPrivateKey,
 	}
 
 	if err := databaseConnection.Create(&domainModel); err.Error != nil {
@@ -76,4 +79,20 @@ func domainAlreadyAdded(domain string, userID uint, databaseConnection *gorm.DB)
 	}
 
 	return count > 0
+}
+
+func validateProofOfPossession(
+	input *Input,
+) bool {
+	proof := crypto.B64DecodeBytes(input.ProofOfPossession)
+	publicKey, err := cryptography.ByteArrToECDSAPublicKey(config.CURVE, crypto.B64DecodeBytes(input.PublicKey))
+	if err != nil {
+		return false
+	}
+
+	if !cryptography.VerifyMessage(publicKey, input.Domain, proof) {
+		return false
+	}
+
+	return true
 }

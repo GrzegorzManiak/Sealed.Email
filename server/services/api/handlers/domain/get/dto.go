@@ -12,8 +12,7 @@ type Input struct {
 
 type Output struct {
 	domainList.Domain
-	DNS              *domainAdd.DNSRecords `json:"dns"`
-	SymmetricRootKey string                `json:"symmetricRootKey" validate:"Encrypted-B64-Key"`
+	DNS *domainAdd.DNSRecords `json:"dns"`
 }
 
 var SessionFilter = &session.APIConfiguration{

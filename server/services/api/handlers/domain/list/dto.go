@@ -8,7 +8,7 @@ type Input struct {
 }
 
 type Output struct {
-	Domains []Domain `json:"domains"`
+	Domains []Domain `json:"domains" validate:"dive"`
 	Total   int64    `json:"total" validate:"gte=0,lte=1000"`
 }
 
@@ -19,6 +19,10 @@ type Domain struct {
 	DateAdded int64  `json:"dateAdded"`
 	CatchAll  bool   `json:"catchAll"`
 	Version   uint   `json:"version"`
+
+	EncryptedPrivateKey string `json:"encryptedPrivateKey" validate:"Encrypted-B64-Key"`
+	PublicKey           string `json:"publicKey" validate:"P256-B64-Key"`
+	SymmetricRootKey    string `json:"symmetricRootKey" validate:"Encrypted-B64-Key"`
 }
 
 var SessionFilter = &session.APIConfiguration{

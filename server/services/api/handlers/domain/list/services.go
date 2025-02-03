@@ -16,12 +16,17 @@ func fetchDomainsByUserID(
 	var count int64
 	domains := make([]*models.UserDomain, 0)
 	dbQuery := databaseConnection.
-		Select("p_id,"+
-			"domain,"+
-			"verified,"+
-			"created_at,"+
-			"catch_all,"+
-			"version").
+		Select(helpers.BuildColumnList([]string{
+			"p_id",
+			"domain",
+			"verified",
+			"created_at",
+			"catch_all",
+			"encrypted_private_key",
+			"public_key",
+			"symmetric_root_key",
+			"version",
+		})).
 		Where("user_id = ?", user.ID).
 		Limit(pagination.PerPage).
 		Offset(pagination.PerPage * pagination.Page).
@@ -49,12 +54,15 @@ func parseDomainList(
 	domainList := make([]Domain, 0)
 	for _, domain := range domains {
 		domainList = append(domainList, Domain{
-			DomainID:  domain.PID,
-			Domain:    domain.Domain,
-			Verified:  domain.Verified,
-			DateAdded: domain.CreatedAt.Unix(),
-			CatchAll:  domain.CatchAll,
-			Version:   domain.Version,
+			DomainID:            domain.PID,
+			Domain:              domain.Domain,
+			Verified:            domain.Verified,
+			DateAdded:           domain.CreatedAt.Unix(),
+			CatchAll:            domain.CatchAll,
+			Version:             domain.Version,
+			PublicKey:           domain.PublicKey,
+			EncryptedPrivateKey: domain.EncryptedPrivateKey,
+			SymmetricRootKey:    domain.SymmetricRootKey,
 		})
 	}
 	return &domainList

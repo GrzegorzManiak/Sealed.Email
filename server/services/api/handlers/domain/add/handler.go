@@ -13,11 +13,15 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 		return nil, helpers.NewUserError("The domain name you provided is invalid.", "Invalid domain name!")
 	}
 
+	if !validateProofOfPossession(input) {
+		return nil, helpers.NewUserError("Uh oh! Looks like your proof is invalid. Please try again.", "Invalid key proof")
+	}
+
 	if domainAlreadyAdded(domain, data.User.ID, data.DatabaseConnection) {
 		return nil, helpers.NewUserError("You already added this domain.", "Domain already added!")
 	}
 
-	domainModel, err := insertDomain(data.User, domain, input.SymmetricRootKey, data.DatabaseConnection)
+	domainModel, err := insertDomain(data.User, input, domain, data.DatabaseConnection)
 	if err != nil {
 		return nil, helpers.NewServerError("Domain could not be added. Please contact support if this issue persists.", "Failed to add domain!")
 	}
