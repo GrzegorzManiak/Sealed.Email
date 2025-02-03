@@ -23,22 +23,6 @@ test("Verify Signature", async () => {
 	expect(verified).toBeTruthy();
 });
 
-test("Compress Signature", () => {
-	const signature = {
-		nonce: "nonce",
-		signature: "signature"
-	};
-	const compressed = Asym.CompressSignature(signature);
-	expect(compressed).toBe("nonce.signature");
-});
-
-test("Decompress Signature", () => {
-	const compressed = "nonce.signature";
-	const signature = Asym.DecompressSignature(compressed);
-	expect(signature.nonce).toBe("nonce");
-	expect(signature.signature).toBe("signature");
-})
-
 test("Shared Key", async () => {
 	const keyPair1 = Asym.GenerateKeyPair();
 	const keyPair2 = Asym.GenerateKeyPair();

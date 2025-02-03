@@ -26,6 +26,7 @@ async function Decrypt(encryptedData: { iv: number[], data: number[] }, key: Uin
     const algorithm = { name: ALG, iv: ivArray };
     const cryptoKey = await crypto.subtle.importKey('raw', key, algorithm, false, ['decrypt']);
     const decrypted = await crypto.subtle.decrypt(algorithm, cryptoKey, dataArray);
+
     const decoder = new TextDecoder();
     return decoder.decode(decrypted);
 }

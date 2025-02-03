@@ -4,11 +4,6 @@ import {BigIntToByteArray, BytesToBigInt, GetCurve, Hash} from "gowl-client-lib"
 import {DecodeFromBase64} from "./common";
 import * as Sym from "./symetric";
 
-type Signature = {
-	nonce: string;
-	signature: string;
-}
-
 function GenerateKeyPair(curve= GetCurve(CurrentCurve)) {
 	const priv = curve.utils.randomPrivateKey();
 	const pub = curve.getPublicKey(priv);
@@ -20,33 +15,16 @@ function EncodeToBase64(data: Uint8Array | string) {
 	else return Buffer.from(data).toString('base64');
 }
 
-function NonceHash(data: string, nonce: string) {
-	return Hash(data + nonce);
-}
-
 async function SignData(data: string | Uint8Array, priv: Uint8Array, curve= GetCurve(CurrentCurve)) {
-	const stringData = EncodeToBase64(data);
-	const nonce = EncodeToBase64(NewKey(32));
-	const hash = BigIntToByteArray(await NonceHash(stringData, nonce));
-	const signature = curve.sign(hash, priv);
+	const encodedData = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
+	const signature = curve.sign(encodedData, priv);
 	const bytes = signature.toCompactRawBytes();
-	return {signature: EncodeToBase64(bytes), nonce};
+	return EncodeToBase64(bytes);
 }
 
-async function VerifySignature(data: string | Uint8Array, signature: Signature, pub: Uint8Array, curve = GetCurve(CurrentCurve)) {
-	const stringData = EncodeToBase64(data);
-	const hash = BigIntToByteArray(await NonceHash(stringData, signature.nonce));
-	return curve.verify(DecodeFromBase64(signature.signature), hash, pub);
-}
-
-
-function CompressSignature(signature: Signature) {
-	return `${signature.nonce}.${signature.signature}`;
-}
-
-function DecompressSignature(signature: string): Signature {
-	const parts = signature.split('.');
-	return {nonce: parts[0], signature: parts[1]};
+async function VerifySignature(data: string | Uint8Array, signature: string, pub: Uint8Array, curve = GetCurve(CurrentCurve)) {
+	const encodedData = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
+	return curve.verify(DecodeFromBase64(signature), encodedData, pub);
 }
 
 async function SharedKey(priv: Uint8Array, pub: Uint8Array, curve = GetCurve(CurrentCurve)) {
@@ -78,12 +56,8 @@ async function Decrypt(
 export {
 	GenerateKeyPair,
 	SignData,
-	CompressSignature,
-	DecompressSignature,
 	VerifySignature,
 	SharedKey,
 	Encrypt,
 	Decrypt,
-
-	type Signature
 }
