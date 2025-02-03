@@ -22,6 +22,8 @@ type UserDomain struct {
 	DKIMPrivateKey    string
 	TxtChallenge      string
 
-	Version          uint
-	SymmetricRootKey string
+	Version             uint
+	SymmetricRootKey    string
+	PublicKey           string
+	EncryptedPrivateKey string
 }

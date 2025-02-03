@@ -48,7 +48,7 @@ var (
 	GenericKeyValidator    = "required,base64,gte=42,lte=46"
 	GenericKeyValidatorTag = "Generic-B64-Key"
 
-	EncryptedKeyValidator    = "required,base64,gte=102,lte=106"
+	EncryptedKeyValidator    = "required,base64,gte=94,lte=106"
 	EncryptedKeyValidatorTag = "Encrypted-B64-Key"
 
 	PublicIDValidator    = "required,base64,gte=42,lte=46"
