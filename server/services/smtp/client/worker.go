@@ -132,6 +132,7 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 
 	bccRecipients := createBccMap(email)
 	groupedRecipients, err := groupRecipients(email, email.SentSuccessfully, bccRecipients)
+	zap.L().Debug("Grouped recipients", zap.Any("groupedRecipients", groupedRecipients))
 	if err != nil {
 		zap.L().Debug("Failed to group recipients", zap.Error(err))
 		return 2
@@ -155,6 +156,6 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 		return 2
 	}
 
-	zap.L().Debug("Email sent", zap.Any("email", email))
+	zap.L().Debug("Email sent", zap.Any("email id", emailId), zap.Any("recipients", sentSuccessfully), zap.Any("code", code))
 	return code
 }
