@@ -1,8 +1,10 @@
 package email
 
 import (
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
+	"strings"
 )
 
 type EncryptedInbox struct {
@@ -40,4 +42,13 @@ func ConvertToInboxKeys(inboxes ...[]EncryptedInbox) []*smtpService.InboxKeys {
 		}
 	}
 	return result
+}
+
+func StringifyInboxKeys(inboxes []EncryptedInbox) string {
+	var result []string
+	for _, inbox := range inboxes {
+		stringified := fmt.Sprintf("<%s:%s>", inbox.PublicKey, inbox.EncryptedEmailKey)
+		result = append(result, stringified)
+	}
+	return strings.Join(result, ",")
 }

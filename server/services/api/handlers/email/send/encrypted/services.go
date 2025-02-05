@@ -43,8 +43,9 @@ func setHeaders(
 	headers.To(input.To.BasicInbox())
 	headers.Cc(email.ReMapEncryptedInboxes(input.Cc))
 	headers.Date()
-	headers.EncryptedNoiseSignature(input.Signature, append([]email.EncryptedInbox{from, to}, cc...))
+	headers.NoiseSignature(input.Signature)
 	headers.Subject(input.Subject)
+	headers.InboxKeys(append([]email.EncryptedInbox{from, to}, cc...))
 
 	if err := headers.InReplyTo(input.InReplyTo); err != nil {
 		return "", err

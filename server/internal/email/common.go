@@ -92,13 +92,19 @@ func (h Headers) References(references []string) error {
 	return nil
 }
 
-func (h Headers) NoiseSignature(signature string, nonce string) {
-	h.Add("X-Noise-Signature", signature)
-	h.Add("X-Noise-Version", "1.0")
+func (h Headers) NoiseNonce(nonce string) {
 	h.Add("X-Noise-Nonce", nonce)
 }
 
-func (h Headers) EncryptedNoiseSignature(signature string, recipients []EncryptedInbox) {
+func (h Headers) NoiseSignature(signature string) {
 	h.Add("X-Noise-Signature", signature)
 	h.Add("X-Noise-Version", "1.0")
+}
+
+func (h Headers) InboxKeys(inboxKeys []EncryptedInbox) {
+	if len(inboxKeys) == 0 {
+		return
+	}
+	stringifiedInboxKeys := StringifyInboxKeys(inboxKeys)
+	h.Add("X-Noise-Inbox-Keys", stringifiedInboxKeys)
 }

@@ -41,7 +41,8 @@ func setHeaders(
 	headers.Cc(input.Cc)
 	headers.Date()
 	headers.Subject(input.Subject)
-	headers.NoiseSignature(input.Signature, input.Nonce)
+	headers.NoiseSignature(input.Signature)
+	headers.NoiseNonce(input.Nonce)
 
 	if err := headers.InReplyTo(input.InReplyTo); err != nil {
 		return "", err

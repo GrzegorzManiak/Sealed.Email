@@ -102,7 +102,12 @@ func sendEmails(certs *tls.Config, email *models.OutboundEmail, groupedRecipient
 			continue
 		}
 		zap.L().Debug("Sending email to bcc", zap.Any("bccKeys", bccKeys))
-		if err := attemptSendEmailBcc(certs, email, bccKeys.EmailHash, bccKeys); err != nil {
+		domain, err := helpers.ExtractDomainFromEmail(bccKeys.EmailHash)
+		if err != nil {
+			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
+			return 2, sentSuccessfully
+		}
+		if err := attemptSendEmailBcc(certs, email, domain, bccKeys); err != nil {
 			zap.L().Debug("Failed to send email to bcc", zap.Error(err))
 			return 2, sentSuccessfully
 		} else {
