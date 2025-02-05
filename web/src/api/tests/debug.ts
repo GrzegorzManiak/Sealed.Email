@@ -61,6 +61,11 @@ const email = new API.EncryptedEmail({
 	body: 'Hello world SDFG SDFGS DFG '
 });
 
+
+console.log('From email:', sender.ComputedEncryptedInbox.emailHash);
+console.log('To email:', inboxA.ComputedEncryptedInbox.emailHash);
+console.log('Bcc email:', inboxBcc.ComputedEncryptedInbox.emailHash);
+
 console.log(await email.Send(session))
 
 //
