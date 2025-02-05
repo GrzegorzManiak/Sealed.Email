@@ -22,8 +22,9 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Out
 	return email, nil
 }
 
-func groupRecipients(email *models.OutboundEmail, sentSuccessfully []string, bccRecipients map[string]models.OutboundEmailKeys) (map[string][]string, error) {
+func groupRecipients(email *models.OutboundEmail, sentSuccessfully []string) (map[string][]string, error) {
 	groupedRecipients := make(map[string][]string)
+	bccRecipients := createBccMap(email)
 
 	for _, recipient := range email.To {
 		recipient = strings.ToLower(recipient)
@@ -34,7 +35,7 @@ func groupRecipients(email *models.OutboundEmail, sentSuccessfully []string, bcc
 		}
 
 		// -- BCC recipients are not included in the grouped recipients
-		if _, ok := bccRecipients[domain]; ok {
+		if _, ok := bccRecipients[recipient]; ok {
 			continue
 		}
 
@@ -68,10 +69,10 @@ func batchSendEmails(certs *tls.Config, email *models.OutboundEmail, domain stri
 	return nil
 }
 
-func createBccMap(email *models.OutboundEmail) map[string]models.OutboundEmailKeys {
-	emailKeys := make(map[string]models.OutboundEmailKeys)
+func createBccMap(email *models.OutboundEmail) map[string]struct{} {
+	emailKeys := make(map[string]struct{})
 	for _, key := range email.OutboundEmailKeys {
-		emailKeys[key.EmailHash] = key
+		emailKeys[strings.ToLower(key.EmailHash)] = struct{}{}
 	}
 	return emailKeys
 }
@@ -136,8 +137,7 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 	}
 	zap.L().Debug("Got email by id", zap.Any("email", email))
 
-	bccRecipients := createBccMap(email)
-	groupedRecipients, err := groupRecipients(email, email.SentSuccessfully, bccRecipients)
+	groupedRecipients, err := groupRecipients(email, email.SentSuccessfully)
 	zap.L().Debug("Grouped recipients", zap.Any("groupedRecipients", groupedRecipients))
 	if err != nil {
 		zap.L().Debug("Failed to group recipients", zap.Error(err))
