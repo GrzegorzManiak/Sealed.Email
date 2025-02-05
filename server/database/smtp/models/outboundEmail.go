@@ -5,6 +5,14 @@ import (
 	"gorm.io/gorm"
 )
 
+type OutboundEmailKeys struct {
+	gorm.Model
+	DisplayName       string
+	EmailHash         string
+	PublicKey         string
+	EncryptedEmailKey string
+}
+
 type OutboundEmail struct {
 	gorm.Model
 	EmailId   string `gorm:"uniqueIndex"`
@@ -18,5 +26,6 @@ type OutboundEmail struct {
 	Encrypted bool
 	Challenge string
 
-	SentSuccessfully pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
+	OutboundEmailKeys []OutboundEmailKeys `gorm:"foreignKey:EmailId;references:EmailId"`
+	SentSuccessfully  pq.StringArray      `gorm:"type:text[]" gorm:"default:[]"`
 }

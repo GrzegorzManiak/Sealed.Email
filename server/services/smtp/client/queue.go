@@ -23,6 +23,16 @@ func createQueueEntry(email *smtp.Email) (*queue.Entry, string, error) {
 
 func insertOutboundEmail(email *smtp.Email, id string, entry *queue.Entry, db *gorm.DB) (*models.OutboundEmail, error) {
 
+	outboundEmailKeys := make([]models.OutboundEmailKeys, 0)
+	for _, key := range email.InboxKeys {
+		outboundEmailKeys = append(outboundEmailKeys, models.OutboundEmailKeys{
+			DisplayName:       key.DisplayName,
+			EmailHash:         key.EmailHash,
+			PublicKey:         key.PublicKey,
+			EncryptedEmailKey: key.EncryptedEmailKey,
+		})
+	}
+
 	outboundEmail := models.OutboundEmail{
 		EmailId:   id,
 		RefID:     entry.RefID,
@@ -30,10 +40,12 @@ func insertOutboundEmail(email *smtp.Email, id string, entry *queue.Entry, db *g
 		From:      email.From,
 		To:        email.To,
 
-		Body:      email.Body,
-		Encrypted: email.Encrypted,
-		Version:   1,
-		Challenge: email.Challenge,
+		Body:              email.Body,
+		Encrypted:         email.Encrypted,
+		Challenge:         email.Challenge,
+		OutboundEmailKeys: outboundEmailKeys,
+
+		Version: 1,
 	}
 
 	if err := db.Create(&outboundEmail).Error; err != nil {
