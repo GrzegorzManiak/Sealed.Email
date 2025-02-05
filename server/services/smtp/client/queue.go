@@ -30,6 +30,7 @@ func insertOutboundEmail(email *smtp.Email, id string, entry *queue.Entry, db *g
 			EmailHash:         key.EmailHash,
 			PublicKey:         key.PublicKey,
 			EncryptedEmailKey: key.EncryptedEmailKey,
+			EmailId:           id,
 		})
 	}
 

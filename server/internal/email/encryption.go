@@ -1,6 +1,9 @@
 package email
 
-import smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
+import (
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
+)
 
 type EncryptedInbox struct {
 	DisplayName       string `json:"displayName" validate:"lte=200"`
@@ -31,7 +34,7 @@ func ConvertToInboxKeys(inboxes ...[]EncryptedInbox) []*smtpService.InboxKeys {
 			result = append(result, &smtpService.InboxKeys{
 				DisplayName:       encryptedInbox.DisplayName,
 				PublicKey:         encryptedInbox.PublicKey,
-				EmailHash:         encryptedInbox.EmailHash,
+				EmailHash:         helpers.NormalizeEmail(encryptedInbox.EmailHash),
 				EncryptedEmailKey: encryptedInbox.EncryptedEmailKey,
 			})
 		}

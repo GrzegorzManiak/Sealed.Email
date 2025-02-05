@@ -7,6 +7,7 @@ import (
 
 type OutboundEmailKeys struct {
 	gorm.Model
+	EmailId           string `gorm:"index"`
 	DisplayName       string
 	EmailHash         string
 	PublicKey         string
