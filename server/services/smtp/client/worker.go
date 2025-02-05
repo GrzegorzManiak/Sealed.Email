@@ -138,7 +138,7 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 	zap.L().Debug("Got email by id", zap.Any("email", email))
 
 	groupedRecipients, err := groupRecipients(email, email.SentSuccessfully)
-	zap.L().Debug("Grouped recipients", zap.Any("groupedRecipients", groupedRecipients))
+	zap.L().Debug("Grouped recipients", zap.Any("groupedRecipients", groupedRecipients), zap.Any("inbox keys", email.OutboundEmailKeys))
 	if err != nil {
 		zap.L().Debug("Failed to group recipients", zap.Error(err))
 		return 2
