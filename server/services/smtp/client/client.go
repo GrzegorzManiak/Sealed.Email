@@ -58,7 +58,7 @@ func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, domain str
 	}
 
 	zap.L().Debug("Email body", zap.String("body", string(email.Body)))
-	//_, err = wc.Write(email.Body)
+	_, err = wc.Write(email.Body)
 	if err != nil {
 		zap.L().Debug("Failed to write email body", zap.Error(err))
 		return err

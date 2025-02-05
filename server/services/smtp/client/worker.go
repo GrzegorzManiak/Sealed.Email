@@ -33,7 +33,8 @@ func groupRecipients(email *models.OutboundEmail, sentSuccessfully []string, bcc
 			return nil, err
 		}
 
-		if _, ok := bccRecipients[domain]; !ok {
+		// -- BCC recipients are not included in the grouped recipients
+		if _, ok := bccRecipients[domain]; ok {
 			continue
 		}
 
