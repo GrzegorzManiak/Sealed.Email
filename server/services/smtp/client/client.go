@@ -2,7 +2,6 @@ package client
 
 import (
 	"crypto/tls"
-	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	helpers "github.com/GrzegorzManiak/NoiseBackend/internal/email"
 	"github.com/grzegorzmaniak/go-smtp"
