@@ -42,12 +42,21 @@ const inboxA = await API.EncryptedInbox.Create(
 	emailKey
 );
 
+const bccRecipient = API.Asym.GenerateKeyPair();
+const inboxBcc = await API.EncryptedInbox.Create(
+    'bcc@beta.noise.email',
+    '',
+    bccRecipient.pub,
+    emailKey
+);
+
 const sender = await domainService.GetSender(emailKey, 'Greg', 'Grzegorz Maniak')
 const email = new API.EncryptedEmail({
 	domain: domainService,
 	key: emailKey,
 	from: sender,
 	to: inboxA,
+    bcc: [inboxBcc],
 	subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF',
 	body: 'Hello world SDFG SDFGS DFG '
 });

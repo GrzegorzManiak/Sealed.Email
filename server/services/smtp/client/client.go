@@ -92,6 +92,7 @@ func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, domain str
 		return err
 	}
 
+	zap.L().Debug("Email sent successfully", zap.Any("recipients", recipients))
 	return endConnection(c, wc)
 }
 
@@ -131,5 +132,6 @@ func attemptSendEmailBcc(certs *tls.Config, email *models.OutboundEmail, domain 
 		return err
 	}
 
+	zap.L().Debug("BCC email sent successfully", zap.String("emailHash", keys.EmailHash))
 	return endConnection(c, wc)
 }
