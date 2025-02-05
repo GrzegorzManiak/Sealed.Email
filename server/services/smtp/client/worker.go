@@ -22,14 +22,19 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Out
 	return email, nil
 }
 
-func GroupRecipients(email *models.OutboundEmail, sentSuccessfully []string) (map[string][]string, error) {
+func groupRecipients(email *models.OutboundEmail, sentSuccessfully []string, bccRecipients map[string]models.OutboundEmailKeys) (map[string][]string, error) {
 	groupedRecipients := make(map[string][]string)
+
 	for _, recipient := range email.To {
 		recipient = strings.ToLower(recipient)
 		domain, err := helpers.ExtractDomainFromEmail(recipient)
 		if err != nil {
 			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
 			return nil, err
+		}
+
+		if _, ok := bccRecipients[domain]; !ok {
+			continue
 		}
 
 		if _, ok := groupedRecipients[domain]; !ok {
@@ -42,10 +47,11 @@ func GroupRecipients(email *models.OutboundEmail, sentSuccessfully []string) (ma
 
 		groupedRecipients[domain] = append(groupedRecipients[domain], recipient)
 	}
+
 	return groupedRecipients, nil
 }
 
-func BatchSendEmails(certs *tls.Config, email *models.OutboundEmail, domain string, recipients []string) error {
+func batchSendEmails(certs *tls.Config, email *models.OutboundEmail, domain string, recipients []string) error {
 	var batch []string
 	for i, recipient := range recipients {
 		batch = append(batch, recipient)
@@ -59,6 +65,52 @@ func BatchSendEmails(certs *tls.Config, email *models.OutboundEmail, domain stri
 		}
 	}
 	return nil
+}
+
+func createBccMap(email *models.OutboundEmail) map[string]models.OutboundEmailKeys {
+	emailKeys := make(map[string]models.OutboundEmailKeys)
+	for _, key := range email.OutboundEmailKeys {
+		emailKeys[key.EmailHash] = key
+	}
+	return emailKeys
+}
+
+func sendEmails(certs *tls.Config, email *models.OutboundEmail, groupedRecipients map[string][]string) (int8, []string) {
+	var sentSuccessfully []string
+	for domain, recipients := range groupedRecipients {
+		if slices.Contains(sentSuccessfully, domain) {
+			continue
+		}
+		zap.L().Debug("Sending email to domain", zap.String("domain", domain), zap.Any("recipients", recipients))
+		if err := batchSendEmails(certs, email, domain, recipients); err != nil {
+			zap.L().Debug("Failed to batch send emails", zap.Error(err))
+			return 2, sentSuccessfully
+		} else {
+			zap.L().Debug("Batch sent successfully")
+			sentSuccessfully = append(sentSuccessfully, domain)
+		}
+	}
+
+	//
+	// This may look like duplicated code, but it's not. The previous loop sends emails to domains,
+	// this one sends emails to encrypted bcc recipients, which cant be batched as each email needs
+	// to be sent with an associated key, which would expose the fact that the email is bcc'd.
+	//
+	for _, bccKeys := range email.OutboundEmailKeys {
+		if slices.Contains(sentSuccessfully, bccKeys.EmailHash) {
+			continue
+		}
+		zap.L().Debug("Sending email to bcc", zap.Any("bccKeys", bccKeys))
+		if err := attemptSendEmailBcc(certs, email, bccKeys.EmailHash, bccKeys); err != nil {
+			zap.L().Debug("Failed to send email to bcc", zap.Error(err))
+			return 2, sentSuccessfully
+		} else {
+			zap.L().Debug("Bcc sent successfully")
+			sentSuccessfully = append(sentSuccessfully, bccKeys.EmailHash)
+		}
+	}
+
+	return 1, sentSuccessfully
 }
 
 func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm.DB) int8 {
@@ -78,7 +130,8 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 	}
 	zap.L().Debug("Got email by id", zap.Any("email", email))
 
-	groupedRecipients, err := GroupRecipients(email, email.SentSuccessfully)
+	bccRecipients := createBccMap(email)
+	groupedRecipients, err := groupRecipients(email, email.SentSuccessfully, bccRecipients)
 	if err != nil {
 		zap.L().Debug("Failed to group recipients", zap.Error(err))
 		return 2
@@ -95,18 +148,7 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 		return 2
 	}
 
-	var sentSuccessfully []string
-	for domain, recipients := range groupedRecipients {
-		zap.L().Debug("Sending email to domain", zap.String("domain", domain), zap.Any("recipients", recipients))
-		if err := BatchSendEmails(certs, email, domain, recipients); err != nil {
-			zap.L().Debug("Failed to batch send emails", zap.Error(err))
-			return 2
-		} else {
-			zap.L().Debug("Batch sent successfully")
-			sentSuccessfully = append(sentSuccessfully, domain)
-		}
-	}
-
+	code, sentSuccessfully := sendEmails(certs, email, groupedRecipients)
 	email.SentSuccessfully = sentSuccessfully
 	if err := queueDatabaseConnection.Save(email).Error; err != nil {
 		zap.L().Debug("Failed to save email", zap.Error(err))
@@ -114,5 +156,5 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 	}
 
 	zap.L().Debug("Email sent", zap.Any("email", email))
-	return 1
+	return code
 }

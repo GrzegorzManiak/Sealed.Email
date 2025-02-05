@@ -34,12 +34,16 @@ func setHeaders(
 	headers *email.Headers,
 	input *Input,
 	fromDomain *models.UserDomain,
+	from email.EncryptedInbox,
+	to email.EncryptedInbox,
+	cc []email.EncryptedInbox,
 ) (string, error) {
 	headers.From(input.From.BasicInbox())
 	headers.ReplyTo(input.From.BasicInbox())
 	headers.To(input.To.BasicInbox())
 	headers.Cc(email.ReMapEncryptedInboxes(input.Cc))
 	headers.Date()
+	headers.EncryptedNoiseSignature(input.Signature, append([]email.EncryptedInbox{from, to}, cc...))
 	headers.Subject(input.Subject)
 
 	if err := headers.InReplyTo(input.InReplyTo); err != nil {
@@ -62,7 +66,7 @@ func sendEmail(
 	recipients := email.FormatEncryptedRecipients(input.To, cc, bcc)
 	headers := &email.Headers{}
 
-	messageId, err := setHeaders(headers, input, fromDomain)
+	messageId, err := setHeaders(headers, input, fromDomain, input.From, input.To, cc)
 	if err != nil {
 		return "", helpers.NewUserError(err.Error(), "Failed to set headers")
 	}
@@ -76,7 +80,7 @@ func sendEmail(
 	if err := email.Send(data.Context, data.ConnectionPool, &smtpService.Email{
 		From:      helpers.NormalizeEmail(input.From.BasicInbox().Email),
 		To:        recipients,
-		InboxKeys: email.ConvertToInboxKeys([]email.EncryptedInbox{input.From, input.To}, cc, bcc),
+		InboxKeys: email.ConvertToInboxKeys(bcc),
 		Body:      []byte(signedEmail),
 		Challenge: fromDomain.TxtChallenge,
 		Version:   "1.0",

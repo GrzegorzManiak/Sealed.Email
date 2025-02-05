@@ -82,3 +82,7 @@ func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, domain str
 
 	return nil
 }
+
+func attemptSendEmailBcc(certs *tls.Config, email *models.OutboundEmail, domain string, keys models.OutboundEmailKeys) error {
+	return nil
+}
