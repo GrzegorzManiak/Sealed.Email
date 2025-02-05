@@ -83,19 +83,19 @@ func createBccMap(email *models.OutboundEmail) map[string]struct{} {
 
 func sendEmails(certs *tls.Config, email *models.OutboundEmail, groupedRecipients map[string][]string) (int8, []string) {
 	var sentSuccessfully []string
-	//for domain, recipients := range groupedRecipients {
-	//	if slices.Contains(sentSuccessfully, domain) {
-	//		continue
-	//	}
-	//	zap.L().Debug("Sending email to domain", zap.String("domain", domain), zap.Any("recipients", recipients))
-	//	if err := batchSendEmails(certs, email, domain, recipients); err != nil {
-	//		zap.L().Debug("Failed to batch send emails", zap.Error(err))
-	//		return 2, sentSuccessfully
-	//	} else {
-	//		zap.L().Debug("Batch sent successfully")
-	//		sentSuccessfully = append(sentSuccessfully, domain)
-	//	}
-	//}
+	for domain, recipients := range groupedRecipients {
+		if slices.Contains(sentSuccessfully, domain) {
+			continue
+		}
+		zap.L().Debug("Sending email to domain", zap.String("domain", domain), zap.Any("recipients", recipients))
+		if err := batchSendEmails(certs, email, domain, recipients); err != nil {
+			zap.L().Debug("Failed to batch send emails", zap.Error(err))
+			return 2, sentSuccessfully
+		} else {
+			zap.L().Debug("Batch sent successfully")
+			sentSuccessfully = append(sentSuccessfully, domain)
+		}
+	}
 
 	//
 	// This may look like duplicated code, but it's not. The previous loop sends emails to domains,
