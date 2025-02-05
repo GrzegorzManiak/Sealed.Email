@@ -156,5 +156,10 @@ func NormalizeEmail(email string) string {
 	username = strings.ToLower(username)
 	username = strings.Trim(username, " ")
 	domain, _ := ExtractDomainFromEmail(email)
+
+	if IsValidFQDN(domain) {
+		domain = strings.TrimSuffix(domain, ".")
+	}
+
 	return fmt.Sprintf("%s@%s", username, domain)
 }

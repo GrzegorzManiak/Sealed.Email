@@ -97,3 +97,8 @@ func (h Headers) NoiseSignature(signature string, nonce string) {
 	h.Add("X-Noise-Version", "1.0")
 	h.Add("X-Noise-Nonce", nonce)
 }
+
+func (h Headers) EncryptedNoiseSignature(signature string, recipients []EncryptedInbox) {
+	h.Add("X-Noise-Signature", signature)
+	h.Add("X-Noise-Version", "1.0")
+}

@@ -42,10 +42,10 @@ var (
 )
 
 var (
-	NoiseVersion       NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-version", "X-Noise-Version"}
-	NoiseEncryptionKey NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-encryption-key", "X-Noise-Encryption-Key"}
-	NoiseSignature     NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-signature", "X-Noise-Signature"}
-	NoiseNonce         NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-nonce", "X-Noise-Nonce"}
+	NoiseVersion        NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-version", "X-Noise-Version"}
+	NoiseEncryptionKeys NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-encryption-keys", "X-Noise-Encryption-Keys"}
+	NoiseSignature      NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-signature", "X-Noise-Signature"}
+	NoiseNonce          NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-nonce", "X-Noise-Nonce"}
 )
 
 var RequiredHeaders = []WellKnownHeader{
@@ -151,8 +151,8 @@ func GetNoiseExtensionHeader(h string) NoiseExtensionHeader {
 	switch lowerH {
 	case NoiseVersion.Lower:
 		return NoiseVersion
-	case NoiseEncryptionKey.Lower:
-		return NoiseEncryptionKey
+	case NoiseEncryptionKeys.Lower:
+		return NoiseEncryptionKeys
 	case NoiseSignature.Lower:
 		return NoiseSignature
 	default:

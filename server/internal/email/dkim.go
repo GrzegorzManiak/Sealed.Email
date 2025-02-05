@@ -23,7 +23,7 @@ var WellKnownHeaderOrder = []WellKnownHeader{
 
 var NoiseExtensionHeaderOrder = []NoiseExtensionHeader{
 	NoiseVersion,
-	NoiseEncryptionKey,
+	NoiseEncryptionKeys,
 	NoiseSignature,
 	NoiseNonce,
 }
