@@ -31,7 +31,6 @@ async function ProcessDetails(username: string, password: string) {
     return { usernameHash, passwordHash };
 }
 
-
 function DecodeFromBase64(base64String: string): Uint8Array {
     const binaryString = atob(base64String);
     const len = binaryString.length;
@@ -40,10 +39,23 @@ function DecodeFromBase64(base64String: string): Uint8Array {
     return bytes;
 }
 
+function SplitEmail(email: string): { username: string, domain: string } {
+    email = email.trim().toLowerCase();
+    const parts = email.split('@', 2);
+    return { username: parts[0], domain: parts[1] };
+}
+
+function EnsureFqdn(domain: string): string {
+    if (domain.endsWith('.')) return domain;
+    else return domain + '.';
+}
+
 export {
     Argon2Hash,
     ProcessDetails,
     DecodeFromBase64,
     CalculateIntegrityHash,
-    ServerName
+    ServerName,
+    SplitEmail,
+    EnsureFqdn
 };

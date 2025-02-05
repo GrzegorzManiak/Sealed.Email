@@ -83,7 +83,7 @@
             <!-- Mail -->
             <div class="border-b border-background border-opacity-25 pb-1">
                 <NavBarGroup text="Mail" defaultOpen={true}>
-                    <NavBarButton {stateManager} buttonID="inbox" icon={Inbox} text="Inbox"/>
+                    <NavBarButton {stateManager} buttonID="inbox" icon={Inbox} text="EncryptedInbox"/>
                     <NavBarButton {stateManager} buttonID="starred" icon={Star} text="Starred"/>
                     <NavBarButton {stateManager} buttonID="pinned" icon={Pin} text="Pinned"/>
                     <NavBarButton {stateManager} buttonID="sent" icon={SendHorizonal} text="Sent"/>

@@ -1,6 +1,6 @@
 
 import * as API from '../lib';
-import {EncodeToBase64} from "gowl-client-lib";
+import {EncodeToBase64, Hash} from "gowl-client-lib";
 
 const username = 'test';
 const password = 'test';
@@ -27,24 +27,33 @@ console.log("Session token:", session.Token);
 
 
 const domainId = 'X0a/eJjvB7vnxLPA3yLnaiiCELkhEW7884e4YG5cTRQ=';
+// const refresh = await API.Domain.RefreshDomainVerification(session, domainId);
+// console.log('Refresh:', refresh);
 const domain = await API.Domain.GetDomain(session, domainId);
 const domainService = await API.DomainService.Decrypt(session, domain);
+// console.log('Domain:', domain);
 
-// const emailKey = API.Sym.NewKey();
-//
-// const recipientA = API.Asym.GenerateKeyPair();
-// const inboxA = await API.EncryptedInbox.Create(
-//     domainService,
-//     'test@beta.noise.email',
-//     'Test',
-//     EncodeToBase64(recipientA.pub),
-//     EncodeToBase64(emailKey)
-// );
-//
-// const sender = await domainService.GetSender(emailKey, 'Greg', 'Grzegorz Maniak')
-//
-// const email = new API.EncryptedEmail(domainService, sender, inboxA, 'Test', 'Hello world!');
+const emailKey = API.Sym.NewKey();
+const recipientA = API.Asym.GenerateKeyPair();
+const inboxA = await API.EncryptedInbox.Create(
+    'test@beta.noise.email',
+    'Test',
+	recipientA.pub,
+	emailKey
+);
 
+const sender = await domainService.GetSender(emailKey, 'Greg', 'Grzegorz Maniak')
+const email = new API.EncryptedEmail({
+	domain: domainService,
+	key: emailKey,
+	from: sender,
+	to: inboxA,
+	subject: 'Hello world',
+	body: 'Hello world'
+});
+
+// console.log('Email:', await email.Send(session));
+console.log(await email.Send(session))
 
 //
 // if (domainSweep) await API.Domain.AddDomain(session, randomString + 'test.grzegorz.ie').then(async(domain) => {
@@ -83,7 +92,7 @@ const domainService = await API.DomainService.Decrypt(session, domain);
 //
 //
 //     from:   { displayName: 'Greg your beloved', email: 'hello@beta.noise.email' },
-//     to:     { displayName: '', email: 'test-e9u8xwz7m@srv1.mail-tester.com' },
+//     to:     { displayName: '', email: 'example@beta.noise.email' },
 //     // cc:     [{ displayName: 'Greg Maniak', email: 'x00189661@mytudublin.ie' }],
 //     // bcc:    [{ displayName: '', email: 'ap3xdigital@gmail.com' }],
 //     bcc:    [],
@@ -91,12 +100,14 @@ const domainService = await API.DomainService.Decrypt(session, domain);
 //
 //     subject: 'Re: Your refund for "Bague ambre et argent" is on its way',
 //     body: 'Bruhh wtf lol',
+//
 // }
-//
-//
+
+
 // const sentEmail = await API.Email.SendPlainEmail(session, {
 //     ...email,
-//     ...await domainService.SignEmail(email)
+// 	signature: await domainService.SignData(EncodeToBase64(await Hash(email.body))),
+// 	nonce: EncodeToBase64(API.Sym.NewKey())
 // });
 //
 // console.log('Sent email:', sentEmail);

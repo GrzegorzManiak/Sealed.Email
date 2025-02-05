@@ -43,7 +43,7 @@ domain:
     batchTimeout: 30
 
     dns: '1.1.1.1:53'
-    verifyAll: true
+    verifyAll: false
 
 etcd:
     endpoints:

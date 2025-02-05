@@ -4,7 +4,7 @@ async function Encrypt(text: string, key: Uint8Array): Promise<{ iv: number[], d
     const encoder = new TextEncoder();
     const data = encoder.encode(text);
 
-    if (key.length !== 32) throw new Error("Key must be 32 bytes");
+    if (key.length !== 32) throw new Error("Key must be 32 bytes, got " + key.length);
 
     const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
 
@@ -21,7 +21,7 @@ async function Decrypt(encryptedData: { iv: number[], data: number[] }, key: Uin
     const ivArray = new Uint8Array(iv);
     const dataArray = new Uint8Array(data);
 
-    if (key.length !== 32) throw new Error("Key must be 32 bytes");
+    if (key.length !== 32) throw new Error("Key must be 32 bytes, got " + key.length);
 
     const algorithm = { name: ALG, iv: ivArray };
     const cryptoKey = await crypto.subtle.importKey('raw', key, algorithm, false, ['decrypt']);

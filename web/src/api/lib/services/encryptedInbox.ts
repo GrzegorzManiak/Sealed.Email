@@ -1,55 +1,77 @@
 import Domain from "./domain";
 import * as Sym from "../symetric";
 import * as Asym from "../asymmetric";
-import {DecodeFromBase64} from "../common";
-import {EncodeToBase64} from "gowl-client-lib";
+import {DecodeFromBase64, EnsureFqdn, SplitEmail} from "../common";
+import {EncodeToBase64, Hash} from "gowl-client-lib";
+import {ComputedEncryptedInbox} from "../api/email";
 
 class EncryptedInbox {
-	private readonly _domain: Domain;
 	private readonly _email: string;
 	private readonly _displayName: string;
-	private readonly _publicKey: string;
-	private readonly _emailKey: string;
+	private readonly _encryptedDisplayName: string;
+	private readonly _publicKey: Uint8Array;
+	private readonly _emailKey: Uint8Array;
 	private readonly _encryptedEmailKey: string;
+	private readonly _userHash: string;
 
 	public constructor(
-		domain: Domain,
 		email: string,
 		displayName: string,
-		publicKey: string,
-		emailKey: string,
-		encryptedEmailKey: string
+		publicKey: Uint8Array,
+		emailKey: Uint8Array,
+		encryptedEmailKey: string,
+		userHash: string,
+		encryptedDisplayName: string
 	) {
-		this._domain = domain;
 		this._email = email;
 		this._displayName = displayName;
 		this._publicKey = publicKey;
 		this._emailKey = emailKey;
 		this._encryptedEmailKey = encryptedEmailKey;
+		this._userHash = userHash;
+		this._encryptedDisplayName = encryptedDisplayName;
 	}
 
 	public static async Create(
-		domain: Domain,
 		email: string,
 		displayName: string,
-		publicKey: string,
-		emailKey: string
+		publicKey: Uint8Array,
+		emailKey: Uint8Array
 	): Promise<EncryptedInbox> {
-		const encryptedName = Sym.Compress(await Sym.Encrypt(displayName, DecodeFromBase64(emailKey)));
-		const encryptedEmailKey = await Asym.Encrypt(emailKey, DecodeFromBase64(publicKey));
-		return new EncryptedInbox(domain, email, EncodeToBase64(encryptedName), publicKey, emailKey, encryptedEmailKey);
+
+		const encryptedDisplayName = Sym.Compress(await Sym.Encrypt(displayName, emailKey));
+		const encodedDisplayName = EncodeToBase64(encryptedDisplayName);
+
+		const { domain, username } = SplitEmail(email);
+		if (!domain || !username) throw new Error("Invalid email");
+		const userHash = await Hash(`${username}@${EnsureFqdn(domain)}`);
+		const encodedUserHash = `${EncodeToBase64(userHash)}@${domain}`;
+
+		const encryptedEmailKey = await Asym.Encrypt(emailKey, publicKey);
+
+		return new EncryptedInbox(
+			email,
+			displayName,
+			publicKey,
+			emailKey,
+			encryptedEmailKey,
+			encodedUserHash,
+			encodedDisplayName
+		);
 	}
 
-	public get domain(): Domain {
-		return this._domain;
+	public get ComputedStringifiedInbox(): string {
+		const computedInbox = this.ComputedEncryptedInbox;
+		return `${computedInbox.displayName}.${computedInbox.emailHash}.${computedInbox.publicKey}.${computedInbox.encryptedEmailKey}`;
 	}
 
-	public get email(): string {
-		return this._email;
-	}
-
-	public get displayName(): string {
-		return this._displayName;
+	public get ComputedEncryptedInbox(): ComputedEncryptedInbox {
+		return {
+			displayName: this._encryptedDisplayName,
+			emailHash: this._userHash,
+			publicKey: EncodeToBase64(this._publicKey),
+			encryptedEmailKey: this._encryptedEmailKey
+		}
 	}
 }
 

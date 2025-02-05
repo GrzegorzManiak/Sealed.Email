@@ -4,25 +4,22 @@ import {HandleRequest} from "./common";
 import {Endpoints} from "../constants";
 import {ClientError} from "../errors";
 
-type EncryptedInbox = {
+type ComputedEncryptedInbox = {
     displayName: string;
     emailHash: string;
     publicKey: string;
+    encryptedEmailKey: string
 }
 
-type ComputedEncryptedInbox = {
-    encryptedEmailKey: string;
-    nonce: string;
-} & EncryptedInbox;
-
-type EncryptedEmail = {
+type PostEncryptedEmail = {
     domainID: DomainRefID;
-    from: EncryptedInbox;
+    from: ComputedEncryptedInbox;
     inReplyTo: string;
+    references: string[];
 
-    to: EncryptedInbox;
-    cc: EncryptedInbox[];
-    bcc: EncryptedInbox[];
+    to: ComputedEncryptedInbox;
+    cc: ComputedEncryptedInbox[];
+    bcc: ComputedEncryptedInbox[];
 
     subject: string;
     body: string;
@@ -64,13 +61,27 @@ const SendPlainEmail = async (session: Session, email: SignedPlainEmail): Promis
     });
 };
 
+const SendEncryptedEmail = async (session: Session, email: PostEncryptedEmail, signature: string): Promise<void> => {
+    await HandleRequest<void>({
+        session,
+        body: { ...email, signature },
+        endpoint: Endpoints.EMAIL_SEND_ENCRYPTED,
+        fallbackError: new ClientError(
+            'Failed to send email',
+            'Sorry, we were unable to send the email',
+            'EMAIL-ENCRYPTED-SEND-FAIL'
+        ),
+    });
+};
+
+
 export {
     SendPlainEmail,
+    SendEncryptedEmail,
     
     type PlainEmail,
     type SignedPlainEmail,
-    type EncryptedEmail,
-    type EncryptedInbox,
+    type PostEncryptedEmail,
     type ComputedEncryptedInbox,
     type Inbox
 }

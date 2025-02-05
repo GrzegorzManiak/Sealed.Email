@@ -9,7 +9,6 @@ import {ComputedEncryptedInbox, PlainEmail} from "../api/email";
 import EncryptedInbox from "./encryptedInbox";
 
 class Domain {
-    private readonly _session: Session;
     private readonly _domainRaw: DomainFull;
     private readonly _domainID: DomainRefID;
     private readonly _domain: string;
@@ -26,12 +25,10 @@ class Domain {
     private _catchAll: boolean;
 
     public constructor(
-        session: Session,
         domain: DomainFull,
         decryptedRootKey: Uint8Array,
         privateKey: Uint8Array,
     ) {
-        this._session = session;
         this._domainRaw = domain;
         this._domainID = domain.domainID;
         this._domain = domain.domain;
@@ -61,7 +58,7 @@ class Domain {
         const encodedPrivateKey = await Decrypt(decompressedPrivateKey, rootKey);
         const privateKey = DecodeFromBase64(encodedPrivateKey);
 
-        return new Domain(session, domain, rootKey, privateKey);
+        return new Domain(domain, rootKey, privateKey);
     }
 
     public async EncryptKey(key: Uint8Array | string): Promise<string> {
@@ -80,27 +77,6 @@ class Domain {
         return await SignData(data, this._decryptedRootKey);
     }
 
-    public async SignEmail(email: PlainEmail): Promise<string> {
-        function formatInbox(inbox: { email: string, displayName: string }): string {
-            return `${inbox.displayName}<${inbox.email}>`.toLowerCase();
-        }
-
-        const ccs = email.cc.map(formatInbox)
-            .sort((a, b) => a.localeCompare(b))
-            .join(',');
-
-        const data = [
-            formatInbox(email.from),
-            formatInbox(email.to),
-            ccs,
-            email.subject,
-            email.body,
-            email.inReplyTo,
-        ].join('\n');
-
-        return await this.SignData(data);
-    }
-
     public FormatEmail(user: string): string {
         user = user.toLowerCase();
         user.replace(/[^a-z0-9]/g, '');
@@ -109,11 +85,10 @@ class Domain {
     
     public async GetSender(emailKey: Uint8Array, user: string, displayName: string = ''): Promise<EncryptedInbox> {
         return EncryptedInbox.Create(
-            this,
             this.FormatEmail(user),
             displayName,
-            this._publicKey,
-            EncodeToBase64(emailKey)
+            DecodeFromBase64(this._publicKey),
+            emailKey
         );
     }
 
