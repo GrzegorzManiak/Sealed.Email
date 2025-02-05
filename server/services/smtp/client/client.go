@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/tls"
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	helpers "github.com/GrzegorzManiak/NoiseBackend/internal/email"
 	"github.com/grzegorzmaniak/go-smtp"
@@ -14,22 +15,18 @@ func attemptDial(domain string, certs *tls.Config) (*smtp.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	zap.L().Debug("Fetched MX records", zap.Any("mxRecords", mxRecords))
 
 	for _, mx := range mxRecords {
 		c, err := dial(mx.Host, certs)
 
 		if err != nil {
-			zap.L().Debug("Failed to dial", zap.Error(err))
 			continue
 		}
 
-		zap.L().Debug("Dial successful", zap.Any("mx", mx))
 		return c, nil
 	}
 
-	zap.L().Debug("Failed to dial (no MX records)")
-	return nil, nil
+	return nil, fmt.Errorf("failed to dial (no MX records)")
 }
 
 func setupConnection(client *smtp.Client, email *models.OutboundEmail, recipients []string) (io.WriteCloser, error) {

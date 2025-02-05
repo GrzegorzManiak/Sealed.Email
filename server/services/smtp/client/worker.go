@@ -15,7 +15,11 @@ import (
 
 func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.OutboundEmail, error) {
 	email := &models.OutboundEmail{}
-	err := queueDatabaseConnection.Where("email_id = ?", emailId).First(email).Error
+	err := queueDatabaseConnection.
+		Preload("OutboundEmailKeys").
+		Where("email_id = ?", emailId).
+		First(email).Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +139,6 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 		zap.L().Debug("Failed to get email by id", zap.Error(err))
 		return 2
 	}
-	zap.L().Debug("Got email by id", zap.Any("email", email))
 
 	groupedRecipients, err := groupRecipients(email, email.SentSuccessfully)
 	zap.L().Debug("Grouped recipients", zap.Any("groupedRecipients", groupedRecipients), zap.Any("inbox keys", email.OutboundEmailKeys))
