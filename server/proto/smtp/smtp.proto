@@ -6,6 +6,13 @@ service SmtpService {
   rpc SendEmail(Email) returns (SendEmailResponse);
 }
 
+message InboxKeys {
+  string displayName = 1;
+  string publicKey = 2;
+  string emailHash = 3;
+  string encryptedEmailKey = 4;
+}
+
 message Email {
   string from = 1;
   repeated string to = 2;
@@ -14,6 +21,7 @@ message Email {
   string messageId = 8;
   bool encrypted = 9;
   string challenge = 10;
+  repeated InboxKeys inboxKeys = 11;
 }
 
 message SendEmailResponse {
