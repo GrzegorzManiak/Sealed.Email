@@ -60,7 +60,7 @@ func sendEmail(
 	fromDomain *models.UserDomain,
 ) (string, helpers.AppError) {
 	cc, bcc := email.CleanRecipients(input.To, input.Cc, input.Bcc)
-	recipients := email.CombineRecipients(input.To, cc, bcc)
+	recipients := email.FormatRecipients(input.To, cc, bcc)
 	headers := &email.Headers{}
 
 	messageId, err := setHeaders(headers, input, fromDomain)
@@ -75,7 +75,7 @@ func sendEmail(
 	}
 
 	if err := email.Send(data.Context, data.ConnectionPool, &smtpService.Email{
-		From:      input.From.Email,
+		From:      helpers.NormalizeEmail(input.From.Email),
 		To:        recipients,
 		Body:      []byte(signedEmail),
 		Challenge: fromDomain.TxtChallenge,

@@ -6,7 +6,7 @@ import (
 )
 
 func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
-	fromProvidedDomain, err := helpers.ExtractDomainFromEmail(input.From.Email)
+	fromProvidedDomain, err := helpers.ExtractDomainFromEmail(input.From.EmailHash)
 	if err != nil {
 		return nil, helpers.NewUserError(err.Error(), "Invalid from email address")
 	}

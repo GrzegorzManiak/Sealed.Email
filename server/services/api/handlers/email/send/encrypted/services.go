@@ -35,13 +35,12 @@ func setHeaders(
 	input *Input,
 	fromDomain *models.UserDomain,
 ) (string, error) {
-	headers.From(input.From)
-	headers.ReplyTo(input.From)
-	headers.To(input.To)
-	headers.Cc(input.Cc)
+	headers.From(input.From.BasicInbox())
+	headers.ReplyTo(input.From.BasicInbox())
+	headers.To(input.To.BasicInbox())
+	headers.Cc(email.ReMapEncryptedInboxes(input.Cc))
 	headers.Date()
 	headers.Subject(input.Subject)
-	headers.NoiseSignature(input.Signature, input.Nonce)
 
 	if err := headers.InReplyTo(input.InReplyTo); err != nil {
 		return "", err
@@ -59,8 +58,8 @@ func sendEmail(
 	data *services.Handler,
 	fromDomain *models.UserDomain,
 ) (string, helpers.AppError) {
-	cc, bcc := email.CleanRecipients(input.To, input.Cc, input.Bcc)
-	recipients := email.CombineRecipients(input.To, cc, bcc)
+	cc, bcc := email.CleanEncryptedRecipients(input.To, input.Cc, input.Bcc)
+	recipients := email.FormatEncryptedRecipients(input.To, cc, bcc)
 	headers := &email.Headers{}
 
 	messageId, err := setHeaders(headers, input, fromDomain)
@@ -75,12 +74,14 @@ func sendEmail(
 	}
 
 	if err := email.Send(data.Context, data.ConnectionPool, &smtpService.Email{
-		From:      input.From.Email,
+		From:      helpers.NormalizeEmail(input.From.BasicInbox().Email),
 		To:        recipients,
+		InboxKeys: email.ConvertToInboxKeys([]email.EncryptedInbox{input.From, input.To}, cc, bcc),
 		Body:      []byte(signedEmail),
+		Challenge: fromDomain.TxtChallenge,
 		Version:   "1.0",
 		MessageId: messageId,
-		Encrypted: false,
+		Encrypted: true,
 	}); err != nil {
 		return "", helpers.NewServerError("Failed to send email. Please try again later.", "Failed to send email")
 	}

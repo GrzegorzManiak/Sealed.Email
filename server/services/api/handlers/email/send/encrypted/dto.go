@@ -8,10 +8,10 @@ import (
 type Input struct {
 	DomainID string `json:"domainID" validate:"required,PublicID"`
 
-	From email.Inbox   `json:"from" validate:"required"`
-	To   email.Inbox   `json:"to" validate:"required"`
-	Cc   []email.Inbox `json:"cc" validate:"dive,required"`
-	Bcc  []email.Inbox `json:"bcc" validate:"dive,required"`
+	From email.EncryptedInbox   `json:"from" validate:"required"`
+	To   email.EncryptedInbox   `json:"to" validate:"required"`
+	Cc   []email.EncryptedInbox `json:"cc" validate:"dive,required"`
+	Bcc  []email.EncryptedInbox `json:"bcc" validate:"dive,required"`
 
 	InReplyTo  string   `json:"inReplyTo" validate:"omitempty,gte=10,lte=200"`
 	References []string `json:"references" validate:"omitempty,dive,gte=10,lte=1000"`
@@ -20,7 +20,6 @@ type Input struct {
 	Body    string `json:"body" validate:"required,gte=1,lte=10000"`
 
 	Signature string `json:"signature" validate:"required,base64,gte=40,lte=200"`
-	Nonce     string `json:"nonce" validate:"required,base64,gte=40,lte=200"`
 }
 
 type Output struct {
