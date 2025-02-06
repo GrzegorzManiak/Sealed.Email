@@ -1,10 +1,14 @@
 <script lang='ts'>
-    import {writable} from "svelte/store";
-    import {InboxManager} from "$lib/inboxManager";
-    const manger = new InboxManager('1', 'Inbox');
+	import * as Resizable from '$shadcn/resizable';
+	import {EmailCard} from "@/inbox/emailCard";
+	import { Button } from '$shadcn/button';
+	import { Input } from '$shadcn/input';
+	import { Label } from '$shadcn/label';
 
-    import * as Resizable from '$shadcn/resizable';
-    import {EmailCard} from "@/inbox/emailCard";
+	import {writable} from "svelte/store";
+    import {InboxManager} from "$lib/inboxManager";
+	import {SquarePen} from "lucide-svelte";
+    const manger = new InboxManager('1', 'Inbox');
 
     const groupCounter = writable(0);
     const groupSelectStore = writable(new Set<string>());
@@ -12,8 +16,22 @@
 </script>
 
 <div class="max-h-screen h-screen w-screen flex flex-col">
+
     <Resizable.PaneGroup direction="horizontal" class="h-full">
+
         <Resizable.Pane class="flex-shrink-0 h-full">
+            <div class="flex flex-col items-start justify-end p-4 py-4 gap-5 border-b h-36">
+                <h1 class="text-2xl font-bold">Encrypted Inbox</h1>
+
+                <div class="flex flex-row gap-2 w-full">
+                    <Input id="search" type="text" placeholder="Search" class="w-full rounded-md bg-primary-foreground bg-opacity-40 text-foreground"/>
+                    <Button variant="ghost" class="bg-foreground rounded-md ">
+                        <SquarePen class="h-5 w-5 text-muted"/>
+                    </Button>
+
+                </div>
+            </div>
+
             <!-- Fixed height pane content -->
             <EmailCard
                     groupCounter={groupCounter}

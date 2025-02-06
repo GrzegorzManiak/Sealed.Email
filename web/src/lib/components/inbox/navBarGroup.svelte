@@ -18,7 +18,9 @@
         </Button>
     </Collapsible.Trigger>
 
-    <Collapsible.Content class="gap-2 px-2">
-        <slot/>
+    <Collapsible.Content>
+        <div class="flex flex-col px-3">
+            <slot/>
+        </div>
     </Collapsible.Content>
 </Collapsible.Root>

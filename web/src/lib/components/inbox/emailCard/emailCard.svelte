@@ -292,7 +292,7 @@
             <div class="flex items-center justify-between mt-2 w-full">
 
                 <!-- Email Sender -->
-                <p class="truncate font-bold text-muted-foreground">{data.fromName} <span class="truncate font-normal text-sm text-muted-foreground">&lt;{data.fromEmail}&gt;</span></p>
+                <p class="truncate font-bold">{data.fromName} <span class="truncate font-normal text-sm text-muted-foreground">&lt;{data.fromEmail}&gt;</span></p>
 
                 <!-- Email actions -->
                 <div class="flex items-center gap-2">

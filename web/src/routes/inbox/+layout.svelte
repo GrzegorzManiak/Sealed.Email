@@ -12,6 +12,7 @@
         SquarePen,
         Inbox,
         Star,
+        Contact,
         Pin,
         SendHorizonal,
         Calendar,
@@ -28,6 +29,7 @@
     import {Button} from "@/ui/button";
     import {RandomHEXColor} from "$lib/common";
     import {cn} from "$lib/utils";
+	import {DomainSelector} from "@/inbox/domainSelector/index.js";
 
     type Folder = {
         id: string;
@@ -61,42 +63,44 @@
 <div class="flex flex-row bun run ">
 
     <!-- Left Sidebar -->
-    <div class="border-r h-screen flex flex-col gap-1 min-w-[15rem] bg-muted">
+    <div class="border-r h-screen flex flex-col gap-1 min-w-[15rem] bg-primary-foreground bg-opacity-40">
 
-        <div class="flex items-center p-2 py-4 gap-2 border-b border-background border-opacity-25">
-            <img src="/images/logos/white.png" alt="Noise Logo" class="w-10 mr-1" />
-            <h1 class="text-md font-bold">Noise Email</h1>
-        </div>
+<!--        <div class="flex items-center p-2 py-4 gap-2 border-b border-background border-opacity-25">-->
+<!--            <img src="/images/logos/white.png" alt="Noise Logo" class="w-10 mr-1" />-->
+<!--            <h1 class="text-md font-bold">Noise Email</h1>-->
+<!--        </div>-->
 
-        <div class="overflow-y-auto flex-grow flex flex-col gap-2">
+        <div class="overflow-y-auto flex-grow flex flex-col">
 
             <!-- Compose / Search / Settings -->
-            <div class="border-b border-background border-opacity-25 pb-1">
-                <NavBarGroup text="Actions" defaultOpen={true}>
-                    <NavBarButton {stateManager} buttonID="compose" icon={SquarePen} text="Compose"/>
-                    <NavBarButton {stateManager} buttonID="search" icon={Search} text="Search"/>
-                    <NavBarButton {stateManager} buttonID="domains" icon={Globe} text="Domains"/>
+            <div class="pt-2">
+                <div class="flex flex-col px-3">
+<!--                    <p class="text-muted-foreground text-xs pb-1">You are currently using:</p>-->
+                    <DomainSelector />
+                    <span class="text-muted-foreground text-xs pb-1"></span>
                     <NavBarButton {stateManager} buttonID="settings" icon={Settings} text="Settings"/>
-                </NavBarGroup>
+                    <NavBarButton {stateManager} buttonID="contacts" icon={Contact} text="Contacts"/>
+
+                </div>
             </div>
 
             <!-- Mail -->
-            <div class="border-b border-background border-opacity-25 pb-1">
+            <div class="border-b py-1">
                 <NavBarGroup text="Mail" defaultOpen={true}>
-                    <NavBarButton {stateManager} buttonID="inbox" icon={Inbox} text="EncryptedInbox"/>
-                    <NavBarButton {stateManager} buttonID="starred" icon={Star} text="Starred"/>
-                    <NavBarButton {stateManager} buttonID="pinned" icon={Pin} text="Pinned"/>
-                    <NavBarButton {stateManager} buttonID="sent" icon={SendHorizonal} text="Sent"/>
-                    <NavBarButton {stateManager} buttonID="later" icon={Calendar} text="Scheduled"/>
-                    <NavBarButton {stateManager} buttonID="drafts" icon={NotebookPen} text="Drafts"/>
-                    <NavBarButton {stateManager} buttonID="spam" icon={MailWarning} text="Spam"/>
-                    <NavBarButton {stateManager} buttonID="archive" icon={Archive} text="Archive"/>
-                    <NavBarButton {stateManager} buttonID="trash" icon={Trash} text="Trash"/>
+                    <NavBarButton hasNotifications={true} {stateManager} buttonID="inbox" icon={Inbox} text="Encrypted Inbox"/>
+                    <NavBarButton hasNotifications={true} {stateManager} buttonID="starred" icon={Star} text="Starred"/>
+                    <NavBarButton hasNotifications={true} {stateManager} buttonID="pinned" icon={Pin} text="Pinned"/>
+                    <NavBarButton hasNotifications={true} {stateManager} buttonID="sent" icon={SendHorizonal} text="Sent"/>
+                    <NavBarButton hasNotifications={true} {stateManager} buttonID="later" icon={Calendar} text="Scheduled"/>
+                    <NavBarButton hasNotifications={true} {stateManager} buttonID="drafts" icon={NotebookPen} text="Drafts"/>
+                    <NavBarButton hasNotifications={true} {stateManager} buttonID="spam" icon={MailWarning} text="Spam"/>
+                    <NavBarButton hasNotifications={true} {stateManager} buttonID="archive" icon={Archive} text="Archive"/>
+                    <NavBarButton hasNotifications={true} {stateManager} buttonID="trash" icon={Trash} text="Trash"/>
                 </NavBarGroup>
             </div>
 
             <!-- Addresses -->
-            <div class="border-b border-background border-opacity-25 pb-1">
+            <div class="border-b py-1">
                 <NavBarGroup text="Addresses">
                     {#each addresses as address}
                         <NavBarButton {stateManager} buttonID={address.name} icon={AtSign} text={address.name}/>
@@ -109,7 +113,7 @@
             </div>
 
             <!-- Folders -->
-            <div class="border-b border-background border-opacity-25 pb-1">
+            <div class="border-b py-1">
                 <NavBarGroup text="Folders">
                     {#each folders as folder}
                         <NavBarButton {stateManager} buttonID={folder.id} icon={Archive} text={folder.name}/>
@@ -122,7 +126,7 @@
             </div>
         </div>
 
-        <div class="border-t border-background border-opacity-25 py-2">
+        <div class="border-t py-2">
             <StorageIndicator />
             <div class="flex px-1 mt-1 gap-1 justify-end">
 

@@ -16,7 +16,7 @@ const email = {
 
 
 	from:   { displayName: 'Greg', email: 'hello@beta.noise.email' },
-	to:     { displayName: '', email: 'noise.gcloud@gmail.com' },
+	to:     { displayName: '', email: 'x00189661@mytudublin.ie' },
 	// cc:     [{ displayName: 'Greg Maniak', email: 'x00189661@mytudublin.ie' }],
 	// bcc:    [{ displayName: '', email: 'ap3xdigital@gmail.com' }],
 	bcc:    [],
