@@ -3,6 +3,10 @@
     import {redirectIfLoggedIn} from "$lib/redirect";
     import {Button} from "@/ui/button";
 
+	function goBack() {
+		history.back();
+	}
+
     onMount(() => {
         redirectIfLoggedIn('/inbox');
     });
@@ -48,7 +52,9 @@
 
     <div class='absolute top-0 right-0'>
         <div class="p-5">
-            <Button href="/" variant="ghost" class="w-24">Go back</Button>
+            <Button variant="ghost" on:click={goBack}>
+                Go Back
+            </Button>
         </div>
     </div>
 
