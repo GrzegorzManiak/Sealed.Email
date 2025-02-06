@@ -48,7 +48,7 @@ func (s *Session) AwaitQueue() error {
 		Version:    1,
 	}
 
-	zap.L().Debug("Inbound email created", zap.Any("email", inboundEmail))
+	zap.L().Debug("Inbound email created", zap.Any("email", inboundEmail.EmailId))
 
 	s.Processed = &inboundEmail
 	s.QueueEntry = entry

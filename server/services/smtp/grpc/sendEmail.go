@@ -9,7 +9,7 @@ import (
 
 func (s *Server) SendEmail(ctx context.Context, email *smtp.Email) (*smtp.SendEmailResponse, error) {
 	data, err := client.QueueEmail(email, s.QueueDatabaseConnection, s.OutboundQueue)
-	zap.L().Debug("Queued email", zap.Any("data", data))
+	zap.L().Debug("Queued email", zap.Any("data", data.EmailId))
 	if err != nil {
 		return &smtp.SendEmailResponse{Success: false}, err
 	}

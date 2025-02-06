@@ -121,7 +121,6 @@ func attemptSendEmailBcc(certs *tls.Config, email *models.OutboundEmail, domain 
 		return err
 	}
 
-	zap.L().Debug("Email body", zap.String("body", string(email.Body)))
 	_, err = wc.Write([]byte(stringifiedHeader))
 	_, err = wc.Write(email.Body)
 	if err != nil {

@@ -92,7 +92,6 @@ func sendEmails(certs *tls.Config, email *models.OutboundEmail, groupedRecipient
 			zap.L().Debug("Failed to batch send emails", zap.Error(err))
 			return 2, sentSuccessfully
 		} else {
-			zap.L().Debug("Batch sent successfully")
 			sentSuccessfully = append(sentSuccessfully, domain)
 		}
 	}
@@ -116,7 +115,6 @@ func sendEmails(certs *tls.Config, email *models.OutboundEmail, groupedRecipient
 			zap.L().Debug("Failed to send email to bcc", zap.Error(err))
 			return 2, sentSuccessfully
 		} else {
-			zap.L().Debug("Bcc sent successfully")
 			sentSuccessfully = append(sentSuccessfully, bccKeys.EmailHash)
 		}
 	}
@@ -132,7 +130,6 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 		zap.L().Debug("Failed to unmarshal email id", zap.Error(err))
 		return 2
 	}
-	zap.L().Debug("Unmarshalled email id", zap.Any("emailId", emailId))
 
 	email, err := getEmailById(emailId.EmailId, queueDatabaseConnection)
 	if err != nil {
@@ -141,7 +138,6 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 	}
 
 	groupedRecipients, err := groupRecipients(email, email.SentSuccessfully)
-	zap.L().Debug("Grouped recipients", zap.Any("groupedRecipients", groupedRecipients), zap.Any("inbox keys", email.OutboundEmailKeys))
 	if err != nil {
 		zap.L().Debug("Failed to group recipients", zap.Error(err))
 		return 2

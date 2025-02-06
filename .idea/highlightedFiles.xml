@@ -20,6 +20,8 @@
       <node color="7" path="$PROJECT_DIR$/server/services/api/session" />
       <node color="4" path="$PROJECT_DIR$/server/services/domain" />
       <node color="2" path="$PROJECT_DIR$/server/services/smtp" />
+      <node color="5" path="$PROJECT_DIR$/server/services/smtp/client" />
+      <node color="3" path="$PROJECT_DIR$/server/services/smtp/server" />
       <node color="3" path="$PROJECT_DIR$/web" />
       <node color="8" path="$PROJECT_DIR$/web/.idea" />
       <node color="8" path="$PROJECT_DIR$/web/.svelte-kit" />
