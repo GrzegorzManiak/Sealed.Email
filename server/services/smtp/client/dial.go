@@ -9,11 +9,11 @@ import (
 	"go.uber.org/zap"
 )
 
-func addPort(domain string, port string) string {
-	return fmt.Sprintf("%s:%s", domain, port)
+func addPort(domain string, port int) string {
+	return fmt.Sprintf("%s:%d", domain, port)
 }
 
-func dialStartTls(domain string, certs *tls.Config, port string) (*smtp.Client, error) {
+func dialStartTls(domain string, certs *tls.Config, port int) (*smtp.Client, error) {
 	domain = addPort(domain, port)
 	zap.L().Debug("Dialing (StartTLS)", zap.String("domain", domain))
 	c, err := smtp.DialStartTLS(domain, config.Smtp.Domain, certs)
@@ -24,7 +24,7 @@ func dialStartTls(domain string, certs *tls.Config, port string) (*smtp.Client, 
 }
 
 func dialPlain(domain string) (*smtp.Client, error) {
-	domain = addPort(domain, "25")
+	domain = addPort(domain, config.Smtp.Ports.Plain)
 	zap.L().Debug("Dialing (Plain)", zap.String("domain", domain))
 	c, err := smtp.Dial(domain, config.Smtp.Domain)
 	if err != nil {
@@ -35,12 +35,12 @@ func dialPlain(domain string) (*smtp.Client, error) {
 
 func dial(domain string, certs *tls.Config) (*smtp.Client, error) {
 
-	c, err := dialStartTls(domain, certs, "25")
+	c, err := dialStartTls(domain, certs, config.Smtp.Ports.Plain)
 	if err == nil {
 		return c, nil
 	}
 
-	c, err = dialStartTls(domain, certs, "587")
+	c, err = dialStartTls(domain, certs, config.Smtp.Ports.StartTls)
 	if err == nil {
 		return c, nil
 	}

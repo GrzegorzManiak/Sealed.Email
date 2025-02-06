@@ -151,3 +151,6 @@ smtp:
   allowInsecureAuth: true
   maxLineLength: 2000
   spfHardFail: false
+
+debug:
+  forceDialLocalhost: true

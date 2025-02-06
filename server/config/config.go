@@ -18,6 +18,7 @@ type RawConfig struct {
 	Domain       structs.DomainConfig       `yaml:"domain"`
 	Certificates structs.CertificatesConfig `yaml:"certificates"`
 	Etcd         structs.EtcdConfig         `yaml:"etcd"`
+	Debug        structs.DebugConfig        `yaml:"debug"`
 	Smtp         structs.SmtpConfig         `yaml:"smtp"`
 }
 
@@ -28,6 +29,7 @@ var Domain structs.DomainConfig
 var Certificates structs.CertificatesConfig
 var Etcd structs.EtcdConfig
 var Smtp structs.SmtpConfig
+var Debug structs.DebugConfig
 
 func ParseConfig(rawConfig RawConfig) error {
 	sessionConfig, err := rawConfig.Session.Parse()
@@ -49,6 +51,7 @@ func ParseConfig(rawConfig RawConfig) error {
 	Certificates = rawConfig.Certificates
 	Etcd = rawConfig.Etcd
 	Smtp = rawConfig.Smtp
+	Debug = rawConfig.Debug
 
 	return nil
 }

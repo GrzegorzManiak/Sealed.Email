@@ -3,6 +3,7 @@ package client
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	helpers "github.com/GrzegorzManiak/NoiseBackend/internal/email"
 	"github.com/grzegorzmaniak/go-smtp"
@@ -11,6 +12,10 @@ import (
 )
 
 func attemptDial(domain string, certs *tls.Config) (*smtp.Client, error) {
+	if config.Debug.ForceDialLocalhost {
+		return dialPlain("localhost")
+	}
+
 	mxRecords, err := FetchMX(domain)
 	if err != nil {
 		return nil, err
@@ -26,7 +31,7 @@ func attemptDial(domain string, certs *tls.Config) (*smtp.Client, error) {
 		return c, nil
 	}
 
-	return nil, fmt.Errorf("failed to dial (no MX records)")
+	return nil, fmt.Errorf("failed to dial: %s", err)
 }
 
 func setupConnection(client *smtp.Client, email *models.OutboundEmail, recipients []string) (io.WriteCloser, error) {
