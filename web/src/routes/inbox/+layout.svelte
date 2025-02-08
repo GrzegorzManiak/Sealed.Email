@@ -81,8 +81,10 @@
 
                     <!-- Compose / Search / Settings -->
                     <div class="pt-2">
-                        <div class="flex flex-col px-3">
-                            <DomainSelector />
+                        <div class="flex flex-col">
+                            <div class="px-2">
+                                <DomainSelector />
+                            </div>
                             <span class="text-muted-foreground text-xs pb-1"></span>
                             <NavBarButton {collapsed} {stateManager} buttonID="settings" icon={Settings} text="Settings"/>
                             <NavBarButton {collapsed} {stateManager} buttonID="contacts" icon={Contact} text="Contacts"/>
@@ -90,45 +92,29 @@
                     </div>
 
                     <!-- Mail -->
-                    <div class="border-b py-1">
-                        <NavBarGroup text="Mail" defaultOpen={true}>
-                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="inbox" icon={Inbox} text="Encrypted Inbox"/>
-                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="starred" icon={Star} text="Starred"/>
-                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="pinned" icon={Pin} text="Pinned"/>
-                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="sent" icon={SendHorizonal} text="Sent"/>
-                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="later" icon={Calendar} text="Scheduled"/>
-                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="drafts" icon={NotebookPen} text="Drafts"/>
-                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="spam" icon={MailWarning} text="Spam"/>
-                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="archive" icon={Archive} text="Archive"/>
-                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="trash" icon={Trash} text="Trash"/>
-                        </NavBarGroup>
-                    </div>
+                    <NavBarGroup {collapsed} text="Mail" defaultOpen={true}>
+                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="inbox" icon={Inbox} text="Encrypted Inbox"/>
+                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="starred" icon={Star} text="Starred"/>
+                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="pinned" icon={Pin} text="Pinned"/>
+                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="sent" icon={SendHorizonal} text="Sent"/>
+                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="later" icon={Calendar} text="Scheduled"/>
+                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="drafts" icon={NotebookPen} text="Drafts"/>
+                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="spam" icon={MailWarning} text="Spam"/>
+                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="archive" icon={Archive} text="Archive"/>
+                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="trash" icon={Trash} text="Trash"/>
+                    </NavBarGroup>
 
-                    <!-- Addresses -->
-                    <div class="border-b py-1">
-                        <NavBarGroup text="Addresses">
-                            {#each addresses as address}
-                                <NavBarButton {collapsed} {stateManager} buttonID={address.name} icon={AtSign} text={address.name}/>
-                            {/each}
-
-                            {#if addresses.length === 0}
-                                <p class="text-muted-foreground text-sm text-center">No addresses</p>
-                            {/if}
-                        </NavBarGroup>
-                    </div>
 
                     <!-- Folders -->
-                    <div class="border-b py-1">
-                        <NavBarGroup text="Folders">
-                            {#each folders as folder}
-                                <NavBarButton {collapsed} {stateManager} buttonID={folder.id} icon={Archive} text={folder.name}/>
-                            {/each}
+                    <NavBarGroup {collapsed} text="Folders">
+                        {#each folders as folder}
+                            <NavBarButton {collapsed} {stateManager} buttonID={folder.id} icon={Archive} text={folder.name}/>
+                        {/each}
 
-                            {#if folders.length === 0}
-                                <p class="text-muted-foreground text-sm text-center">No folders</p>
-                            {/if}
-                        </NavBarGroup>
-                    </div>
+                        {#if folders.length === 0}
+                            <p class="text-muted-foreground text-sm text-center">No folders</p>
+                        {/if}
+                    </NavBarGroup>
                 </div>
 
                 <div class="border-t py-2">

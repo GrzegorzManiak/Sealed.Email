@@ -4,4 +4,4 @@
     import {cn} from "$lib/utils";
 </script>
 
-<p class={cn("text-muted-foreground text-xs font-medium pl-2 uppercase", className)}>{text}</p>
+<p class={cn("text-muted-foreground text-xs font-medium leading-tight", className)}>{text}</p>
