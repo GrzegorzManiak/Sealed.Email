@@ -32,7 +32,7 @@ const colors = {
     normal: "bg-background",
     chain: "bg-muted bg-opacity-20",
     hovered: "bg-muted bg-opacity-10",
-    selected: "bg-muted bg-opacity-50",
+    selected: "bg-zinc-900",
 }
 
 enum ChainGroupSelect {

@@ -5,6 +5,12 @@
     import NavBarGroup from "@/inbox/navBarGroup.svelte";
     import * as Avatar from "$shadcn/avatar";
     import * as Collapsible from "$shadcn/collapsible";
+	import * as Resizable from '$shadcn/resizable';
+	import {writable} from "svelte/store";
+	import {Button} from "@/ui/button";
+	import {RandomHEXColor} from "$lib/common";
+	import {cn} from "$lib/utils";
+	import {DomainSelector} from "@/inbox/domainSelector/index.js";
 
     import {
         Search,
@@ -24,12 +30,6 @@
         AtSign,
         Globe
     } from "lucide-svelte";
-
-    import {writable} from "svelte/store";
-    import {Button} from "@/ui/button";
-    import {RandomHEXColor} from "$lib/common";
-    import {cn} from "$lib/utils";
-	import {DomainSelector} from "@/inbox/domainSelector/index.js";
 
     type Folder = {
         id: string;
@@ -54,101 +54,109 @@
     ];
 
     const stateManager = writable<string>();
+	const collapsed = writable(false);
 
     const color = RandomHEXColor();
     const avatar = `https://api.dicebear.com/9.x/lorelei/svg?seed=${color}icon&options[mood][]=happy`;
-
 </script>
 
-<div class="flex flex-row bun run ">
+<div class="flex flex-row">
+    <Resizable.PaneGroup direction="horizontal" class="h-full">
 
-    <!-- Left Sidebar -->
-    <div class="border-r h-screen flex flex-col gap-1 min-w-[15rem] bg-primary-foreground bg-opacity-40">
+        <Resizable.Pane
+                minSize={25}
+                maxSize={35}
+                defaultSize={30}
+                collapsible={true}
+                collapsedSize={7}
+                onCollapse={() => collapsed.set(true)}
+                onExpand={() => collapsed.set(false)}
+                class={cn("flex-shrink-0 h-full", {
+                    "max-w-[4rem] w-[4rem]": $collapsed
+                })}>
 
-<!--        <div class="flex items-center p-2 py-4 gap-2 border-b border-background border-opacity-25">-->
-<!--            <img src="/images/logos/white.png" alt="Noise Logo" class="w-10 mr-1" />-->
-<!--            <h1 class="text-md font-bold">Noise Email</h1>-->
-<!--        </div>-->
+            <div class="h-screen flex flex-col gap-1 bg-primary-foreground bg-opacity-40">
 
-        <div class="overflow-y-auto flex-grow flex flex-col">
+                <div class="overflow-y-auto flex-grow flex flex-col">
 
-            <!-- Compose / Search / Settings -->
-            <div class="pt-2">
-                <div class="flex flex-col px-3">
-<!--                    <p class="text-muted-foreground text-xs pb-1">You are currently using:</p>-->
-                    <DomainSelector />
-                    <span class="text-muted-foreground text-xs pb-1"></span>
-                    <NavBarButton {stateManager} buttonID="settings" icon={Settings} text="Settings"/>
-                    <NavBarButton {stateManager} buttonID="contacts" icon={Contact} text="Contacts"/>
+                    <!-- Compose / Search / Settings -->
+                    <div class="pt-2">
+                        <div class="flex flex-col px-3">
+                            <DomainSelector />
+                            <span class="text-muted-foreground text-xs pb-1"></span>
+                            <NavBarButton {collapsed} {stateManager} buttonID="settings" icon={Settings} text="Settings"/>
+                            <NavBarButton {collapsed} {stateManager} buttonID="contacts" icon={Contact} text="Contacts"/>
+                        </div>
+                    </div>
 
+                    <!-- Mail -->
+                    <div class="border-b py-1">
+                        <NavBarGroup text="Mail" defaultOpen={true}>
+                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="inbox" icon={Inbox} text="Encrypted Inbox"/>
+                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="starred" icon={Star} text="Starred"/>
+                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="pinned" icon={Pin} text="Pinned"/>
+                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="sent" icon={SendHorizonal} text="Sent"/>
+                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="later" icon={Calendar} text="Scheduled"/>
+                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="drafts" icon={NotebookPen} text="Drafts"/>
+                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="spam" icon={MailWarning} text="Spam"/>
+                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="archive" icon={Archive} text="Archive"/>
+                            <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="trash" icon={Trash} text="Trash"/>
+                        </NavBarGroup>
+                    </div>
+
+                    <!-- Addresses -->
+                    <div class="border-b py-1">
+                        <NavBarGroup text="Addresses">
+                            {#each addresses as address}
+                                <NavBarButton {collapsed} {stateManager} buttonID={address.name} icon={AtSign} text={address.name}/>
+                            {/each}
+
+                            {#if addresses.length === 0}
+                                <p class="text-muted-foreground text-sm text-center">No addresses</p>
+                            {/if}
+                        </NavBarGroup>
+                    </div>
+
+                    <!-- Folders -->
+                    <div class="border-b py-1">
+                        <NavBarGroup text="Folders">
+                            {#each folders as folder}
+                                <NavBarButton {collapsed} {stateManager} buttonID={folder.id} icon={Archive} text={folder.name}/>
+                            {/each}
+
+                            {#if folders.length === 0}
+                                <p class="text-muted-foreground text-sm text-center">No folders</p>
+                            {/if}
+                        </NavBarGroup>
+                    </div>
+                </div>
+
+                <div class="border-t py-2">
+                    <StorageIndicator />
+                    <div class="flex px-1 mt-1 gap-1 justify-end">
+
+                        <Button href="/logout" variant="secondary" class="text-xs bg-background text-muted-foreground bg-opacity-30 p-1 h-auto">
+                            Help
+                        </Button>
+
+                        <Button href="/logout" variant="secondary" class="text-xs bg-background text-muted-foreground bg-opacity-30 p-1 h-auto">
+                            Feedback
+                        </Button>
+
+                        <Button href="/logout" variant="secondary" class="text-xs bg-background text-muted-foreground bg-opacity-30 p-1 h-auto">
+                            Logout
+                        </Button>
+                    </div>
                 </div>
             </div>
+        </Resizable.Pane>
 
-            <!-- Mail -->
-            <div class="border-b py-1">
-                <NavBarGroup text="Mail" defaultOpen={true}>
-                    <NavBarButton hasNotifications={true} {stateManager} buttonID="inbox" icon={Inbox} text="Encrypted Inbox"/>
-                    <NavBarButton hasNotifications={true} {stateManager} buttonID="starred" icon={Star} text="Starred"/>
-                    <NavBarButton hasNotifications={true} {stateManager} buttonID="pinned" icon={Pin} text="Pinned"/>
-                    <NavBarButton hasNotifications={true} {stateManager} buttonID="sent" icon={SendHorizonal} text="Sent"/>
-                    <NavBarButton hasNotifications={true} {stateManager} buttonID="later" icon={Calendar} text="Scheduled"/>
-                    <NavBarButton hasNotifications={true} {stateManager} buttonID="drafts" icon={NotebookPen} text="Drafts"/>
-                    <NavBarButton hasNotifications={true} {stateManager} buttonID="spam" icon={MailWarning} text="Spam"/>
-                    <NavBarButton hasNotifications={true} {stateManager} buttonID="archive" icon={Archive} text="Archive"/>
-                    <NavBarButton hasNotifications={true} {stateManager} buttonID="trash" icon={Trash} text="Trash"/>
-                </NavBarGroup>
-            </div>
 
-            <!-- Addresses -->
-            <div class="border-b py-1">
-                <NavBarGroup text="Addresses">
-                    {#each addresses as address}
-                        <NavBarButton {stateManager} buttonID={address.name} icon={AtSign} text={address.name}/>
-                    {/each}
 
-                    {#if addresses.length === 0}
-                        <p class="text-muted-foreground text-sm text-center">No addresses</p>
-                    {/if}
-                </NavBarGroup>
-            </div>
+        <Resizable.Handle withHandle />
 
-            <!-- Folders -->
-            <div class="border-b py-1">
-                <NavBarGroup text="Folders">
-                    {#each folders as folder}
-                        <NavBarButton {stateManager} buttonID={folder.id} icon={Archive} text={folder.name}/>
-                    {/each}
-
-                    {#if folders.length === 0}
-                        <p class="text-muted-foreground text-sm text-center">No folders</p>
-                    {/if}
-                </NavBarGroup>
-            </div>
-        </div>
-
-        <div class="border-t py-2">
-            <StorageIndicator />
-            <div class="flex px-1 mt-1 gap-1 justify-end">
-
-                <Button href="/logout" variant="secondary" class="text-xs bg-background text-muted-foreground bg-opacity-30 p-1 h-auto">
-                    Help
-                </Button>
-
-                <Button href="/logout" variant="secondary" class="text-xs bg-background text-muted-foreground bg-opacity-30 p-1 h-auto">
-                    Feedback
-                </Button>
-
-                <Button href="/logout" variant="secondary" class="text-xs bg-background text-muted-foreground bg-opacity-30 p-1 h-auto">
-                    Logout
-                </Button>
-            </div>
-
-<!--            <p class="text-muted-foreground text-xs text-center mt-2">Version hash: ND0FA1238</p>-->
-        </div>
-    </div>
-
-    <!-- Content -->
-    <div class="overflow-clip flex-grow">
+        <!-- Content -->
         <slot></slot>
-    </div>
+
+    </Resizable.PaneGroup>
 </div>

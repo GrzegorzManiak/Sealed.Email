@@ -48,7 +48,7 @@ func Start() {
 		queueContext,
 		queueDatabaseConnection,
 		inboundQueue,
-		func(entry *queue.Entry) int8 { return server.Worker(nil, entry, queueDatabaseConnection) })
+		func(entry *queue.Entry) int8 { return server.Worker(entry, queueDatabaseConnection) })
 
 	server.StartServers(inboundQueue, queueDatabaseConnection)
 

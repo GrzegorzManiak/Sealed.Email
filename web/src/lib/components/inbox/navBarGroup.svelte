@@ -19,7 +19,7 @@
     </Collapsible.Trigger>
 
     <Collapsible.Content>
-        <div class="flex flex-col px-3">
+        <div class="flex flex-col align-middle items-start justify-center">
             <slot/>
         </div>
     </Collapsible.Content>

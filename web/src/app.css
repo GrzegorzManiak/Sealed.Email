@@ -45,9 +45,13 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+    --emailCardSelected: 60 100% 3.3%;
   }
 }
 
+.email-card-selected {
+  background-color: hsl(var(--emailCardSelected));
+}
  
 @layer base {
   * {
