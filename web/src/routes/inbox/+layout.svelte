@@ -64,9 +64,9 @@
     <Resizable.PaneGroup direction="horizontal" class="h-full">
 
         <Resizable.Pane
-                minSize={25}
+                minSize={20}
                 maxSize={35}
-                defaultSize={30}
+                defaultSize={25}
                 collapsible={true}
                 collapsedSize={7}
                 onCollapse={() => collapsed.set(true)}
@@ -80,8 +80,8 @@
                 <div class="overflow-y-auto flex-grow flex flex-col">
 
                     <!-- Compose / Search / Settings -->
-                    <div class="pt-2">
-                        <div class="flex flex-col">
+                    <div class="pt-2 h-[180px] max-h-[180px] overflow-hidden">
+                        <div class="flex flex-col h-full">
                             <div class="px-2">
                                 <DomainSelector />
                             </div>
