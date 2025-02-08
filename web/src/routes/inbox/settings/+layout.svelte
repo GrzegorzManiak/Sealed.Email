@@ -13,23 +13,23 @@
     const sidebarNavItems = [
         {
             title: "Account",
-            href: "/settings/account",
+            href: "/inbox/settings/account",
         },
         {
             title: "Security",
-            href: "/settings/security",
+            href: "/inbox/settings/security",
         },
         {
         	title: "Appearance",
-        	href: "/settings/appearance",
+        	href: "/inbox/settings/appearance",
         },
         {
             title: "Notifications",
-            href: "/settings/notifications",
+            href: "/inbox/settings/notifications",
         },
         {
             title: "Preferences",
-            href: "/settings/preferences",
+            href: "/inbox/settings/preferences",
         },
     ];
 
@@ -43,7 +43,7 @@
     });
 </script>
 
-<div class='w-screen h-screen flex justify-center align-top'>
+<div class='w-full h-full flex justify-center align-top'>
     <div class='flex flex-col justify-between items-center w-full max-w-[60rem] flex-1 h-full'>
         <div class="w-full mt-5">
             <div class="w-full" >

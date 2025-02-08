@@ -13,9 +13,7 @@
 	import {DomainSelector} from "@/inbox/domainSelector/index.js";
 
     import {
-        Search,
         Settings,
-        SquarePen,
         Inbox,
         Star,
         Contact,
@@ -25,10 +23,7 @@
         NotebookPen,
         MailWarning,
         Archive,
-        ChevronsUpDown,
         Trash,
-        AtSign,
-        Globe
     } from "lucide-svelte";
 
     type Folder = {
@@ -58,36 +53,39 @@
 
     const color = RandomHEXColor();
     const avatar = `https://api.dicebear.com/9.x/lorelei/svg?seed=${color}icon&options[mood][]=happy`;
+
+	const headerHeight = 190;
 </script>
 
 <div class="flex flex-row">
     <Resizable.PaneGroup direction="horizontal" class="h-full">
 
         <Resizable.Pane
-                minSize={20}
-                maxSize={25}
-                defaultSize={25}
-                collapsible={true}
-                collapsedSize={7}
-                onCollapse={() => collapsed.set(true)}
-                onExpand={() => collapsed.set(false)}
-                class={cn("flex-shrink-0 h-full", {
-                    "max-w-[4rem] w-[4rem]": $collapsed
-                })}>
+            minSize={20}
+            maxSize={25}
+            defaultSize={25}
+            collapsible={true}
+            collapsedSize={7}
+            onCollapse={() => collapsed.set(true)}
+            onExpand={() => collapsed.set(false)}
+            class={cn("flex-shrink-0 h-full", {
+                "max-w-[4rem] w-[4rem]": $collapsed
+            })}>
 
             <div class="h-screen flex flex-col gap-1 bg-primary-foreground bg-opacity-40">
 
                 <div class="overflow-y-auto flex-grow flex flex-col">
 
                     <!-- Compose / Search / Settings -->
-                    <div class="pt-2 h-[180px] max-h-[180px] overflow-hidden">
+                    <div class="pt-2 overflow-hidden" style="height: {headerHeight}px; max-height: {headerHeight}px;">
                         <div class="flex flex-col h-full">
                             <div class="px-2">
                                 <DomainSelector />
                             </div>
                             <span class="text-muted-foreground text-xs pb-1"></span>
-                            <NavBarButton {collapsed} {stateManager} buttonID="settings" icon={Settings} text="Settings"/>
-                            <NavBarButton {collapsed} {stateManager} buttonID="contacts" icon={Contact} text="Contacts"/>
+                            <NavBarButton {collapsed} {stateManager} buttonID="settings" icon={Settings} text="Settings" href="/inbox/settings"/>
+                            <NavBarButton {collapsed} {stateManager} buttonID="contacts" icon={Contact} text="Contacts" href="/inbox/contacts"/>
+                            <NavBarButton {collapsed} {stateManager} buttonID="calendar" icon={Calendar} text="Calendar" href="/inbox/calendar"/>
                         </div>
                     </div>
 
@@ -142,7 +140,7 @@
         <Resizable.Handle withHandle />
 
         <!-- Content -->
-        <slot></slot>
+        <slot/>
 
     </Resizable.PaneGroup>
 </div>

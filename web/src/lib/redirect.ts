@@ -4,7 +4,7 @@ import { get } from 'svelte/store';
 import {Sleep} from "$lib/utils";
 import {throwToast} from "$lib/toasts";
 
-const DEV_MODE = false;
+const DEV_MODE = true;
 
 type DelayedRedirect = {
     delay: number;

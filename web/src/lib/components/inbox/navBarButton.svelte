@@ -12,6 +12,7 @@
 	export let collapsed: Writable<boolean>;
     export let notificationId: string = buttonID;
     export let className: string | undefined | null = undefined;
+    export let href: string | undefined | null = undefined;
 
     function handleClick() {
         stateManager.set(buttonID);
@@ -22,7 +23,7 @@
     $: isCurrent = $stateManager === buttonID;
 </script>
 
-<Button on:click={handleClick} variant="ghost" class={cn(
+<Button on:click={handleClick} variant="ghost" {href} class={cn(
     "hover:bg-zinc-800 w-full h-auto rounded-none py-[0.6rem] relative", {
         "bg-zinc-900 text-foreground": isCurrent,
         "hover:bg-opacity-90": !isCurrent

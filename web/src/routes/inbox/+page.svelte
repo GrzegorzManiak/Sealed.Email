@@ -4,17 +4,12 @@
 	import { Button } from '$shadcn/button';
 	import { Input } from '$shadcn/input';
 	import { Label } from '$shadcn/label';
-
-	import {writable} from "svelte/store";
+	import {type Writable, writable} from "svelte/store";
     import {InboxManager} from "$lib/inboxManager";
-	import {Globe, Inbox, Mails, SquarePen} from "lucide-svelte";
-	import {Checkbox} from "@/ui/checkbox";
-	import ChevronLeft from "lucide-svelte/icons/chevron-left";
 	import SelectedInboxHeader from "@/inbox/selectedInboxHeader.svelte";
 	import {cn} from "$lib/utils";
 
     const inboxManager = new InboxManager('1', 'Encrypted Inbox');
-
     const groupCounter = writable(0);
     const groupSelectStore = writable(new Set<string>());
     const selectedStore = writable<string>();

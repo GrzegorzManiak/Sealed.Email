@@ -9,9 +9,11 @@
 
 	export let collapsed: Writable<boolean>;
 	export let inboxManager: InboxManager;
+
+	const headerHeight = 191;
 </script>
 
-<div class="h-[181px] max-h-[181px] overflow-hidden">
+<div class="overflow-hidden" style="height: {headerHeight}px; max-height: {headerHeight}px;">
     <div class="flex flex-col items-start justify-between align-bottom p-4 gap-2 border-b bg-primary-foreground bg-opacity-40 h-full">
 
         <div class="flex flex-col gap-1">
