@@ -65,7 +65,7 @@
 
         <Resizable.Pane
                 minSize={20}
-                maxSize={35}
+                maxSize={25}
                 defaultSize={25}
                 collapsible={true}
                 collapsedSize={7}

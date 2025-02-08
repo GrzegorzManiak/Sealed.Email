@@ -11,6 +11,7 @@
 	import {Checkbox} from "@/ui/checkbox";
 	import ChevronLeft from "lucide-svelte/icons/chevron-left";
 	import SelectedInboxHeader from "@/inbox/selectedInboxHeader.svelte";
+	import {cn} from "$lib/utils";
 
     const inboxManager = new InboxManager('1', 'Encrypted Inbox');
 
@@ -24,20 +25,22 @@
     maxSize={100}
     minSize={30}
     defaultSize={40}
-    collapsedSize={7}
-    collapsible={true}
+    collapsedSize={0}
+    collapsible={false}
     onCollapse={() => collapsed.set(true)}
     onExpand={() => collapsed.set(false)}
     class="flex-shrink-0 h-full">
 
     <SelectedInboxHeader {collapsed} {inboxManager}/>
 
-    <!-- Fixed height pane content -->
-    <EmailCard
-            groupCounter={groupCounter}
-            selectedStore={selectedStore}
-            groupSelectStore={groupSelectStore}
-            data={{
+    <div class={cn({ 'hidden': $collapsed })}>
+
+        <!-- Fixed height pane content -->
+        <EmailCard
+                groupCounter={groupCounter}
+                selectedStore={selectedStore}
+                groupSelectStore={groupSelectStore}
+                data={{
         id: '1',
         date: 'Sat Sep 28 2024 20:27:32 GMT+0100 (Irish Standard Time)',
 
@@ -125,11 +128,11 @@
         },
         totalAttachments: 5
     }}/>
-    <EmailCard
-            groupCounter={groupCounter}
-            selectedStore={selectedStore}
-            groupSelectStore={groupSelectStore}
-            data={
+        <EmailCard
+                groupCounter={groupCounter}
+                selectedStore={selectedStore}
+                groupSelectStore={groupSelectStore}
+                data={
         {
             id: '2f',
             date: 'Sat Sep 28 2024 20:27:32 GMT+0100 (Irish Standard Time)',
@@ -151,7 +154,8 @@
             }
     }/>
 
-    <p class="text-muted-foreground text-sm text-center p-4">No more emails to show.</p>
+        <p class="text-muted-foreground text-sm text-center p-4">No more emails to show.</p>
+    </div>
 
 </Resizable.Pane>
 
