@@ -1,5 +1,6 @@
 import {Session} from "$api/lib";
 import { persisted } from 'svelte-persisted-store'
+import type {DomainBrief, DomainRefID} from "$api/lib/api/domain";
 
 /**
  * User store
@@ -20,5 +21,21 @@ const user = persisted<User>('user', {
     username: null
 });
 
-export { user };
-export type { User };
+/**
+ * Notification Count store
+ */
+type NotificationCount = Map<string, Map<string, number>>;
+
+const notificationCount = persisted<NotificationCount>('notificationCount', new Map());
+
+/**
+ * Domain store
+ */
+
+const domains = persisted<Map<DomainRefID, DomainBrief>>('domains', new Map());
+
+const selectedDomain = persisted<DomainRefID | null>('selectedDomain', null);
+
+
+export { user, notificationCount };
+export type { User, NotificationCount, DomainBrief, DomainRefID };

@@ -6,11 +6,12 @@
     import * as Avatar from "$shadcn/avatar";
     import * as Collapsible from "$shadcn/collapsible";
 	import * as Resizable from '$shadcn/resizable';
-	import {writable} from "svelte/store";
+	import {type Writable, writable} from "svelte/store";
 	import {Button} from "@/ui/button";
 	import {RandomHEXColor} from "$lib/common";
 	import {cn} from "$lib/utils";
 	import {DomainSelector} from "@/inbox/domainSelector/index.js";
+    import InboxComponent from "@/inbox/inbox.svelte";
 
     import {
         Settings,
@@ -38,23 +39,9 @@
         {id: "3", name: "School", color: "text-green-200"},
     ];
 
-    type Address = {
-        id: string;
-        name: string;
-    }
-
-    const addresses: Array<Address> = [
-        {id: "1", name: "Personal@Grzegorz.ie"},
-        {id: "2", name: "Test@Grzegorz.ie"}
-    ];
-
     const stateManager = writable<string>();
 	const collapsed = writable(false);
-
-    const color = RandomHEXColor();
-    const avatar = `https://api.dicebear.com/9.x/lorelei/svg?seed=${color}icon&options[mood][]=happy`;
-
-	const headerHeight = 190;
+	const headerHeight: Writable<number> = writable(0);
 </script>
 
 <div class="flex flex-row">
@@ -77,7 +64,7 @@
                 <div class="overflow-y-auto flex-grow flex flex-col">
 
                     <!-- Compose / Search / Settings -->
-                    <div class="pt-2 overflow-hidden" style="height: {headerHeight}px; max-height: {headerHeight}px;">
+                    <div class="pt-2 overflow-hidden" style="height: {$headerHeight - 1}px; max-height: {$headerHeight - 1}px;">
                         <div class="flex flex-col h-full">
                             <div class="px-2">
                                 <DomainSelector />
@@ -91,7 +78,7 @@
 
                     <!-- Mail -->
                     <NavBarGroup {collapsed} text="Mail" defaultOpen={true}>
-                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="inbox" icon={Inbox} text="Encrypted Inbox"/>
+                        <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="inbox" icon={Inbox} text="Inbox"/>
                         <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="starred" icon={Star} text="Starred"/>
                         <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="pinned" icon={Pin} text="Pinned"/>
                         <NavBarButton {collapsed} hasNotifications={true} {stateManager} buttonID="sent" icon={SendHorizonal} text="Sent"/>
@@ -106,7 +93,7 @@
                     <!-- Folders -->
                     <NavBarGroup {collapsed} text="Folders">
                         {#each folders as folder}
-                            <NavBarButton {collapsed} {stateManager} buttonID={folder.id} icon={Archive} text={folder.name}/>
+                            <NavBarButton {collapsed} {stateManager} buttonID={folder.id} icon={Archive} text={folder.name} className={folder.color}/>
                         {/each}
 
                         {#if folders.length === 0}
@@ -136,11 +123,9 @@
         </Resizable.Pane>
 
 
-
         <Resizable.Handle withHandle />
 
-        <!-- Content -->
-        <slot/>
+        <InboxComponent {headerHeight} {stateManager} />
 
     </Resizable.PaneGroup>
 </div>
