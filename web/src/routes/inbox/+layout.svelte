@@ -41,7 +41,7 @@
 
     const stateManager = writable<string>();
 	const collapsed = writable(false);
-	const headerHeight: Writable<number> = writable(0);
+	const headerHeight: Writable<number> = writable(191);
 </script>
 
 <div class="flex flex-row">
@@ -126,6 +126,13 @@
         <Resizable.Handle withHandle />
 
         <InboxComponent {headerHeight} {stateManager} />
+
+        <Resizable.Handle withHandle />
+
+        <Resizable.Pane class="flex-grow h-full overflow-y-visible">
+            <slot {headerHeight} />
+        </Resizable.Pane>
+
 
     </Resizable.PaneGroup>
 </div>

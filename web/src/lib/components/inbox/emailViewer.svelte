@@ -1,1 +1,3 @@
-<slot/>
+<script lang="ts">
+
+</script>

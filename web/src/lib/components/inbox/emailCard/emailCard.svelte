@@ -23,6 +23,7 @@
     import {TrimText} from "$lib/text";
 
     import { cubicInOut } from "svelte/easing";
+	import {goto} from "$app/navigation";
 
     export let data: Email;
     export let isChain: boolean = false;
@@ -151,11 +152,12 @@
         }
     }
 
-    function ToggleSelected(e: MouseEvent | KeyboardEvent) {
+    async function ToggleSelected(e: MouseEvent | KeyboardEvent) {
         if (chainVisible) return;
         data.read = true;
         if (isSelected) return $selectedStore = "";
         $selectedStore = data.id;
+		await goto(`/inbox/email/${data.id}`);
     }
 
     const easeHeight = (node: HTMLElement, { duration: duration = 250, easing: easing = cubicInOut }) => {

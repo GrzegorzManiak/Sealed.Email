@@ -158,9 +158,3 @@
     </div>
 
 </Resizable.Pane>
-
-<Resizable.Handle withHandle />
-
-<Resizable.Pane class="flex-grow h-full overflow-y-visible">
-</Resizable.Pane>
-
