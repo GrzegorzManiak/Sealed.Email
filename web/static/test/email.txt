@@ -47,10 +47,10 @@ DKIM-Signature: v=1; a=rsa-sha256; s=cf2024-1; d=cloudflare-email.net; c=relaxed
 	sdA3zuv/1uGMQoihE6GYKMvT+Re+IlWsEu2IjLJ4qd6W7Hi5EjiArt8KSG0XaZ+qpYiOXuO3wJq
 	4ZTB96S9nWE+sbZddhp7V8r9l64smXog==;
 X-Forwarded-To: X00189661@myTUDublin.ie
-X-Forwarded-For: shitfist@grzegorz.ie X00189661@myTUDublin.ie
+X-Forwarded-For: greg@grzegorz.ie X00189661@myTUDublin.ie
 Received: from o1411.shared.klaviyomail.com (149.72.148.61)
         by cloudflare-email.net (unknown) id fGGTAfl7nNuK
-        for <shitfist@grzegorz.ie>; Sun, 09 Feb 2025 17:15:55 +0000
+        for <greg@grzegorz.ie>; Sun, 09 Feb 2025 17:15:55 +0000
 ARC-Seal: i=1; a=rsa-sha256; s=cf2024-1; d=cloudflare-email.net; cv=none;
 	b=fpewv3Igbpo1/9zo7nKd4bOHNuDBObsmz0kCpRehg943BVv4xcrPatEImwj9cIvKTPifAOk7K
 	pdWeb/WTM++dJBiH7zu7fIG5Ue4ygMVMpD0Du6mCrNUjzPPiFsLsiGDjNjo0ikWkAA6CP+I9aA/
@@ -71,19 +71,19 @@ ARC-Authentication-Results: i=1; mx.cloudflare.net;
 	dkim=pass header.d=kilkennydesign.com header.s=kl header.b=fdLOH/wY;
 	dmarc=pass header.from=email.kilkennydesign.com policy.dmarc=quarantine;
 	spf=none (mx.cloudflare.net: no SPF records found for postmaster@o1411.shared.klaviyomail.com) smtp.helo=o1411.shared.klaviyomail.com;
-	spf=pass (mx.cloudflare.net: domain of bounces+25704557-7f24-shitfist=grzegorz.ie@email.kilkennydesign.com designates 149.72.148.61 as permitted sender) smtp.mailfrom=bounces+25704557-7f24-shitfist=grzegorz.ie@email.kilkennydesign.com;
+	spf=pass (mx.cloudflare.net: domain of bounces+25704557-7f24-greg=grzegorz.ie@email.kilkennydesign.com designates 149.72.148.61 as permitted sender) smtp.mailfrom=bounces+25704557-7f24-greg=grzegorz.ie@email.kilkennydesign.com;
 	arc=none smtp.remote-ip=149.72.148.61
-Received-SPF: pass (mx.cloudflare.net: domain of bounces+25704557-7f24-shitfist=grzegorz.ie@email.kilkennydesign.com designates 149.72.148.61 as permitted sender)
-	receiver=mx.cloudflare.net; client-ip=149.72.148.61; envelope-from="bounces+25704557-7f24-shitfist=grzegorz.ie@email.kilkennydesign.com"; helo=o1411.shared.klaviyomail.com;
+Received-SPF: pass (mx.cloudflare.net: domain of bounces+25704557-7f24-greg=grzegorz.ie@email.kilkennydesign.com designates 149.72.148.61 as permitted sender)
+	receiver=mx.cloudflare.net; client-ip=149.72.148.61; envelope-from="bounces+25704557-7f24-greg=grzegorz.ie@email.kilkennydesign.com"; helo=o1411.shared.klaviyomail.com;
 Authentication-Results-Original: mx.cloudflare.net;	dkim=pass
  header.d=kilkennydesign.com header.s=kl header.b=fdLOH/wY;	dmarc=pass
  header.from=email.kilkennydesign.com policy.dmarc=quarantine;	spf=none
  (mx.cloudflare.net: no SPF records found for
  postmaster@o1411.shared.klaviyomail.com)
  smtp.helo=o1411.shared.klaviyomail.com;	spf=pass (mx.cloudflare.net: domain
- of bounces+25704557-7f24-shitfist=grzegorz.ie@email.kilkennydesign.com
+ of bounces+25704557-7f24-greg=grzegorz.ie@email.kilkennydesign.com
  designates 149.72.148.61 as permitted sender)
- smtp.mailfrom=bounces+25704557-7f24-shitfist=grzegorz.ie@email.kilkennydesign.com;
+ smtp.mailfrom=bounces+25704557-7f24-greg=grzegorz.ie@email.kilkennydesign.com;
 	arc=none smtp.remote-ip=149.72.148.61
 X-CF-SpamH-Score: 0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kilkennydesign.com;
@@ -133,7 +133,7 @@ X-SG-ID: =?us-ascii?Q?u001=2ESdBcvi+Evd=2FbQef8eZF3BiU3Zi1S53GtqGa3TWBmqe75yn5aY
  =?us-ascii?Q?xEugyI3CcQxSU9zhURr9qGkLIkQJ2WkSiJy8TMp?=
  =?us-ascii?Q?AAiZt9OLO5+hZwx3KqOwA=2FHBq2CS+f7fYNhKidA?=
  =?us-ascii?Q?+pr2QVdEaJE2hNr?=
-To: shitfist@grzegorz.ie
+To: greg@grzegorz.ie
 X-Entity-ID: u001.IqK02d5j6FYDFSgg1btZcA==
 Return-Path: cfbounces+ndrdrop@grzegorz.ie
 X-MS-Exchange-Organization-ExpirationStartTime: 09 Feb 2025 17:16:00.4732

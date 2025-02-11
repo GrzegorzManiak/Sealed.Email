@@ -23,4 +23,7 @@ type InboundEmail struct {
 	DkimResult services.DkimResult
 	SpfResult  spf.Result
 	Version    uint
+
+	IsEncrypted bool
+	Processed   bool
 }

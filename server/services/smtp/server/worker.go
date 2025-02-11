@@ -19,6 +19,14 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Inb
 	return email, nil
 }
 
+func fetchRecipients(email *models.InboundEmail) []string {
+	toArray := make([]string, 0, len(email.To))
+	for k := range email.To {
+		toArray = append(toArray, k)
+	}
+	return toArray
+}
+
 func Worker(entry *queue.Entry, queueDatabaseConnection *gorm.DB) int8 {
 	email, err := getEmailById(entry.RefID, queueDatabaseConnection)
 	if err != nil {

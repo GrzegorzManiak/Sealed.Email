@@ -1,7 +1,7 @@
 server:
   port: 2500
   host: 'localhost'
-  id: 'dev-noise-email(Smtp)'
+  id: 'dev-sealed-email(Smtp)'
 
 session:
   privateKey: 'VEEHKF8dUjUmQqasfirtGR6coar5yfGgfk6C8sQIk1U='
@@ -16,17 +16,17 @@ auth:
 
 domain:
   provided:
-      - 'beta.noise.email'
+      - 'beta.sealed.email'
 
   DKIMKeySize: 2048 # Will be 4096 in production, just too slow for development
   challengeTemplate: '%s 300 IN TXT "%s"'
   challengePrefix: '_nes-challenge'
-  identityTemplate: '_identity.%s 300 IN CNAME _identity.mx.noise.email'
-  spfRecordTemplate: '_spf.%s 300 IN TXT "v=spf1 include:_spf.mx.noise.email -all"'
+  identityTemplate: '_identity.%s 300 IN CNAME _identity.sealed.email'
+  spfRecordTemplate: '_spf.%s 300 IN TXT "v=spf1 include:_spf.sealed.email -all"'
   mxRecords:
-    - 'doom.mx.noise.email'
-    - 'madlib.mx.noise.email'
-    - 'west.mx.noise.email'
+    - 'doom.mx.sealed.email'
+    - 'madlib.mx.sealed.email'
+    - 'west.mx.sealed.email'
   dkimTemplate: '%s._domainkey.%s IN TXT "v=DKIM1; k=rsa; p=%s"'
   dmarcTemplate: '_dmarc.{DOMAIN} IN TXT "v=DMARC1; p=none; rua=mailto:dmarc-reports@{DOMAIN}; ruf=mailto:dmarc-failures@{DOMAIN}; sp=none; aspf=r;"'
 
@@ -47,7 +47,7 @@ domain:
 
 etcd:
     endpoints:
-        - 'http://etcd.noise.email:2379'
+        - 'http://etcd.sealed.email:2379'
 
     connectionPool:
         refreshInterval: 2 # dev only
@@ -140,7 +140,7 @@ smtp:
     startTls: 49102 # 587
 
   address: 'localhost:%d'
-  domain: 'doom.mx.noise.email'
+  domain: 'doom.mx.sealed.email'
 
   portTimeout: 3
   writeTimeout: 100

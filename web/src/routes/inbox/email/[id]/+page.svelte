@@ -118,7 +118,7 @@
                     bind:this={iframe}
                     sandbox=""
                     class="w-full rounded-md"
-                    style="height: calc(100vh - {$headerHeight}px);" />
+                    style="height: calc(100vh - {$headerHeight - 8}px);" />
         </div>
     </div>
 {/if}

@@ -97,6 +97,13 @@ func (h Headers) Has(key []WellKnownHeader) bool {
 	return true
 }
 
+func (h Headers) IsEncrypted() bool {
+	_, nv := h[NoiseVersion.Lower]
+	_, nek := h[NoiseInboxKeys.Lower]
+	_, ns := h[NoiseSignature.Lower]
+	return nv && nek && ns
+}
+
 func (h Headers) Marshal() []byte {
 	var bytes []byte
 	for k, v := range h {

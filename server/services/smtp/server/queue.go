@@ -45,7 +45,10 @@ func (s *Session) AwaitQueue() error {
 
 		DkimResult: s.DkimResult,
 		SpfResult:  s.SpfResult,
-		Version:    1,
+
+		Version:     1,
+		Processed:   false,
+		IsEncrypted: s.Headers.Data.IsEncrypted(),
 	}
 
 	zap.L().Debug("Inbound email created", zap.Any("email", inboundEmail.EmailId))
