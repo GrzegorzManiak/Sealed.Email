@@ -14,8 +14,9 @@ type InboundEmail struct {
 	ServerId   string
 	ServerMode string
 
-	From string
-	To   pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
+	From                  string
+	To                    pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
+	ProcessedSuccessfully pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
 
 	Headers []uint8 `gorm:"type:bytea"`
 	RawData []uint8 `gorm:"type:bytea"`

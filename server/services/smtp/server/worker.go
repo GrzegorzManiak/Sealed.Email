@@ -40,13 +40,9 @@ func extractUniqueRecipientDomains(email *models.InboundEmail) []string {
 		domain, err := helpers.ExtractDomainFromEmail(recipient)
 		if err != nil {
 			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
-			continue
+		} else if _, ok := processedMap[domain]; !ok {
+			domains[domain] = struct{}{}
 		}
-
-		if _, ok := processedMap[domain]; ok {
-			continue
-		}
-		domains[domain] = struct{}{}
 	}
 
 	return slices.Collect(maps.Keys(domains))
@@ -54,15 +50,11 @@ func extractUniqueRecipientDomains(email *models.InboundEmail) []string {
 
 func fetchRecipients(primaryDatabaseConnection *gorm.DB, recipientDomains []string) (*[]primaryModels.UserDomain, error) {
 	var fetchedDomains []primaryModels.UserDomain
-
-	result := primaryDatabaseConnection.
+	if err := primaryDatabaseConnection.
 		Where("domain IN ? AND verified = 1", recipientDomains).
-		Find(&fetchedDomains)
-
-	if result.Error != nil {
-		return nil, fmt.Errorf("failed to fetch recipients: %v", result.Error)
+		Find(&fetchedDomains).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch recipients: %v", err)
 	}
-
 	return &fetchedDomains, nil
 }
 

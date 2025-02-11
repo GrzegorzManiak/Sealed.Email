@@ -42,13 +42,17 @@ func Start() {
 		queueContext,
 		queueDatabaseConnection,
 		outboundQueue,
-		func(entry *queue.Entry) int8 { return client.Worker(nil, entry, queueDatabaseConnection) })
+		func(entry *queue.Entry) queue.WorkerResponse {
+			return client.Worker(nil, entry, queueDatabaseConnection)
+		})
 
 	go queue.Dispatcher(
 		queueContext,
 		queueDatabaseConnection,
 		inboundQueue,
-		func(entry *queue.Entry) int8 { return server.Worker(entry, queueDatabaseConnection) })
+		func(entry *queue.Entry) queue.WorkerResponse {
+			return server.Worker(entry, queueDatabaseConnection, primaryDatabaseConnection)
+		})
 
 	server.StartServers(inboundQueue, queueDatabaseConnection)
 

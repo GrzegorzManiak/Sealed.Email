@@ -77,6 +77,14 @@ func ValidateEmailDomain(domain string) bool {
 		IsValidPublicIPV6(domain)
 }
 
+func NormalizeDomain(domain string) string {
+	domain = strings.ToLower(domain)
+	domain = strings.Trim(domain, " ")
+	domain = strings.TrimSuffix(domain, ".")
+	domain = domain + "."
+	return domain
+}
+
 func IsValidFQDN(domain string) bool {
 
 	// -- FQDN's must end with a dot
@@ -121,34 +129,24 @@ func IsValidPublicIPV6(domain string) bool {
 func ExtractDomainFromEmail(email string) (string, error) {
 	email = strings.ToLower(email)
 	domain := ""
+
 	if !strings.Contains(email, "@") {
 		domain = email
 	} else {
 		domain = strings.SplitN(email, "@", 2)[1]
 	}
 
+	domain = NormalizeDomain(domain)
 	if ValidateEmailDomain(domain) {
 		return domain, nil
 	}
-
 	return "", fmt.Errorf("invalid domain")
 }
 
 func CompareDomains(domain1 string, domain2 string) bool {
-	domain1 = strings.ToLower(domain1)
-	domain2 = strings.ToLower(domain2)
-
-	t1, err := TrimDomain(domain1)
-	if err != nil {
-		return false
-	}
-
-	t2, err := TrimDomain(domain2)
-	if err != nil {
-		return false
-	}
-
-	return t1 == t2
+	domain1 = NormalizeDomain(domain1)
+	domain2 = NormalizeDomain(domain2)
+	return domain1 == domain2
 }
 
 func NormalizeEmail(email string) string {

@@ -32,7 +32,7 @@ func Start() {
 		queueContext,
 		queueDatabaseConnection,
 		domainQueue,
-		func(entry *queue.Entry) int8 {
+		func(entry *queue.Entry) queue.WorkerResponse {
 			return QueueService.Worker(entry, primaryDatabaseConnection)
 		})
 
