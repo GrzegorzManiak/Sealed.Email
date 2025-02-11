@@ -81,7 +81,7 @@ func createBccMap(email *models.OutboundEmail) map[string]struct{} {
 	return emailKeys
 }
 
-func sendEmails(certs *tls.Config, email *models.OutboundEmail, groupedRecipients map[string][]string) (int8, []string) {
+func sendEmails(certs *tls.Config, email *models.OutboundEmail, groupedRecipients map[string][]string) (queue.WorkerResponse, []string) {
 	var sentSuccessfully []string
 	for domain, recipients := range groupedRecipients {
 		if slices.Contains(sentSuccessfully, domain) {
@@ -90,7 +90,7 @@ func sendEmails(certs *tls.Config, email *models.OutboundEmail, groupedRecipient
 		zap.L().Debug("Sending email to domain", zap.String("domain", domain), zap.Any("recipients", recipients))
 		if err := batchSendEmails(certs, email, domain, recipients); err != nil {
 			zap.L().Debug("Failed to batch send emails", zap.Error(err))
-			return 2, sentSuccessfully
+			return queue.Failed, sentSuccessfully
 		} else {
 			sentSuccessfully = append(sentSuccessfully, domain)
 		}
@@ -122,43 +122,43 @@ func sendEmails(certs *tls.Config, email *models.OutboundEmail, groupedRecipient
 	return 1, sentSuccessfully
 }
 
-func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm.DB) int8 {
+func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm.DB) queue.WorkerResponse {
 	zap.L().Debug("Processing smtp queue", zap.Any("entry", entry))
 
 	emailId, err := models.UnmarshalQueueEmailId(entry.Data)
 	if err != nil {
 		zap.L().Debug("Failed to unmarshal email id", zap.Error(err))
-		return 2
+		return queue.Failed
 	}
 
 	email, err := getEmailById(emailId.EmailId, queueDatabaseConnection)
 	if err != nil {
 		zap.L().Debug("Failed to get email by id", zap.Error(err))
-		return 2
+		return queue.Failed
 	}
 
 	groupedRecipients, err := groupRecipients(email, email.SentSuccessfully)
 	if err != nil {
 		zap.L().Debug("Failed to group recipients", zap.Error(err))
-		return 2
+		return queue.Failed
 	}
 
 	fromDomain, err := helpers.ExtractDomainFromEmail(email.From)
 	if err != nil {
 		zap.L().Debug("Failed to extract domain from email", zap.Error(err))
-		return 2
+		return queue.Failed
 	}
 
 	if err = services.VerifyDns(fromDomain, email.Challenge); err != nil {
 		zap.L().Debug("Failed to verify dns", zap.Error(err))
-		return 2
+		return queue.Failed
 	}
 
 	code, sentSuccessfully := sendEmails(certs, email, groupedRecipients)
 	email.SentSuccessfully = sentSuccessfully
 	if err := queueDatabaseConnection.Save(email).Error; err != nil {
 		zap.L().Debug("Failed to save email", zap.Error(err))
-		return 2
+		return queue.Failed
 	}
 
 	zap.L().Debug("Email sent", zap.Any("email id", emailId), zap.Any("recipients", sentSuccessfully), zap.Any("code", code))

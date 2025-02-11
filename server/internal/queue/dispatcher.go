@@ -11,7 +11,7 @@ func Dispatcher(
 	ctx context.Context,
 	databaseConnection *gorm.DB,
 	queue *Queue,
-	worker func(entry *Entry) int8,
+	worker func(entry *Entry) WorkerResponse,
 ) {
 	// -- Migrate the table
 	err := databaseConnection.AutoMigrate(&Entry{})
@@ -77,7 +77,7 @@ func refreshPool(
 func runWorkers(
 	ctx context.Context,
 	queue *Queue,
-	worker func(entry *Entry) int8,
+	worker func(entry *Entry) WorkerResponse,
 ) {
 	for {
 		select {
@@ -95,7 +95,7 @@ func runWorkers(
 	}
 }
 
-func workerWrapper(entry *Entry, queue *Queue, worker func(entry *Entry) int8) {
+func workerWrapper(entry *Entry, queue *Queue, worker func(entry *Entry) WorkerResponse) {
 	output := worker(entry)
 	entry.LogStatus(output)
 	queue.UpdateEntry(entry)

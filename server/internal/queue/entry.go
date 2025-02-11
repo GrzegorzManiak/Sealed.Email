@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+type WorkerResponse int
+
 type Entry struct {
 	gorm.Model
 	Uuid  string `gorm:"unique"`
@@ -18,7 +20,7 @@ type Entry struct {
 	RetryInterval     int64
 	TotalAttempts     int64
 	PermittedAttempts int64
-	Status            int8
+	Status            WorkerResponse
 	Queue             string
 	Data              string
 }
@@ -26,6 +28,13 @@ type Entry struct {
 type EntryData interface {
 	Marshal() (string, error)
 }
+
+const (
+	Pending  WorkerResponse = iota
+	Verified WorkerResponse = iota
+	Failed   WorkerResponse = iota
+	Expired  WorkerResponse = iota
+)
 
 // BeforeSave
 // 0 - Pending,
@@ -60,7 +69,7 @@ func (entry *Entry) LogAttempt() {
 	}
 }
 
-func (entry *Entry) LogStatus(status int8) {
+func (entry *Entry) LogStatus(status WorkerResponse) {
 	if entry.TotalAttempts >= entry.PermittedAttempts {
 		entry.Status = 3
 	} else if status >= 0 && status <= 3 {

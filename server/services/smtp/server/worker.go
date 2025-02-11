@@ -1,10 +1,15 @@
 package server
 
 import (
+	"fmt"
+	primaryModels "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"maps"
+	"slices"
 )
 
 func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.InboundEmail, error) {
@@ -19,21 +24,69 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Inb
 	return email, nil
 }
 
-func fetchRecipients(email *models.InboundEmail) []string {
-	toArray := make([]string, 0, len(email.To))
-	for k := range email.To {
-		toArray = append(toArray, k)
+func buildProcessedMap(email *models.InboundEmail) map[string]struct{} {
+	processedMap := make(map[string]struct{})
+	for _, domain := range email.ProcessedSuccessfully {
+		processedMap[domain] = struct{}{}
 	}
-	return toArray
+	return processedMap
 }
 
-func Worker(entry *queue.Entry, queueDatabaseConnection *gorm.DB) int8 {
+func extractUniqueRecipientDomains(email *models.InboundEmail) []string {
+	domains := make(map[string]struct{})
+	processedMap := buildProcessedMap(email)
+
+	for _, recipient := range email.To {
+		domain, err := helpers.ExtractDomainFromEmail(recipient)
+		if err != nil {
+			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
+			continue
+		}
+
+		if _, ok := processedMap[domain]; ok {
+			continue
+		}
+		domains[domain] = struct{}{}
+	}
+
+	return slices.Collect(maps.Keys(domains))
+}
+
+func fetchRecipients(primaryDatabaseConnection *gorm.DB, recipientDomains []string) (*[]primaryModels.UserDomain, error) {
+	var fetchedDomains []primaryModels.UserDomain
+
+	result := primaryDatabaseConnection.
+		Where("domain IN ? AND verified = 1", recipientDomains).
+		Find(&fetchedDomains)
+
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to fetch recipients: %v", result.Error)
+	}
+
+	return &fetchedDomains, nil
+}
+
+func Worker(entry *queue.Entry, queueDatabaseConnection *gorm.DB, primaryDatabaseConnection *gorm.DB) queue.WorkerResponse {
 	email, err := getEmailById(entry.RefID, queueDatabaseConnection)
 	if err != nil {
 		zap.L().Debug("Failed to get email by id", zap.Error(err))
-		return 1
+		return queue.Failed
 	}
 
-	zap.L().Debug("Processing email", zap.String("email_id", email.EmailId))
-	return 2
+	recipientDomains := extractUniqueRecipientDomains(email)
+	recipients, err := fetchRecipients(primaryDatabaseConnection, recipientDomains)
+	if err != nil {
+		zap.L().Debug("Failed to fetch recipients", zap.Error(err))
+		return queue.Failed
+	}
+
+	zap.L().Debug("Fetched recipients", zap.Any("recipients", recipients))
+
+	email.ProcessedSuccessfully = append(email.ProcessedSuccessfully, recipientDomains...)
+	if err := queueDatabaseConnection.Save(email).Error; err != nil {
+		zap.L().Debug("Failed to save email", zap.Error(err))
+		return queue.Failed
+	}
+
+	return queue.Verified
 }
