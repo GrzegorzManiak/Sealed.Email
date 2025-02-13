@@ -32,5 +32,6 @@ func (bkd *Backend) NewSession(c *smtp.Conn) (smtp.Session, error) {
 		DkimResult:         services.DkimNotProcessed,
 		Mode:               bkd.Mode,
 		DatabaseConnection: bkd.DatabaseConnection,
+		ReceivedAt:         helpers.GetUnixTimestamp(),
 	}, nil
 }

@@ -49,6 +49,7 @@ func (s *Session) AwaitQueue() error {
 		Version:     1,
 		Processed:   false,
 		IsEncrypted: s.Headers.Data.IsEncrypted(),
+		ReceivedAt:  s.ReceivedAt,
 	}
 
 	zap.L().Debug("Inbound email created", zap.Any("email", inboundEmail.EmailId))

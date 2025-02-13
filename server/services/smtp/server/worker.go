@@ -59,6 +59,63 @@ func fetchRecipients(primaryDatabaseConnection *gorm.DB, recipientDomains []stri
 	return &fetchedDomains, nil
 }
 
+func batchRecipientsByDomain(tos []string, processedSuccessfully []string) map[string][]string {
+	batchedRecipients := make(map[string][]string)
+
+	for _, to := range tos {
+		domain, err := helpers.ExtractDomainFromEmail(to)
+		if err != nil {
+			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
+			continue
+		}
+
+		if slices.Contains(processedSuccessfully, domain) {
+			continue
+		}
+
+		if _, ok := batchedRecipients[domain]; !ok {
+			batchedRecipients[domain] = make([]string, 0)
+		}
+
+		batchedRecipients[domain] = append(batchedRecipients[domain], to)
+	}
+
+	return batchedRecipients
+}
+
+func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.InboundEmail, domains *[]primaryModels.UserDomain, inboxes map[string][]string) ([]string, queue.WorkerResponse) {
+	successfulInserts := make([]string, 0, len(inboxes))
+	for _, domain := range *domains {
+		inbox, ok := inboxes[domain.Domain]
+		if !ok {
+			zap.L().Warn("No inbox found for domain", zap.String("domain", domain.Domain))
+			continue
+		}
+
+		inserts := make([]primaryModels.UserEmail, 0, len(inbox))
+		for _, recipient := range inbox {
+			PID := helpers.GeneratePublicId()
+			inserts = append(inserts, primaryModels.UserEmail{
+				PID:          PID,
+				UserID:       domain.UserID,
+				UserDomainID: domain.ID,
+				To:           recipient,
+				ReceivedAt:   email.ReceivedAt,
+			})
+		}
+
+		if err := primaryDatabaseConnection.Create(&inserts).Error; err != nil {
+			zap.L().Warn("Failed to insert emails", zap.Error(err))
+			return successfulInserts, queue.Failed
+		}
+
+		zap.L().Debug("Inserted emails", zap.Any("emails", inserts))
+		successfulInserts = append(successfulInserts, domain.Domain)
+	}
+
+	return successfulInserts, queue.Verified
+}
+
 func Worker(entry *queue.Entry, queueDatabaseConnection *gorm.DB, primaryDatabaseConnection *gorm.DB, minioClient *minio.Client) queue.WorkerResponse {
 	email, err := getEmailById(entry.RefID, queueDatabaseConnection)
 	if err != nil {
@@ -74,12 +131,15 @@ func Worker(entry *queue.Entry, queueDatabaseConnection *gorm.DB, primaryDatabas
 	}
 
 	zap.L().Debug("Fetched recipients", zap.Any("recipients", recipients))
+	batchedRecipients := batchRecipientsByDomain(email.To, email.ProcessedSuccessfully)
+	successfulInserts, code := insertIntoDatabase(primaryDatabaseConnection, email, recipients, batchedRecipients)
+	zap.L().Debug("Successful inserts", zap.Any("domains", successfulInserts), zap.Error(err))
 
-	email.ProcessedSuccessfully = append(email.ProcessedSuccessfully, recipientDomains...)
+	email.ProcessedSuccessfully = append(email.ProcessedSuccessfully, successfulInserts...)
 	if err := queueDatabaseConnection.Save(email).Error; err != nil {
 		zap.L().Debug("Failed to save email", zap.Error(err))
 		return queue.Failed
 	}
 
-	return queue.Verified
+	return code
 }

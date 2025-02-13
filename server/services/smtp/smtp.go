@@ -84,7 +84,7 @@ func Start() {
 	}
 
 	etcdContext := context.Background()
-	_, err := ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
+	_, err = ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
 	if err != nil {
 		zap.L().Panic("failed to create etcd service", zap.Error(err))
 	}

@@ -2,7 +2,7 @@ package models
 
 import "gorm.io/gorm"
 
-type UserInbox struct {
+type UserEmail struct {
 	gorm.Model
 	PID          string     `gorm:"uniqueIndex"`
 	User         User       `gorm:"foreignKey:UserID"`
@@ -10,10 +10,9 @@ type UserInbox struct {
 	UserDomain   UserDomain `gorm:"foreignKey:UserDomainID;constraint:OnDelete:CASCADE"`
 	UserDomainID uint       `gorm:"index"`
 
-	To   string
-	Data []uint8 `gorm:"type:bytea"`
+	To string
 
 	OriginallyEncrypted bool
 	ReceivedAt          int64
-	Bucket              string
+	BucketPath          string
 }

@@ -22,6 +22,7 @@ type Session struct {
 	DatabaseConnection *gorm.DB
 	Ctx                *smtp.Conn
 	Mode               Mode
+	ReceivedAt         int64
 
 	From string
 	To   map[string]bool // pseudo set

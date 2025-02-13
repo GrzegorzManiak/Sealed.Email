@@ -9,3 +9,7 @@ func Sleep(seconds int) {
 func GetFormattedTime() string {
 	return time.Now().Format(time.RFC1123Z)
 }
+
+func GetUnixTimestamp() int64 {
+	return time.Now().Unix()
+}

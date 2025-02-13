@@ -27,4 +27,5 @@ type InboundEmail struct {
 
 	IsEncrypted bool
 	Processed   bool
+	ReceivedAt  int64
 }

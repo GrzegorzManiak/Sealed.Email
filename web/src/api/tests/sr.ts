@@ -36,15 +36,15 @@ import * as API from '../lib';
 })();
 
 
-(async () => {
-	const details = ['test2', 'test2'];
-	const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
-	await session.DecryptKeys();
-
-
-	const domainId = '49peyLQOSHIylIeftxVzGNFivTtqbwDzK5nN7VjJFkg=';
-	const domain = await API.Domain.GetDomain(session, domainId);
-	const domainService = await API.DomainService.Decrypt(session, domain);
-
-	// console.log(domainService);
-})();
+// (async () => {
+// 	const details = ['test2', 'test2'];
+// 	const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
+// 	await session.DecryptKeys();
+//
+//
+// 	const domainId = '49peyLQOSHIylIeftxVzGNFivTtqbwDzK5nN7VjJFkg=';
+// 	const domain = await API.Domain.GetDomain(session, domainId);
+// 	const domainService = await API.DomainService.Decrypt(session, domain);
+//
+// 	// console.log(domainService);
+// })();

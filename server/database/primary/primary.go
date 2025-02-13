@@ -1,7 +1,7 @@
 package primary
 
 import (
-	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
+	models "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"go.uber.org/zap"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -27,10 +27,11 @@ func InitiateConnection() *gorm.DB {
 }
 
 func AutoMigrateTables(databaseConnection *gorm.DB) {
-	databaseConnection.AutoMigrate(&models2.UserVerify{})
-	databaseConnection.AutoMigrate(&models2.Session{})
-	databaseConnection.AutoMigrate(&models2.User{})
-	databaseConnection.AutoMigrate(&models2.UserDomain{})
-	databaseConnection.AutoMigrate(&models2.UserHold{})
-	databaseConnection.AutoMigrate(&models2.UserQuota{})
+	databaseConnection.AutoMigrate(&models.UserVerify{})
+	databaseConnection.AutoMigrate(&models.Session{})
+	databaseConnection.AutoMigrate(&models.User{})
+	databaseConnection.AutoMigrate(&models.UserDomain{})
+	databaseConnection.AutoMigrate(&models.UserHold{})
+	databaseConnection.AutoMigrate(&models.UserQuota{})
+	databaseConnection.AutoMigrate(&models.UserEmail{})
 }
