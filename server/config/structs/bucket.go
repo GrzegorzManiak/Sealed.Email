@@ -1,8 +1,8 @@
 package structs
 
 type BucketConfig struct {
-	Key    string `yaml:"key"`
-	Api    string `yaml:"api"`
-	Secret string `yaml:"secret"`
-	UseSsl bool   `yaml:"useSSL"`
+	Endpoint  string `yaml:"endpoint"`
+	AccessKey string `yaml:"accessKey"`
+	SecretKey string `yaml:"secretKey"`
+	UseSSL    bool   `yaml:"useSSL"`
 }

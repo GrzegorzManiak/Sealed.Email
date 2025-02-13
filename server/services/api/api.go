@@ -13,6 +13,8 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"go.uber.org/zap"
 	"time"
 )
@@ -28,6 +30,14 @@ func Start() {
 	pprof.Register(router, "debug/")
 
 	databaseConnection := PrimaryDatabase.InitiateConnection()
+	minioClient, err := minio.New(config.Bucket.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(config.Bucket.AccessKey, config.Bucket.SecretKey, ""),
+		Secure: config.Bucket.UseSSL,
+	})
+	if err != nil {
+		zap.L().Panic("failed to create minio client", zap.Error(err))
+	}
+	zap.L().Info("Minio client created", zap.Any("client", minioClient))
 
 	serviceUUID, err := uuid.NewUUID()
 	if err != nil {
@@ -55,6 +65,7 @@ func Start() {
 	baseRoute := &services.BaseRoute{
 		DatabaseConnection: databaseConnection,
 		ConnectionPool:     connPool,
+		MinioClient:        minioClient,
 	}
 
 	routes.RegisterRoutes(router, baseRoute)

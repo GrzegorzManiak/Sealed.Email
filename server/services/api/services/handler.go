@@ -7,6 +7,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/middleware"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 	"github.com/gin-gonic/gin"
+	"github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -14,6 +15,7 @@ import (
 type BaseRoute struct {
 	DatabaseConnection *gorm.DB
 	ConnectionPool     *service.Pools
+	MinioClient        *minio.Client
 }
 
 type Handler struct {
