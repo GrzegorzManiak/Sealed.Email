@@ -3,6 +3,12 @@ server:
   host: 'localhost'
   id: 'dev-sealed-email(Smtp)'
 
+bucket:
+  api: 'http://192.168.0.144:9000'
+  key: 'BG8w953m1KAzXBBq7Nnng6fElDTWtpR0t7Ej0nhZ'
+  secret: 'BG8w953m1KAzXBBq7Nnng6fElDTWtpR0t7Ej0nhZ'
+  useSSL: false
+
 session:
   privateKey: 'VEEHKF8dUjUmQqasfirtGR6coar5yfGgfk6C8sQIk1U='
   cookiePath: '/'
