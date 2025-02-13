@@ -18,7 +18,6 @@ type InboundEmail struct {
 	To                    pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
 	ProcessedSuccessfully pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
 
-	Headers []uint8 `gorm:"type:bytea"`
 	RawData []uint8 `gorm:"type:bytea"`
 
 	DkimResult services.DkimResult

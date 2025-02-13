@@ -59,7 +59,7 @@ func (h Headers) Subject(subject string) {
 }
 
 func (h Headers) MessageId(domain string) string {
-	messageId := "<" + helpers.GeneratePublicId() + "@" + helpers.RemoveTrailingDot(domain) + ">"
+	messageId := "<" + helpers.GeneratePublicId(64) + "@" + helpers.RemoveTrailingDot(domain) + ">"
 	h.Add("Message-ID", messageId)
 	return messageId
 }

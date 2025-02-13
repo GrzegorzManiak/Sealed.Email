@@ -12,66 +12,65 @@ import (
 )
 
 func (s *Session) Data(r io.Reader) error {
-
-	// -- Note: This is hacky, its also using 2x the memory, but it works for now
 	var buffer, dkimBuffer bytes.Buffer
 	multiWriter := io.MultiWriter(&buffer, &dkimBuffer)
-	_, err := io.Copy(multiWriter, r)
-	if err != nil {
+	if _, err := io.Copy(multiWriter, r); err != nil {
 		zap.L().Debug("Failed to copy data", zap.Error(err))
 		return err
 	}
 
 	bufReader := bufio.NewReader(&buffer)
 	dkimReader := bufio.NewReader(&dkimBuffer)
-
-	verdict, _ := services.VerifyDkimSignature(dkimReader)
-	s.DkimResult = verdict
+	s.DkimResult, _ = services.VerifyDkimSignature(dkimReader)
 
 	for {
+
+		//
+		// Builds the line buffer so that we are able to read the data
+		// line by line.
+		//
 		line, err := bufReader.ReadBytes('\n')
 		if err != nil {
 			if err == io.EOF {
 				if buffer.Len() > 0 {
-					eofBytes := buffer.Bytes()
-					s.RawData = append(s.RawData, eofBytes...)
+					s.RawData = append(s.RawData, buffer.Bytes()...)
 				}
 				break
 			}
 			return err
 		}
 
-		// -- Handle headers
+		//
+		// Append the line to the raw dat buffer.
+		// This is what the user will see when they request the email.
+		//
+		s.RawData = append(s.RawData, line...)
+
+		//
+		// If the headers are not finished, we need to process them.
+		//
 		if !s.Headers.Finished {
-			buffer.Write(line)
-			strData := buffer.String()
-			err := ProcessHeaders(strData, s)
-			if err != nil {
+			if err := processHeaders(line, s); err != nil {
 				return err
 			}
-			buffer.Reset()
 			continue
 		}
-
-		// -- Handle data
-		s.RawData = append(s.RawData, line...)
 	}
 
 	return s.AwaitQueue()
 }
 
-func ProcessHeaders(data string, session *Session) error {
-
-	if len(strings.TrimSpace(data)) == 0 {
-		session.Headers.Finished = true
-		if !session.Headers.Data.Has(email.RequiredHeaders) {
+func processHeaders(line []byte, s *Session) error {
+	if len(strings.TrimSpace(string(line))) == 0 {
+		s.Headers.Finished = true
+		if !s.Headers.Data.Has(email.RequiredHeaders) {
 			return fmt.Errorf("missing required headers")
 		}
 		return nil
 	}
 
-	lastHeader, _ := session.Headers.Data.Get(session.Headers.LastHeader)
-	header, value, err := email.ParseHeader(data, lastHeader)
+	lastHeader, _ := s.Headers.Data.Get(s.Headers.LastHeader)
+	header, value, err := email.ParseHeader(string(line), lastHeader)
 	if err != nil {
 		return nil
 	}
@@ -79,8 +78,8 @@ func ProcessHeaders(data string, session *Session) error {
 	header = strings.Trim(header, " \n\t")
 	value = strings.Trim(value, " \n\t")
 
-	session.Headers.Data.Add(header, value)
-	session.Headers.LastHeader = header
+	s.Headers.Data.Add(header, value)
+	s.Headers.LastHeader = header
 
 	return nil
 }

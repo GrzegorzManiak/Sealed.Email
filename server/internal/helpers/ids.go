@@ -1,10 +1,17 @@
 package helpers
 
 import (
-	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
-	"github.com/GrzegorzManiak/NoiseBackend/config"
+	"math/rand"
+	"time"
 )
 
-func GeneratePublicId() string {
-	return crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func GeneratePublicId(length int) string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[r.Intn(len(charset))]
+	}
+	return string(b)
 }

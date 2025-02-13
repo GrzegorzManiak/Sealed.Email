@@ -11,7 +11,7 @@ import (
 )
 
 func createQueueEntry(email *smtp.Email) (*queue.Entry, string, error) {
-	id := helpers.GeneratePublicId()
+	id := helpers.GeneratePublicId(64)
 	entry, err := queue.Initiate(config.Smtp.OutboundQueue.MaxRetry,
 		config.Smtp.OutboundQueue.RetryInterval,
 		config.Smtp.OutboundQueue.Name,

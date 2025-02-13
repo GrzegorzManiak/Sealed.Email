@@ -16,7 +16,7 @@ type Backend struct {
 }
 
 func (bkd *Backend) NewSession(c *smtp.Conn) (smtp.Session, error) {
-	id := helpers.GeneratePublicId()
+	id := helpers.GeneratePublicId(64)
 	zap.L().Debug("New session",
 		zap.String("id", id),
 		zap.String("server", string(bkd.Mode)),
