@@ -17,11 +17,7 @@ import (
 
 func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.InboundEmail, error) {
 	email := &models.InboundEmail{}
-	err := queueDatabaseConnection.
-		Where("ref_id = ?", emailId).
-		First(email).Error
-
-	if err != nil {
+	if err := queueDatabaseConnection.Where("ref_id = ?", emailId).First(email).Error; err != nil {
 		return nil, err
 	}
 	return email, nil
@@ -66,19 +62,10 @@ func batchRecipientsByDomain(tos []string, processedSuccessfully []string) map[s
 
 	for _, to := range tos {
 		domain, err := helpers.ExtractDomainFromEmail(to)
-		if err != nil {
+		if err != nil || slices.Contains(processedSuccessfully, domain) {
 			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
 			continue
 		}
-
-		if slices.Contains(processedSuccessfully, domain) {
-			continue
-		}
-
-		if _, ok := batchedRecipients[domain]; !ok {
-			batchedRecipients[domain] = make([]string, 0)
-		}
-
 		batchedRecipients[domain] = append(batchedRecipients[domain], to)
 	}
 
@@ -121,10 +108,9 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Inboun
 }
 
 func insertIntoBucket(minioClient *minio.Client, email *models.InboundEmail) error {
-	_, err := minioClient.PutObject(context.Background(), "emails", email.RefID, bytes.NewReader(email.RawData), int64(len(email.RawData)), minio.PutObjectOptions{
+	if _, err := minioClient.PutObject(context.Background(), "emails", email.RefID, bytes.NewReader(email.RawData), int64(len(email.RawData)), minio.PutObjectOptions{
 		ContentType: "message/rfc822",
-	})
-	if err != nil {
+	}); err != nil {
 		zap.L().Debug("Failed to insert email into bucket", zap.Error(err))
 		return err
 	}
