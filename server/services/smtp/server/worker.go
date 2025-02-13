@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	primaryModels "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
@@ -96,11 +98,13 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Inboun
 		for _, recipient := range inbox {
 			PID := helpers.GeneratePublicId()
 			inserts = append(inserts, primaryModels.UserEmail{
-				PID:          PID,
-				UserID:       domain.UserID,
-				UserDomainID: domain.ID,
-				To:           recipient,
-				ReceivedAt:   email.ReceivedAt,
+				PID:                 PID,
+				UserID:              domain.UserID,
+				UserDomainID:        domain.ID,
+				To:                  recipient,
+				ReceivedAt:          email.ReceivedAt,
+				OriginallyEncrypted: email.IsEncrypted,
+				BucketPath:          email.RefID,
 			})
 		}
 
@@ -114,6 +118,17 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Inboun
 	}
 
 	return successfulInserts, queue.Verified
+}
+
+func insertIntoBucket(minioClient *minio.Client, email *models.InboundEmail) error {
+	_, err := minioClient.PutObject(context.Background(), "emails", email.RefID, bytes.NewReader(email.RawData), int64(len(email.RawData)), minio.PutObjectOptions{
+		ContentType: "message/rfc822",
+	})
+	if err != nil {
+		zap.L().Debug("Failed to insert email into bucket", zap.Error(err))
+		return err
+	}
+	return nil
 }
 
 func Worker(entry *queue.Entry, queueDatabaseConnection *gorm.DB, primaryDatabaseConnection *gorm.DB, minioClient *minio.Client) queue.WorkerResponse {
@@ -134,6 +149,14 @@ func Worker(entry *queue.Entry, queueDatabaseConnection *gorm.DB, primaryDatabas
 	batchedRecipients := batchRecipientsByDomain(email.To, email.ProcessedSuccessfully)
 	successfulInserts, code := insertIntoDatabase(primaryDatabaseConnection, email, recipients, batchedRecipients)
 	zap.L().Debug("Successful inserts", zap.Any("domains", successfulInserts), zap.Error(err))
+
+	if !email.InBucket {
+		if err := insertIntoBucket(minioClient, email); err != nil {
+			return queue.Failed
+		}
+		zap.L().Debug("Inserted email into bucket")
+		email.InBucket = true
+	}
 
 	email.ProcessedSuccessfully = append(email.ProcessedSuccessfully, successfulInserts...)
 	if err := queueDatabaseConnection.Save(email).Error; err != nil {
