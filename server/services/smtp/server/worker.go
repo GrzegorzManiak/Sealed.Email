@@ -6,6 +6,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
+	"github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"maps"
@@ -58,7 +59,7 @@ func fetchRecipients(primaryDatabaseConnection *gorm.DB, recipientDomains []stri
 	return &fetchedDomains, nil
 }
 
-func Worker(entry *queue.Entry, queueDatabaseConnection *gorm.DB, primaryDatabaseConnection *gorm.DB) queue.WorkerResponse {
+func Worker(entry *queue.Entry, queueDatabaseConnection *gorm.DB, primaryDatabaseConnection *gorm.DB, minioClient *minio.Client) queue.WorkerResponse {
 	email, err := getEmailById(entry.RefID, queueDatabaseConnection)
 	if err != nil {
 		zap.L().Debug("Failed to get email by id", zap.Error(err))

@@ -5,6 +5,9 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	SmtpDatabase "github.com/GrzegorzManiak/NoiseBackend/database/smtp"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
+
 	//"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
@@ -21,6 +24,15 @@ func Start() {
 	queueDatabaseConnection := SmtpDatabase.InitiateConnection()
 	primaryDatabaseConnection := PrimaryDatabase.InitiateConnection()
 	queueContext := context.Background()
+
+	minioClient, err := minio.New(config.Bucket.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(config.Bucket.AccessKey, config.Bucket.SecretKey, ""),
+		Secure: config.Bucket.UseSSL,
+	})
+	if err != nil {
+		zap.L().Panic("failed to create minio client", zap.Error(err))
+	}
+	zap.L().Info("Minio client created", zap.Any("client", minioClient))
 
 	zap.L().Debug("Creating inbound queue", zap.Any("config", config.Smtp.InboundQueue))
 	inboundQueue := queue.NewQueue(
@@ -51,7 +63,7 @@ func Start() {
 		queueDatabaseConnection,
 		inboundQueue,
 		func(entry *queue.Entry) queue.WorkerResponse {
-			return server.Worker(entry, queueDatabaseConnection, primaryDatabaseConnection)
+			return server.Worker(entry, queueDatabaseConnection, primaryDatabaseConnection, minioClient)
 		})
 
 	server.StartServers(inboundQueue, queueDatabaseConnection)
