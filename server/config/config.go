@@ -11,7 +11,7 @@ import (
 
 var CURVE = elliptic.P256()
 
-type RawConfig struct {
+type BaseConfig struct {
 	Session      structs.RawSessionConfig   `yaml:"session"`
 	Server       structs.ServerConfig       `yaml:"server"`
 	Auth         structs.RawAuthConfig      `yaml:"auth"`
@@ -33,43 +33,43 @@ var Smtp structs.SmtpConfig
 var Debug structs.DebugConfig
 var Bucket structs.BucketConfig
 
-func ParseConfig(rawConfig RawConfig) error {
-	sessionConfig, err := rawConfig.Session.Parse()
+func ParseConfig(baseConfig BaseConfig) error {
+	sessionConfig, err := baseConfig.Session.Parse()
 	if err != nil {
-		zap.L().Error("failed to parse session config", zap.Error(err), zap.Any("config", rawConfig.Session))
+		zap.L().Error("failed to parse session config", zap.Error(err), zap.Any("config", baseConfig.Session))
 		return fmt.Errorf("failed to parse session config: %w", err)
 	}
 
-	authConfig, err := rawConfig.Auth.Parse()
+	authConfig, err := baseConfig.Auth.Parse()
 	if err != nil {
-		zap.L().Error("failed to parse auth config", zap.Error(err), zap.Any("config", rawConfig.Auth))
+		zap.L().Error("failed to parse auth config", zap.Error(err), zap.Any("config", baseConfig.Auth))
 		return fmt.Errorf("failed to parse auth config: %w", err)
 	}
 
 	Session = *sessionConfig
-	Server = rawConfig.Server
+	Server = baseConfig.Server
 	Auth = *authConfig
-	Domain = rawConfig.Domain
-	Certificates = rawConfig.Certificates
-	Etcd = rawConfig.Etcd
-	Smtp = rawConfig.Smtp
-	Debug = rawConfig.Debug
-	Bucket = rawConfig.Bucket
+	Domain = baseConfig.Domain
+	Certificates = baseConfig.Certificates
+	Etcd = baseConfig.Etcd
+	Smtp = baseConfig.Smtp
+	Debug = baseConfig.Debug
+	Bucket = baseConfig.Bucket
 
 	return nil
 }
 
-func LoadConfig(configPath string) error {
-	f, err := os.Open(configPath)
+func LoadConfig(path string) error {
+	f, err := os.Open(path)
 	if err != nil {
-		zap.L().Panic("failed to open config file", zap.Error(err), zap.String("path", configPath))
+		zap.L().Panic("failed to open config file", zap.Error(err), zap.String("path", path))
 	}
 	defer f.Close()
 
-	rawConfig := RawConfig{}
+	rawConfig := BaseConfig{}
 	err = yaml.NewDecoder(f).Decode(&rawConfig)
 	if err != nil {
-		zap.L().Panic("failed to decode config file", zap.Error(err), zap.String("path", configPath))
+		zap.L().Panic("failed to decode config file", zap.Error(err), zap.String("path", path))
 	}
 
 	err = ParseConfig(rawConfig)
