@@ -96,7 +96,7 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Inboun
 
 		inserts := make([]primaryModels.UserEmail, 0, len(inbox))
 		for _, recipient := range inbox {
-			PID := helpers.GeneratePublicId()
+			PID := helpers.GeneratePublicId(64)
 			inserts = append(inserts, primaryModels.UserEmail{
 				PID:                 PID,
 				UserID:              domain.UserID,

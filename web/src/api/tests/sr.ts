@@ -1,4 +1,5 @@
 import * as API from '../lib';
+import {EncodeToBase64} from "gowl-client-lib";
 
 (async () => {
 	const details = ['test', 'test'];
@@ -22,17 +23,30 @@ import * as API from '../lib';
 	);
 
 
-	const sender = await domainService.GetSender(emailKey, 'Greg', 'Grzegorz Maniak')
-	const email = new API.EncryptedEmail({
-		domain: domainService,
-		key: emailKey,
-		from: sender,
-		to: inboxA,
-		subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF',
-		body: 'Hello world SDFG SDFGS DFG '
-	});
+	// const sender = await domainService.GetSender(emailKey, 'Greg', 'Grzegorz Maniak')
+	// const email = new API.EncryptedEmail({
+	// 	domain: domainService,
+	// 	key: emailKey,
+	// 	from: sender,
+	// 	to: inboxA,
+	// 	subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF',
+	// 	body: 'Hello world SDFG SDFGS DFG '
+	// });
+	//
+	// console.log(await email.Send(session))
 
-	console.log(await email.Send(session))
+	await API.Email.SendPlainEmail(session, {
+		domainID: domainService.DomainID,
+		inReplyTo: '',
+		from: { displayName: 'Greg', email: 'test@beta.grzegorz.ie' },
+		to: { displayName: '', email: 'test@sealed.email' },
+		bcc: [],
+		cc: [],
+		subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF',
+		body: 'Hello world SDFG SDFGS DFG ',
+		nonce: EncodeToBase64(API.Sym.NewKey()),
+		signature: EncodeToBase64(API.Sym.NewKey()),
+	})
 })();
 
 

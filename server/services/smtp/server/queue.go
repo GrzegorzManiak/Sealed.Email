@@ -40,7 +40,6 @@ func (s *Session) AwaitQueue() error {
 		From: s.From,
 		To:   toArray,
 
-		Headers: s.Headers.Data.Marshal(),
 		RawData: s.RawData,
 
 		DkimResult: s.DkimResult,

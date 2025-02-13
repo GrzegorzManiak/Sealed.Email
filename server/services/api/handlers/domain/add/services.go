@@ -21,7 +21,7 @@ func insertDomain(
 	if err != nil {
 		return &models.UserDomain{}, err
 	}
-	PID := helpers.GeneratePublicId()
+	PID := helpers.GeneratePublicId(64)
 
 	domainModel := models.UserDomain{
 		PID:    PID,
@@ -34,7 +34,7 @@ func insertDomain(
 		DKIMKeysCreatedAt: time.Now().Unix(),
 		DKIMPublicKey:     kp.EncodePublicKey(),
 		DKIMPrivateKey:    kp.EncodePrivateKey(),
-		TxtChallenge:      config.Domain.ChallengePrefix + "=" + helpers.GeneratePublicId(),
+		TxtChallenge:      config.Domain.ChallengePrefix + "=" + helpers.GeneratePublicId(64),
 
 		Version:             1,
 		SymmetricRootKey:    input.SymmetricRootKey,
