@@ -23,11 +23,9 @@ func attemptDial(domain string, certs *tls.Config) (*smtp.Client, error) {
 
 	for _, mx := range mxRecords {
 		c, err := dial(mx.Host, certs)
-
 		if err != nil {
 			continue
 		}
-
 		return c, nil
 	}
 
