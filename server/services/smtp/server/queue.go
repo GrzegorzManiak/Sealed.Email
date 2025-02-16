@@ -18,7 +18,21 @@ func (s *Session) createQueueEntry() (*queue.Entry, error) {
 	return entry, err
 }
 
-func (s *Session) AwaitQueue() error {
+func (s *Session) insertInboundEmail() error {
+	if s.Processed == nil {
+		return fmt.Errorf("no inbound email to insert")
+	}
+
+	err := s.DatabaseConnection.Create(s.Processed).Error
+	if err != nil {
+		zap.L().Error("failed to insert inbound email", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+func (s *Session) prepareInboundEmail() error {
 
 	entry, err := s.createQueueEntry()
 	if err != nil {
@@ -58,30 +72,16 @@ func (s *Session) AwaitQueue() error {
 	return nil
 }
 
-func (s *Session) Process() error {
+func (s *Session) finalizeInboundEmail() error {
 	if s.Processed == nil {
 		return fmt.Errorf("no inbound email to process")
 	}
 
-	err := s.InsertInboundEmail()
+	err := s.insertInboundEmail()
 	if err != nil {
 		return err
 	}
 
 	s.InboundQueue.AddEntry(s.QueueEntry)
-	return nil
-}
-
-func (s *Session) InsertInboundEmail() error {
-	if s.Processed == nil {
-		return fmt.Errorf("no inbound email to insert")
-	}
-
-	err := s.DatabaseConnection.Create(s.Processed).Error
-	if err != nil {
-		zap.L().Error("failed to insert inbound email", zap.Error(err))
-		return err
-	}
-
 	return nil
 }

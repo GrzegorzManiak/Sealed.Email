@@ -5,7 +5,6 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/services"
 	"github.com/grzegorzmaniak/go-smtp"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -16,22 +15,17 @@ type Backend struct {
 }
 
 func (bkd *Backend) NewSession(c *smtp.Conn) (smtp.Session, error) {
-	id := helpers.GeneratePublicId(64)
-	zap.L().Debug("New session",
-		zap.String("id", id),
-		zap.String("server", string(bkd.Mode)),
-		zap.String("remote", c.Hostname()),
-		zap.String("local", c.Conn().LocalAddr().String()))
-
 	return &Session{
-		Headers:            CreateHeaderContext(),
-		Id:                 id,
-		InboundQueue:       bkd.InboundQueue,
+		Id:                 helpers.GeneratePublicId(64),
 		Ctx:                c,
-		To:                 make(map[string]bool),
-		DkimResult:         services.DkimNotProcessed,
-		Mode:               bkd.Mode,
+		InboundQueue:       bkd.InboundQueue,
 		DatabaseConnection: bkd.DatabaseConnection,
-		ReceivedAt:         helpers.GetUnixTimestamp(),
+
+		Headers: CreateHeaderContext(),
+		To:      make(map[string]struct{}),
+
+		DkimResult: services.DkimNotProcessed,
+		Mode:       bkd.Mode,
+		ReceivedAt: helpers.GetUnixTimestamp(),
 	}, nil
 }

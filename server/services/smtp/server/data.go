@@ -57,7 +57,7 @@ func (s *Session) Data(r io.Reader) error {
 		}
 	}
 
-	return s.AwaitQueue()
+	return s.prepareInboundEmail()
 }
 
 func processHeaders(line []byte, s *Session) error {

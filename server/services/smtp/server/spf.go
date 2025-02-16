@@ -2,8 +2,8 @@ package server
 
 import (
 	"blitiri.com.ar/go/spf"
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
-	"go.uber.org/zap"
 	"net"
 	"strings"
 )
@@ -13,17 +13,14 @@ func GetRemoteConnectionIp(smtpCtx *Session) string {
 	if strings.Contains(ipStr, ":") {
 		ipStr = strings.Split(ipStr, ":")[0]
 	}
-
 	return ipStr
 }
 
 func ValidateMailFromSpf(ipStr, from, host string) (spf.Result, error) {
-
 	ip := net.ParseIP(ipStr)
 	if ip == nil {
-		zap.L().Debug("Failed to parse IP", zap.String("ip", ipStr))
+		return spf.None, fmt.Errorf("failed to parse IP: %s", ipStr)
 	}
-
 	return spf.CheckHostWithSender(ip, host, from)
 }
 
