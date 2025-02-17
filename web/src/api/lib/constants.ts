@@ -17,6 +17,9 @@ const Endpoints: { [key: string]: [string, string] } = {
 
     EMAIL_SEND_PLAIN: [`${ROOT}/email/send/plain`, 'POST'],
     EMAIL_SEND_ENCRYPTED: [`${ROOT}/email/send/encrypted`, 'POST'],
+    EMAIL_LIST: [`${ROOT}/email/list`, 'GET'],
+    EMAIL_GET: [`${ROOT}/email/get`, 'GET'],
+    EMAIL_DATA: [`${ROOT}/email/data`, 'GET'],
 };
 
 const ServerName: string = 'NoiseEmailServer>V1.0.0';

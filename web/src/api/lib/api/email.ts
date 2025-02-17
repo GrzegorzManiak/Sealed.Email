@@ -48,6 +48,32 @@ type SignedPlainEmail = {
     nonce: string;
 } & PlainEmail;
 
+type EmailListFilters = {
+    domainID: DomainRefID;
+    page?: number;
+    perPage?: number;
+    order?: 'asc' | 'desc';
+    read?: 'all' | 'read' | 'unread';
+}
+
+type Email = {
+    emailID: string;
+    receivedAt: number;
+    bucketPath: string;
+    read: boolean;
+    folder: string;
+    to: string;
+    spam: boolean;
+    sent: boolean;
+    accessKey: string;
+    expiration: number;
+}
+
+type EmailListResponse = {
+    emails: Email[];
+    total: number;
+}
+
 const SendPlainEmail = async (session: Session, email: SignedPlainEmail): Promise<void> => {
     await HandleRequest<void>({
         session,
@@ -74,14 +100,38 @@ const SendEncryptedEmail = async (session: Session, email: PostEncryptedEmail, s
     });
 };
 
+const GetEmailList = async (session: Session, filters: EmailListFilters): Promise<EmailListResponse> => {
+    const defaultFilters = {
+        page: 0,
+        perPage: 10,
+        order: 'asc',
+        read: 'all',
+    }
+
+    return await HandleRequest<EmailListResponse>({
+        session,
+        query: { ...defaultFilters, ...filters },
+        endpoint: Endpoints.EMAIL_LIST,
+        fallbackError: new ClientError(
+            'Failed to get email list',
+            'Sorry, we were unable to get the email list',
+            'EMAIL-LIST-FAIL'
+        ),
+    });
+}
+
 
 export {
     SendPlainEmail,
     SendEncryptedEmail,
+    GetEmailList,
     
     type PlainEmail,
     type SignedPlainEmail,
     type PostEncryptedEmail,
+    type EmailListFilters,
     type ComputedEncryptedInbox,
-    type Inbox
+    type Inbox,
+    type Email,
+    type EmailListResponse
 }
