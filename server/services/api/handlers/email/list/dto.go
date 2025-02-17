@@ -14,7 +14,7 @@ type Input struct {
 
 type Output struct {
 	Emails []Email `json:"emails" validate:"dive"`
-	Total  int64   `json:"total" validate:"gte=0"`
+	Total  int     `json:"total" validate:"gte=0"`
 }
 
 type Email struct {
@@ -25,6 +25,7 @@ type Email struct {
 	To         string `json:"to"`
 	Spam       bool   `json:"spam"`
 	Sent       bool   `json:"sent"`
+	AccessKey  string `json:"accessKey"`
 }
 
 var SessionFilter = &session.APIConfiguration{

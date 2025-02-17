@@ -2,7 +2,10 @@ package list
 
 import (
 	"fmt"
+	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -13,7 +16,7 @@ func fetchEmails(
 	user *models.User,
 	pagination Input,
 	databaseConnection *gorm.DB,
-) (emails []*models.UserEmail, count int64, err helpers.AppError) {
+) (emails []*models.UserEmail, err helpers.AppError) {
 	emails = make([]*models.UserEmail, 0)
 	dbQuery := databaseConnection.
 		Table("user_emails").
@@ -46,28 +49,41 @@ func fetchEmails(
 		dbQuery = dbQuery.Where("sent = 0")
 	}
 
-	if err := dbQuery.Count(&count).Error; err != nil {
-		zap.L().Debug("Failed to count emails", zap.Error(err))
-		return nil, 0, helpers.NewServerError("Failed to count emails.", "Email count error")
-	}
-
 	if err := dbQuery.
 		Limit(pagination.PerPage).
 		Offset(pagination.PerPage * pagination.Page).
 		Order(fmt.Sprintf("received_at %s", helpers.FormatOrderString(pagination.Order))).
 		Find(&emails).Error; err != nil {
 		zap.L().Debug("Failed to fetch emails", zap.Error(err))
-		return nil, 0, helpers.NewServerError("The requested emails could not be found.", "Emails not found!")
+		return nil, helpers.NewServerError("The requested emails could not be found.", "Emails not found!")
 	}
 
-	return emails, count, nil
+	return emails, nil
+}
+
+func CreateAccessKey(emailPid string) (string, error) {
+	exp := helpers.GetUnixTimestamp() + 60*5 // 5 minutes
+	emailPid += fmt.Sprintf(":%d", exp)
+	bytes, err := cryptography.SignMessage(&config.Session.EmailAccessPrivateKey, emailPid)
+	if err != nil {
+		return "", err
+	}
+	return crypto.B64Encode(bytes), nil
 }
 
 func parseEmailList(
 	emails []*models.UserEmail,
-) *[]Email {
+) *Output {
 	emailList := make([]Email, 0)
+	count := 0
+
 	for _, email := range emails {
+		account, err := CreateAccessKey(email.DomainPID)
+		if err != nil {
+			zap.L().Debug("Failed to create access key", zap.Error(err))
+			continue
+		}
+
 		emailList = append(emailList, Email{
 			EmailID:    email.PID,
 			ReceivedAt: email.ReceivedAt,
@@ -76,7 +92,14 @@ func parseEmailList(
 			Folder:     email.Folder,
 			Spam:       email.Spam,
 			Sent:       email.Sent,
+			AccessKey:  account,
 		})
+
+		count++
 	}
-	return &emailList
+
+	return &Output{
+		Emails: emailList,
+		Total:  count,
+	}
 }
