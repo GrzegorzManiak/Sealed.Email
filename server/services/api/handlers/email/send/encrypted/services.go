@@ -79,14 +79,17 @@ func sendEmail(
 	}
 
 	if err := email.Send(data.Context, data.ConnectionPool, &smtpService.Email{
-		From:      helpers.NormalizeEmail(input.From.BasicInbox().Email),
-		To:        recipients,
-		InboxKeys: email.ConvertToInboxKeys(bcc),
-		Body:      []byte(signedEmail),
-		Challenge: fromDomain.TxtChallenge,
-		Version:   "1.0",
-		MessageId: messageId,
-		Encrypted: true,
+		From:          helpers.NormalizeEmail(input.From.BasicInbox().Email),
+		To:            recipients,
+		InboxKeys:     email.ConvertToInboxKeys(bcc),
+		Body:          []byte(signedEmail),
+		Challenge:     fromDomain.TxtChallenge,
+		Version:       "1.0",
+		MessageId:     messageId,
+		Encrypted:     true,
+		FromUserId:    uint64(fromDomain.UserID),
+		FromDomainPID: fromDomain.PID,
+		FromDomainId:  uint64(fromDomain.ID),
 	}); err != nil {
 		return "", helpers.NewServerError("Failed to send email. Please try again later.", "Failed to send email")
 	}
