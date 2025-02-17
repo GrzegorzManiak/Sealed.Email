@@ -10,7 +10,8 @@ type UserEmail struct {
 	UserDomain   UserDomain `gorm:"foreignKey:UserDomainID;constraint:OnDelete:CASCADE"`
 	UserDomainID uint       `gorm:"index"`
 
-	To string
+	To   string
+	Read bool
 
 	OriginallyEncrypted bool
 	ReceivedAt          int64
