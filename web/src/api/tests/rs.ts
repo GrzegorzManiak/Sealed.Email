@@ -14,6 +14,12 @@ import {ClientError} from "$api/lib/errors";
 	const domain = await API.Domain.GetDomain(session, domainId);
 	const domainService = await API.DomainService.Decrypt(session, domain);
 
-	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID });
-	console.log('Emails:', emails);
+	// const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID });
+	// console.log('Emails:', emails);
+
+	const bucketPath = 'C2LMBhwH9jUj1eLyUfZpJiy1g2W8qWjQAbb5ejg4SZUk6GmkWP9y6ZFcaokTc72A:plain:fa0lux/84dv58hxqkja6lnatc0oacbaiupziua4x4qu=@beta.noise.email';
+	const email = await API.Email.GetEmail(session, domainService.DomainID, bucketPath);
+	const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
+
+	console.log('Email:', emailData);
 })();

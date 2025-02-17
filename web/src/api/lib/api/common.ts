@@ -4,6 +4,7 @@ import { GenericError } from "../index";
 
 type RequiredOptions = {
     session: Session;
+    parse?: boolean;
     endpoint: [string, string];
     fallbackError: ClientError;
 };
@@ -24,6 +25,7 @@ type Options = RequiredOptions & BodyOptions & HeaderOptions & QueryOptions;
 
 async function HandleRequest<T>(options: Options): Promise<T> {
     const { session, endpoint, fallbackError, query, body, headers: customHeaders } = options;
+    if (options.parse === null || options.parse === undefined) options.parse = true;
 
     const headers = customHeaders ?? new Headers();
     if (session.IsTokenAuthenticated) headers.set("cookie", session.CookieToken);
@@ -43,7 +45,8 @@ async function HandleRequest<T>(options: Options): Promise<T> {
         fallbackError
     );
 
-    return await response.json();
+    if (options.parse) return await response.json();
+    return response as unknown as T;
 }
 
 export {

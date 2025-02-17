@@ -118,13 +118,46 @@ const GetEmailList = async (session: Session, filters: EmailListFilters): Promis
             'EMAIL-LIST-FAIL'
         ),
     });
-}
+};
 
+const GetEmail = async (session: Session, domainID: DomainRefID, bucketPath: string): Promise<Email> => {
+    return await HandleRequest<Email>({
+        session,
+        query: { domainID, bucketPath },
+        endpoint: Endpoints.EMAIL_GET,
+        fallbackError: new ClientError(
+            'Failed to get email',
+            'Sorry, we were unable to get the email',
+            'EMAIL-GET-FAIL'
+        ),
+    });
+};
+
+const GetEmailData = async (session: Session, domainID: DomainRefID, email: Email): Promise<string> => {
+    return await HandleRequest<Response>({
+        session,
+        query: {
+            domainID,
+            bucketPath: email.bucketPath,
+            accessKey: email.accessKey,
+            expiration: email.expiration,
+        },
+        parse: false,
+        endpoint: Endpoints.EMAIL_DATA,
+        fallbackError: new ClientError(
+            'Failed to get email data',
+            'Sorry, we were unable to get the email data',
+            'EMAIL-DATA-FAIL'
+        ),
+    }).then(response => response.text());
+}
 
 export {
     SendPlainEmail,
     SendEncryptedEmail,
     GetEmailList,
+    GetEmail,
+    GetEmailData,
     
     type PlainEmail,
     type SignedPlainEmail,
