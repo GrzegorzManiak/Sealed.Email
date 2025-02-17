@@ -10,6 +10,9 @@ import (
 )
 
 func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration, databaseConnection *gorm.DB) (*session.Claims, helpers.AppError) {
+	if filter.Bypass == true {
+		return nil, nil
+	}
 
 	if filter.Allow == nil {
 		filter.Allow = []string{}
