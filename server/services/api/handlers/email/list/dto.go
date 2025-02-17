@@ -3,11 +3,12 @@ package list
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
-	DomainID string `form:"domainID" validate:"required,PublicID"`
-	EmailID  string `form:"emailID" validate:"required,PublicID"`
-	Page     int    `form:"page" validate:"gte=0"`
-	PerPage  int    `form:"perPage" validate:"required,gte=1,lte=30"`
-	Order    string `form:"order" validate:"omitempty,oneof=asc desc"`
+	DomainID string   `form:"domainID" validate:"required,PublicID"`
+	Page     int      `form:"page" validate:"gte=0"`
+	PerPage  int      `form:"perPage" validate:"required,gte=1,lte=30"`
+	Order    string   `form:"order" validate:"omitempty,oneof=asc desc"`
+	Read     bool     `form:"read" validate:"omitempty"`
+	Folders  []string `form:"folders" validate:"omitempty,dive,gte=0,lte=100"`
 }
 
 type Output struct {
@@ -19,6 +20,9 @@ type Email struct {
 	EmailID    string `json:"emailID"`
 	ReceivedAt int64  `json:"receivedAt"`
 	Read       bool   `json:"read"`
+	Folder     string `json:"folder"`
+	To         string `json:"to"`
+	Spam       bool   `json:"spam"`
 }
 
 var SessionFilter = &session.APIConfiguration{

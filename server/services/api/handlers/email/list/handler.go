@@ -6,5 +6,13 @@ import (
 )
 
 func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
-	return nil, nil
+	domains, total, err := fetchEmails(data.User, *input, data.DatabaseConnection)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Output{
+		Emails: *parseEmailList(domains),
+		Total:  total,
+	}, nil
 }

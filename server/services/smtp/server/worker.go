@@ -92,6 +92,7 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Inboun
 				ReceivedAt:          email.ReceivedAt,
 				OriginallyEncrypted: email.IsEncrypted,
 				BucketPath:          email.RefID,
+				DomainPID:           domain.PID,
 			})
 		}
 
