@@ -78,6 +78,11 @@ func ExecuteRoute[InputType any, OutputType any](
 		return
 	}
 
+	if sessionFilter.SelfResponse {
+		zap.L().Debug("SelfResponse", zap.Any("output", output))
+		return
+	}
+
 	// -- Output validation
 	if outErr := helpers.ValidateOutputData(output); outErr != nil {
 		zap.L().Debug("Error ValidateOutputData", zap.Error(outErr), zap.Any("output", output))

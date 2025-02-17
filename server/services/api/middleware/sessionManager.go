@@ -11,6 +11,7 @@ import (
 
 func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration, databaseConnection *gorm.DB) (*session.Claims, helpers.AppError) {
 	if filter.Bypass == true {
+		filter.SessionRequired = false
 		return nil, nil
 	}
 
