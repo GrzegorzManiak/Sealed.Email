@@ -1,6 +1,7 @@
 package domainList
 
 import (
+	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"go.uber.org/zap"
@@ -29,6 +30,7 @@ func fetchDomainsByUserID(
 		})).
 		Where("user_id = ?", user.ID).
 		Limit(pagination.PerPage).
+		Order(fmt.Sprintf("created_at %s", helpers.FormatOrderString(pagination.Order))).
 		Offset(pagination.PerPage * pagination.Page).
 		Find(&domains).
 		Count(&count)

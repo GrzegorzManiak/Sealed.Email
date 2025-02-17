@@ -3,8 +3,9 @@ package domainList
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
-	Page    int `form:"page" validate:"gte=0,lte=1000"`
-	PerPage int `form:"perPage" validate:"required,gte=1,lte=15"`
+	Page    int    `form:"page" validate:"gte=0,lte=1000"`
+	PerPage int    `form:"perPage" validate:"required,gte=1,lte=15"`
+	Order   string `form:"order" validate:"omitempty,oneof=asc desc"`
 }
 
 type Output struct {
