@@ -45,8 +45,8 @@
         usernameError = username.length < 3;
         if (usernameError) errorMessages.push('Username must be at least 3 characters long');
 
-        passwordError = password.length < 8;
-        if (passwordError) errorMessages.push('Password must be at least 8 characters long');
+        passwordError = password.length < 3;
+        if (passwordError) errorMessages.push('Password must be at least 3 characters long');
 
         const isError = usernameError || passwordError;
         if (isError) setErrorBox('You have the following errors', errorMessages.join('; '));
