@@ -5,6 +5,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	SmtpDatabase "github.com/GrzegorzManiak/NoiseBackend/database/smtp"
+	queue2 "github.com/GrzegorzManiak/NoiseBackend/services/smtp/server/worker"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
@@ -63,7 +64,7 @@ func Start() {
 		queueDatabaseConnection,
 		inboundQueue,
 		func(entry *queue.Entry) queue.WorkerResponse {
-			return server.Worker(entry, queueDatabaseConnection, primaryDatabaseConnection, minioClient)
+			return queue2.Worker(entry, queueDatabaseConnection, primaryDatabaseConnection, minioClient)
 		})
 
 	server.StartServers(inboundQueue, queueDatabaseConnection)

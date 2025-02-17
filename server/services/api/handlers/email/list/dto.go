@@ -24,6 +24,7 @@ type Email struct {
 	Folder     string `json:"folder"`
 	To         string `json:"to"`
 	Spam       bool   `json:"spam"`
+	Sent       bool   `json:"sent"`
 }
 
 var SessionFilter = &session.APIConfiguration{
