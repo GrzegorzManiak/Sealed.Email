@@ -75,6 +75,7 @@ func parseEmailList(
 			To:         email.To,
 			Folder:     email.Folder,
 			Spam:       email.Spam,
+			Sent:       email.Sent,
 		})
 	}
 	return &emailList
