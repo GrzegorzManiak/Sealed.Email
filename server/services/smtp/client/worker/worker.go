@@ -6,11 +6,12 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/GrzegorzManiak/NoiseBackend/services/domain/services"
+	"github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm.DB) queue.WorkerResponse {
+func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm.DB, primaryDatabaseConnection *gorm.DB, minioClient *minio.Client) queue.WorkerResponse {
 	zap.L().Debug("Processing smtp queue", zap.Any("entry", entry))
 
 	emailId, err := models.UnmarshalQueueEmailId(entry.Data)
@@ -40,6 +41,22 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 	if err = services.VerifyDns(fromDomain, email.Challenge); err != nil {
 		zap.L().Debug("Failed to verify dns", zap.Error(err))
 		return queue.Failed
+	}
+
+	if !email.InBucket {
+		if err := insertIntoBucket(minioClient, email); err != nil {
+			return queue.Failed
+		}
+		zap.L().Debug("Inserted email into bucket")
+		email.InBucket = true
+	}
+
+	if !email.InDatabase {
+		if err := insertIntoDatabase(primaryDatabaseConnection, email); err != nil {
+			return queue.Failed
+		}
+		zap.L().Debug("Inserted email into database")
+		email.InDatabase = true
 	}
 
 	code, sentSuccessfully := sendEmails(certs, email, groupedRecipients)
