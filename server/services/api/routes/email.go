@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	emailGet "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/email/get"
 	emailsList "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/email/list"
 	sendEncrypted "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/email/send/encrypted"
 	sendPlain "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/email/send/plain"
@@ -20,4 +21,9 @@ func EmailRoutes(router *gin.Engine, baseRoute *services.BaseRoute) {
 	router.GET("/api/email/list", func(ctx *gin.Context) {
 		services.ExecuteRoute[emailsList.Input, emailsList.Output](ctx, baseRoute, emailsList.SessionFilter, emailsList.Handler)
 	})
+	router.GET("/api/email/get", func(ctx *gin.Context) {
+		services.ExecuteRoute[emailGet.Input, emailGet.Output](ctx, baseRoute, emailGet.SessionFilter, emailGet.Handler)
+	})
 }
+
+//http://localhost:2095/api/email/get?domainID=RhXK5kpWpnoxLyaItUDHqG4aJAXKsOUHyuxLYaWGdv4=&emailID=6mSnJghXmNRYwTLauIJQn4HLevRIt7MaQjdNZcYT3t1vl7IQ0vZBccJQQN8I8Y1q:plain:test@beta.grzegorz.ie

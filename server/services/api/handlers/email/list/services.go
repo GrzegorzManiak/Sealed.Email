@@ -20,15 +20,7 @@ func fetchEmails(
 	emails = make([]*models.UserEmail, 0)
 	dbQuery := databaseConnection.
 		Table("user_emails").
-		Select(helpers.BuildColumnList([]string{
-			"read",
-			"folder",
-			"p_id",
-			"domain_p_id",
-			"`to`",
-			"received_at",
-			"sent",
-		})).
+		Select([]string{"read", "folder", "p_id", "domain_p_id", "`to`", "received_at", "sent", "bucket_path"}).
 		Where("user_id = ? AND domain_p_id = ?", user.ID, pagination.DomainID)
 
 	if len(pagination.Folders) > 0 {
@@ -71,6 +63,29 @@ func CreateAccessKey(bucketPath string) (string, int64, error) {
 	return crypto.B64Encode(bytes), exp, nil
 }
 
+func ParseEmail(
+	email *models.UserEmail,
+) *Email {
+	account, exp, err := CreateAccessKey(email.BucketPath)
+	if err != nil {
+		zap.L().Debug("Failed to create access key", zap.Error(err))
+		return nil
+	}
+
+	return &Email{
+		EmailID:    email.PID,
+		BucketPath: email.BucketPath,
+		ReceivedAt: email.ReceivedAt,
+		Read:       email.Read,
+		To:         email.To,
+		Folder:     email.Folder,
+		Spam:       email.Spam,
+		Sent:       email.Sent,
+		AccessKey:  account,
+		Expiration: exp,
+	}
+}
+
 func parseEmailList(
 	emails []*models.UserEmail,
 ) *Output {
@@ -78,25 +93,11 @@ func parseEmailList(
 	count := 0
 
 	for _, email := range emails {
-		account, exp, err := CreateAccessKey(email.BucketPath)
-		if err != nil {
-			zap.L().Debug("Failed to create access key", zap.Error(err))
+		emailData := ParseEmail(email)
+		if emailData == nil {
 			continue
 		}
-
-		emailList = append(emailList, Email{
-			EmailID:    email.PID,
-			BucketPath: email.BucketPath,
-			ReceivedAt: email.ReceivedAt,
-			Read:       email.Read,
-			To:         email.To,
-			Folder:     email.Folder,
-			Spam:       email.Spam,
-			Sent:       email.Sent,
-			AccessKey:  account,
-			Expiration: exp,
-		})
-
+		emailList = append(emailList, *emailData)
 		count++
 	}
 

@@ -11,6 +11,7 @@ bucket:
 
 session:
   privateKey: 'VEEHKF8dUjUmQqasfirtGR6coar5yfGgfk6C8sQIk1U='
+  emailAccessKey: '28Mzu6GgvI3bXkjal2hUCOEYG0aNssj8Jv8T0Vbu'
   cookiePath: '/'
   cookieDomain: 'localhost'
   cookieName: 'NES-DEV'

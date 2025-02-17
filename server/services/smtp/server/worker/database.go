@@ -20,32 +20,34 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Inb
 	return email, nil
 }
 
+func prepareInserts(email *models.InboundEmail, domain primaryModels.UserDomain, inbox []string) []primaryModels.UserEmail {
+	inserts := make([]primaryModels.UserEmail, 0, len(inbox))
+	for _, recipient := range inbox {
+		inserts = append(inserts, primaryModels.UserEmail{
+			PID:                 helpers.GeneratePublicId(64),
+			UserID:              domain.UserID,
+			UserDomainID:        domain.ID,
+			To:                  recipient,
+			ReceivedAt:          email.ReceivedAt,
+			OriginallyEncrypted: email.IsEncrypted,
+			BucketPath:          email.RefID,
+			DomainPID:           domain.PID,
+		})
+	}
+	return inserts
+}
+
 func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.InboundEmail, domains *[]primaryModels.UserDomain, inboxes map[string][]string) ([]string, queue.WorkerResponse) {
 	successfulInserts := make([]string, 0, len(inboxes))
 	for _, domain := range *domains {
 		if inbox, ok := inboxes[domain.Domain]; ok {
-			inserts := make([]primaryModels.UserEmail, 0, len(inbox))
-			for _, recipient := range inbox {
-				inserts = append(inserts, primaryModels.UserEmail{
-					PID:                 helpers.GeneratePublicId(64),
-					UserID:              domain.UserID,
-					UserDomainID:        domain.ID,
-					To:                  recipient,
-					ReceivedAt:          email.ReceivedAt,
-					OriginallyEncrypted: email.IsEncrypted,
-					BucketPath:          email.RefID,
-					DomainPID:           domain.PID,
-				})
-			}
-
+			inserts := prepareInserts(email, domain, inbox)
 			if err := primaryDatabaseConnection.Create(&inserts).Error; err != nil {
 				zap.L().Warn("Failed to insert emails", zap.Error(err))
 				return successfulInserts, queue.Failed
 			}
-
 			zap.L().Debug("Inserted emails", zap.Any("emails", inserts))
 			successfulInserts = append(successfulInserts, domain.Domain)
-
 		} else {
 			zap.L().Warn("No inbox found for domain", zap.String("domain", domain.Domain))
 		}

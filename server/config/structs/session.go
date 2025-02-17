@@ -16,7 +16,9 @@ func ByteArrToECDSAPrivateKey(curve elliptic.Curve, privateKey []byte) (*ecdsa.P
 }
 
 type RawSessionConfig struct {
-	PrivateKey   string `yaml:"privateKey" validate:"required,base64,gte=42,lte=46"`
+	PrivateKey     string `yaml:"privateKey" validate:"required,base64,gte=42,lte=46"`
+	EmailAccessKey string `yaml:"emailAccessKey" validate:"required,base64,gte=42,lte=46"`
+
 	CookiePath   string `yaml:"cookiePath"`
 	CookieDomain string `yaml:"cookieDomain"`
 	CookieName   string `yaml:"cookieName"`
@@ -25,8 +27,12 @@ type RawSessionConfig struct {
 }
 
 type ParsedSessionConfig struct {
-	PublicKey    ecdsa.PublicKey
-	PrivateKey   ecdsa.PrivateKey
+	PublicKey  ecdsa.PublicKey
+	PrivateKey ecdsa.PrivateKey
+
+	EmailAccessPublicKey  ecdsa.PublicKey
+	EmailAccessPrivateKey ecdsa.PrivateKey
+
 	CookiePath   string `yaml:"cookiePath"`
 	CookieDomain string `yaml:"cookieDomain"`
 	CookieName   string `yaml:"cookieName"`
@@ -40,9 +46,18 @@ func (s *RawSessionConfig) Parse() (*ParsedSessionConfig, error) {
 		return nil, err
 	}
 
+	emailAccessPrivateKey, err := ByteArrToECDSAPrivateKey(elliptic.P256(), crypto.B64DecodeBytes(s.EmailAccessKey))
+	if err != nil {
+		return nil, err
+	}
+
 	return &ParsedSessionConfig{
-		PublicKey:    *privateKey.Public().(*ecdsa.PublicKey),
-		PrivateKey:   *privateKey,
+		PublicKey:  *privateKey.Public().(*ecdsa.PublicKey),
+		PrivateKey: *privateKey,
+
+		EmailAccessPublicKey:  *emailAccessPrivateKey.Public().(*ecdsa.PublicKey),
+		EmailAccessPrivateKey: *emailAccessPrivateKey,
+
 		CookiePath:   s.CookiePath,
 		CookieDomain: s.CookieDomain,
 		CookieName:   s.CookieName,
