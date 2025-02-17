@@ -5,6 +5,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	SmtpDatabase "github.com/GrzegorzManiak/NoiseBackend/database/smtp"
+	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/client/worker"
 	queue2 "github.com/GrzegorzManiak/NoiseBackend/services/smtp/server/worker"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -13,7 +14,6 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
-	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/client"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/grpc"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/server"
 	"go.uber.org/zap"
@@ -56,7 +56,7 @@ func Start() {
 		queueDatabaseConnection,
 		outboundQueue,
 		func(entry *queue.Entry) queue.WorkerResponse {
-			return client.Worker(nil, entry, queueDatabaseConnection)
+			return worker.Worker(nil, entry, queueDatabaseConnection)
 		})
 
 	go queue.Dispatcher(

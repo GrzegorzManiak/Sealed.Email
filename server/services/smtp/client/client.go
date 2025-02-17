@@ -71,7 +71,7 @@ func endConnection(c *smtp.Client, wc io.WriteCloser) error {
 	return nil
 }
 
-func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, domain string, recipients []string) error {
+func AttemptSendEmail(certs *tls.Config, email *models.OutboundEmail, domain string, recipients []string) error {
 
 	c, err := attemptDial(domain, certs)
 	if err != nil {
@@ -96,7 +96,7 @@ func attemptSendEmail(certs *tls.Config, email *models.OutboundEmail, domain str
 	return endConnection(c, wc)
 }
 
-func attemptSendEmailBcc(certs *tls.Config, email *models.OutboundEmail, domain string, keys models.OutboundEmailKeys) error {
+func AttemptSendEmailBcc(certs *tls.Config, email *models.OutboundEmail, domain string, keys models.OutboundEmailKeys) error {
 	encryptedInbox := helpers.EncryptedInbox{
 		EmailHash: keys.EmailHash,
 		PublicKey: keys.PublicKey,
