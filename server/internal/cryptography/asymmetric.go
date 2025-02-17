@@ -5,7 +5,6 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"errors"
@@ -41,8 +40,7 @@ func VerifyMessage(publicKey *ecdsa.PublicKey, message string, signature []byte)
 }
 
 func SignMessage(privateKey *ecdsa.PrivateKey, message string) ([]byte, error) {
-	hash := sha256.Sum256([]byte(message))
-	r, s, err := ecdsa.Sign(rand.Reader, privateKey, hash[:])
+	r, s, err := ecdsa.Sign(rand.Reader, privateKey, []byte(message))
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,8 @@
 package list
 
 import (
+	"encoding/base64"
 	"fmt"
-	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
@@ -55,12 +55,12 @@ func fetchEmails(
 
 func CreateAccessKey(bucketPath string) (string, int64, error) {
 	exp := helpers.GetUnixTimestamp() + 60*5 // 5 minutes
-	bucketPath += fmt.Sprintf(":%d", exp)
+	bucketPath = fmt.Sprintf("%s:%d", bucketPath, exp)
 	bytes, err := cryptography.SignMessage(&config.Session.EmailAccessPrivateKey, bucketPath)
 	if err != nil {
 		return "", 0, err
 	}
-	return crypto.B64Encode(bytes), exp, nil
+	return base64.RawURLEncoding.EncodeToString(bytes), exp, nil
 }
 
 func ParseEmail(

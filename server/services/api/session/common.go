@@ -63,6 +63,7 @@ type Claims struct {
 type APIConfiguration struct {
 	SessionRequired bool
 	Bypass          bool
+	SelfResponse    bool
 	Allow           []string
 	Block           []string
 }
