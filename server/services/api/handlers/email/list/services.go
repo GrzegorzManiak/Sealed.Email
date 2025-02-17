@@ -6,6 +6,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"strings"
 )
 
 func fetchEmails(
@@ -15,6 +16,7 @@ func fetchEmails(
 ) (emails []*models.UserEmail, count int64, err helpers.AppError) {
 	emails = make([]*models.UserEmail, 0)
 	dbQuery := databaseConnection.
+		Table("user_emails").
 		Select(helpers.BuildColumnList([]string{
 			"read",
 			"folder",
@@ -22,6 +24,7 @@ func fetchEmails(
 			"domain_p_id",
 			"`to`",
 			"received_at",
+			"sent",
 		})).
 		Where("user_id = ? AND domain_p_id = ?", user.ID, pagination.DomainID)
 
@@ -29,10 +32,18 @@ func fetchEmails(
 		dbQuery = dbQuery.Where("folder IN (?)", pagination.Folders)
 	}
 
+	pagination.Read = strings.ToLower(pagination.Read)
 	if pagination.Read == "only" {
 		dbQuery = dbQuery.Where("read = 1")
 	} else if pagination.Read == "unread" {
 		dbQuery = dbQuery.Where("read = 0")
+	}
+
+	pagination.Sent = strings.ToLower(pagination.Sent)
+	if pagination.Sent == "in" {
+		dbQuery = dbQuery.Where("sent = 1")
+	} else if pagination.Sent == "out" {
+		dbQuery = dbQuery.Where("sent = 0")
 	}
 
 	if err := dbQuery.Count(&count).Error; err != nil {

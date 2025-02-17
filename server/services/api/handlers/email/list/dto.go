@@ -9,6 +9,7 @@ type Input struct {
 	Order    string   `form:"order" validate:"omitempty,oneof=asc desc"`
 	Read     string   `form:"read" validate:"omitempty,oneof=only unread all"`
 	Folders  []string `form:"folders" validate:"omitempty,dive,gte=0,lte=100"`
+	Sent     string   `form:"sent" validate:"omitempty,oneof=in out all"`
 }
 
 type Output struct {
