@@ -20,12 +20,14 @@ type Output struct {
 type Email struct {
 	EmailID    string `json:"emailID"`
 	ReceivedAt int64  `json:"receivedAt"`
+	BucketPath string `json:"bucketPath"`
 	Read       bool   `json:"read"`
 	Folder     string `json:"folder"`
 	To         string `json:"to"`
 	Spam       bool   `json:"spam"`
 	Sent       bool   `json:"sent"`
 	AccessKey  string `json:"accessKey"`
+	Expiration int64  `json:"expiration"`
 }
 
 var SessionFilter = &session.APIConfiguration{

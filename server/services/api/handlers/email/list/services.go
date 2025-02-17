@@ -61,14 +61,14 @@ func fetchEmails(
 	return emails, nil
 }
 
-func CreateAccessKey(emailPid string) (string, error) {
+func CreateAccessKey(bucketPath string) (string, int64, error) {
 	exp := helpers.GetUnixTimestamp() + 60*5 // 5 minutes
-	emailPid += fmt.Sprintf(":%d", exp)
-	bytes, err := cryptography.SignMessage(&config.Session.EmailAccessPrivateKey, emailPid)
+	bucketPath += fmt.Sprintf(":%d", exp)
+	bytes, err := cryptography.SignMessage(&config.Session.EmailAccessPrivateKey, bucketPath)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
-	return crypto.B64Encode(bytes), nil
+	return crypto.B64Encode(bytes), exp, nil
 }
 
 func parseEmailList(
@@ -78,7 +78,7 @@ func parseEmailList(
 	count := 0
 
 	for _, email := range emails {
-		account, err := CreateAccessKey(email.DomainPID)
+		account, exp, err := CreateAccessKey(email.BucketPath)
 		if err != nil {
 			zap.L().Debug("Failed to create access key", zap.Error(err))
 			continue
@@ -86,6 +86,7 @@ func parseEmailList(
 
 		emailList = append(emailList, Email{
 			EmailID:    email.PID,
+			BucketPath: email.BucketPath,
 			ReceivedAt: email.ReceivedAt,
 			Read:       email.Read,
 			To:         email.To,
@@ -93,6 +94,7 @@ func parseEmailList(
 			Spam:       email.Spam,
 			Sent:       email.Sent,
 			AccessKey:  account,
+			Expiration: exp,
 		})
 
 		count++
