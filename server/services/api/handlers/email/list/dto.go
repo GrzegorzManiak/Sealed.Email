@@ -7,7 +7,7 @@ type Input struct {
 	Page     int      `form:"page" validate:"gte=0"`
 	PerPage  int      `form:"perPage" validate:"required,gte=1,lte=30"`
 	Order    string   `form:"order" validate:"omitempty,oneof=asc desc"`
-	Read     bool     `form:"read" validate:"omitempty"`
+	Read     string   `form:"read" validate:"omitempty,oneof=only unread all"`
 	Folders  []string `form:"folders" validate:"omitempty,dive,gte=0,lte=100"`
 }
 

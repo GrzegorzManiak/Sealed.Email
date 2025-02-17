@@ -12,10 +12,8 @@ func fetchEmails(
 	user *models.User,
 	pagination Input,
 	databaseConnection *gorm.DB,
-) ([]*models.UserEmail, int64, helpers.AppError) {
-
-	var count int64
-	emails := make([]*models.UserEmail, 0)
+) (emails []*models.UserEmail, count int64, err helpers.AppError) {
+	emails = make([]*models.UserEmail, 0)
 	dbQuery := databaseConnection.
 		Select(helpers.BuildColumnList([]string{
 			"read",
@@ -31,18 +29,24 @@ func fetchEmails(
 		dbQuery = dbQuery.Where("folder IN (?)", pagination.Folders)
 	}
 
-	dbQuery = dbQuery.Limit(pagination.PerPage).
+	if pagination.Read == "only" {
+		dbQuery = dbQuery.Where("read = 1")
+	} else if pagination.Read == "unread" {
+		dbQuery = dbQuery.Where("read = 0")
+	}
+
+	if err := dbQuery.Count(&count).Error; err != nil {
+		zap.L().Debug("Failed to count emails", zap.Error(err))
+		return nil, 0, helpers.NewServerError("Failed to count emails.", "Email count error")
+	}
+
+	if err := dbQuery.
+		Limit(pagination.PerPage).
 		Offset(pagination.PerPage * pagination.Page).
 		Order(fmt.Sprintf("received_at %s", helpers.FormatOrderString(pagination.Order))).
-		Find(&emails).
-		Count(&count)
-
-	if dbQuery.Error != nil {
-		zap.L().Debug("Failed to fetch emails", zap.Error(dbQuery.Error))
-		return nil, 0, helpers.NewServerError(
-			"The requested emails could not be found.",
-			"EMails not found!",
-		)
+		Find(&emails).Error; err != nil {
+		zap.L().Debug("Failed to fetch emails", zap.Error(err))
+		return nil, 0, helpers.NewServerError("The requested emails could not be found.", "Emails not found!")
 	}
 
 	return emails, count, nil
