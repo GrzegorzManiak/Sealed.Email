@@ -56,7 +56,7 @@ func Start() {
 		queueDatabaseConnection,
 		outboundQueue,
 		func(entry *queue.Entry) queue.WorkerResponse {
-			return worker.Worker(nil, entry, queueDatabaseConnection)
+			return worker.Worker(nil, entry, queueDatabaseConnection, primaryDatabaseConnection, minioClient)
 		})
 
 	go queue.Dispatcher(

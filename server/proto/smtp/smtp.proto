@@ -22,6 +22,9 @@ message Email {
   bool encrypted = 9;
   string challenge = 10;
   repeated InboxKeys inboxKeys = 11;
+  string fromDomainPID = 12;
+  uint64 fromUserId = 13;
+  uint64 fromDomainId = 14;
 }
 
 message SendEmailResponse {

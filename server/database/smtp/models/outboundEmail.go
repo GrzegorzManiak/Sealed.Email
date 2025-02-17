@@ -20,12 +20,19 @@ type OutboundEmail struct {
 	RefID     string `gorm:"uniqueIndex"`
 	MessageId string `gorm:"index"`
 
+	FromUserId    uint
+	FromDomainId  uint
+	FromDomainPID string
+
 	From      string
 	To        pq.StringArray `gorm:"type:text[]" gorm:"default:[]"`
 	Body      []byte
 	Version   int
 	Encrypted bool
 	Challenge string
+
+	InBucket   bool
+	InDatabase bool
 
 	OutboundEmailKeys []OutboundEmailKeys `gorm:"foreignKey:EmailId;references:EmailId"`
 	SentSuccessfully  pq.StringArray      `gorm:"type:text[]" gorm:"default:[]"`
