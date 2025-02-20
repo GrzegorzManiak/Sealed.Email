@@ -9,9 +9,9 @@ import (
 )
 
 func usernameExists(username string, databaseConnection *gorm.DB) bool {
-	var user models.User
-	databaseConnection.Where("uid = ?", username).First(&user)
-	return user.UID != ""
+	var count int64
+	databaseConnection.Model(&models.User{}).Where("uid = ?", username).Count(&count)
+	return count > 0
 }
 
 func registerUser(

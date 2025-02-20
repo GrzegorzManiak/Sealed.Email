@@ -14,7 +14,7 @@ import (
 func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 
 	proof := crypto.B64DecodeBytes(input.Proof)
-	publicKey, err := cryptography.ByteArrToECDSAPublicKey(config.CURVE, crypto.B64DecodeBytes(input.PublicKey))
+	publicKey, err := cryptography.ByteArrToECDSAPublicKey(crypto.B64DecodeBytes(input.PublicKey))
 	if err != nil {
 		return nil, helpers.NewServerError(fmt.Sprintf("Error converting public key: %v", err), "Oops! Something went wrong")
 	}
