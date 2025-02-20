@@ -5,6 +5,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -16,7 +17,7 @@ func insertDomain(
 	input *Input,
 	formattedDomain string,
 	databaseConnection *gorm.DB,
-) (*models.UserDomain, helpers.AppError) {
+) (*models.UserDomain, errors.AppError) {
 	kp, err := generateDKIMKeyPair()
 	if err != nil {
 		return &models.UserDomain{}, err
@@ -43,7 +44,7 @@ func insertDomain(
 	}
 
 	if err := databaseConnection.Create(&domainModel); err.Error != nil {
-		return &models.UserDomain{}, helpers.NewServerError(
+		return &models.UserDomain{}, errors.User(
 			"Domain could not be added. Please contact support if this issue persists.",
 			"Failed to add domain!",
 		)
@@ -52,12 +53,12 @@ func insertDomain(
 	return &domainModel, nil
 }
 
-func generateDKIMKeyPair() (*cryptography.RSAKeyPair, helpers.AppError) {
+func generateDKIMKeyPair() (*cryptography.RSAKeyPair, errors.AppError) {
 	kp, err := cryptography.GenerateRSAKeyPair(config.Domain.DKIMKeySize)
 
 	if err != nil {
 		zap.L().Error("Error generating RSA key pair", zap.Error(err))
-		return &cryptography.RSAKeyPair{}, helpers.NewServerError(
+		return &cryptography.RSAKeyPair{}, errors.User(
 			"There was an error generating the DKIM key pair. Please contact support if this issue persists.",
 			"Failed to generate DKIM key pair!",
 		)

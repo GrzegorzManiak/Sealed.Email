@@ -2,13 +2,13 @@ package data
 
 import (
 	"fmt"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 )
 
-func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
+func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 	if valid := validateAccessKey(input); !valid {
-		return nil, helpers.NewNoAccessError("Invalid access key")
+		return nil, errors.Access("Invalid access key")
 	}
 
 	content := fmt.Sprintf("attachment; filename=%s.eml", input.BucketPath)

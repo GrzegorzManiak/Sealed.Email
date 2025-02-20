@@ -6,6 +6,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -58,7 +59,7 @@ func fetchEmails(
 	user *models.User,
 	pagination Input,
 	databaseConnection *gorm.DB,
-) (emails []*models.UserEmail, err helpers.AppError) {
+) (emails []*models.UserEmail, err errors.AppError) {
 	emails = make([]*models.UserEmail, 0)
 	dbQuery := databaseConnection.
 		Table("user_emails").
@@ -73,7 +74,7 @@ func fetchEmails(
 		Order(fmt.Sprintf("received_at %s", helpers.FormatOrderString(pagination.Order))).
 		Find(&emails).Error; err != nil {
 		zap.L().Debug("Failed to fetch emails", zap.Error(err))
-		return nil, helpers.NewServerError("The requested emails could not be found.", "Emails not found!")
+		return nil, errors.User("The requested emails could not be found.", "Emails not found!")
 	}
 
 	return emails, nil

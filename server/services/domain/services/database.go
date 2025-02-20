@@ -1,15 +1,15 @@
 package services
 
 import (
-	models "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"gorm.io/gorm"
 	"sync"
 )
 
 var primaryDatabaseMutex = sync.Mutex{}
 
-func VerifyDomain(domain string, uid uint64, did uint64, databaseConnection *gorm.DB) helpers.AppError {
+func VerifyDomain(domain string, uid uint64, did uint64, databaseConnection *gorm.DB) errors.AppError {
 	primaryDatabaseMutex.Lock()
 	defer primaryDatabaseMutex.Unlock()
 
@@ -25,7 +25,7 @@ func VerifyDomain(domain string, uid uint64, did uint64, databaseConnection *gor
 	})
 
 	if err != nil {
-		return helpers.NewNotFoundError(
+		return errors.NotFound(
 			"We were unable to verify the domain. Please try again.",
 			"Failed to verify domain!",
 		)

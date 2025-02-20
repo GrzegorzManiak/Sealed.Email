@@ -2,7 +2,7 @@ package session
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"gorm.io/gorm"
 	"time"
 )
@@ -107,14 +107,14 @@ func (claims *Claims) Filter(filter *APIConfiguration) bool {
 	return true
 }
 
-func (claims *Claims) FetchUser(databaseConnection *gorm.DB) (models.User, helpers.AppError) {
+func (claims *Claims) FetchUser(databaseConnection *gorm.DB) (models.User, errors.AppError) {
 	user := models.User{}
 	err := databaseConnection.
 		Where("id = ?", claims.Content.UserID).
 		First(&user)
 
 	if err.Error != nil {
-		return models.User{}, helpers.NewUserError(
+		return models.User{}, errors.User(
 			"Sorry! We couldn't find your account. Please try again.",
 			"User not found",
 		)

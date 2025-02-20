@@ -5,11 +5,12 @@ import (
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"gorm.io/gorm"
 )
 
-func prepareClientAuthInit(data *Input) (*owl.ClientAuthInitRequestPayload, helpers.AppError) {
+func prepareClientAuthInit(data *Input) (*owl.ClientAuthInitRequestPayload, errors.AppError) {
 	clientAuthInit := &owl.ClientAuthInitRequestPayload{
 		U:  data.User,
 		X1: helpers.DecodeUrlSafeBase64ToBytes(data.X1),
@@ -25,19 +26,19 @@ func prepareClientAuthInit(data *Input) (*owl.ClientAuthInitRequestPayload, help
 	}
 
 	if clientAuthInit.X1 == nil || clientAuthInit.X2 == nil || clientAuthInit.PI1 == nil || clientAuthInit.PI2 == nil {
-		return nil, helpers.NewUserError("Your request is missing some data. Please try again.", "Missing data")
+		return nil, errors.User("Your request is missing some data. Please try again.", "Missing data")
 	}
 
 	return clientAuthInit, nil
 }
 
-func parseRegisteredUser(fetchedUser *models2.User) (*owl.RegistrationResponse, helpers.AppError) {
+func parseRegisteredUser(fetchedUser *models2.User) (*owl.RegistrationResponse, errors.AppError) {
 	if fetchedUser == nil {
-		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
+		return nil, errors.User("Sorry! We couldn't find your account. Please try again.", "User not found")
 	}
 
 	if fetchedUser.X3 == "" || fetchedUser.PI3_V == "" || fetchedUser.PI3_R == "" {
-		return nil, helpers.NewUserError("Your request is missing some data. Please try again.", "Missing data")
+		return nil, errors.User("Your request is missing some data. Please try again.", "Missing data")
 	}
 
 	return &owl.RegistrationResponse{
@@ -56,7 +57,7 @@ func insertVerifyData(
 	serverAuthInit *owl.ServerAuthInitResponse,
 	clientAuthInit *owl.ClientAuthInitRequestPayload,
 	databaseConnection *gorm.DB,
-) (string, helpers.AppError) {
+) (string, errors.AppError) {
 	PID := helpers.GeneratePublicId(64)
 	newUserVerify := databaseConnection.Create(&models2.UserVerify{
 		PID:      PID,
@@ -77,7 +78,7 @@ func insertVerifyData(
 	})
 
 	if newUserVerify.Error != nil {
-		return "", helpers.NewServerError("Failed to create verification data. Please try again.", "Failed to create verification data")
+		return "", errors.User("Failed to create verification data. Please try again.", "Failed to create verification data")
 	}
 
 	return PID, nil

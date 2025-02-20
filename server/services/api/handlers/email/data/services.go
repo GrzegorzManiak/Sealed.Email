@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
@@ -13,15 +14,15 @@ import (
 	"io"
 )
 
-func fetchEmailData(input *Input, minioClient *minio.Client, writer *gin.ResponseWriter) helpers.AppError {
+func fetchEmailData(input *Input, minioClient *minio.Client, writer *gin.ResponseWriter) errors.AppError {
 	object, err := minioClient.GetObject(context.Background(), "emails", input.BucketPath, minio.GetObjectOptions{})
 	if err != nil {
-		return helpers.NewServerError("Failed to fetch email data", "Failed to fetch email data")
+		return errors.User("Failed to fetch email data", "Failed to fetch email data")
 	}
 	defer object.Close()
 
 	if _, err := io.Copy(*writer, object); err != nil {
-		return helpers.NewServerError("Failed to write email data", "Failed to write email data")
+		return errors.User("Failed to write email data", "Failed to write email data")
 	}
 
 	return nil

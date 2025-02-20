@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"gorm.io/gorm"
 )
 
@@ -18,7 +18,7 @@ func registerUser(
 	data *Input,
 	registeredUser *owl.RegistrationResponse,
 	databaseConnection *gorm.DB,
-) (*models.User, helpers.AppError) {
+) (*models.User, errors.AppError) {
 	user := &models.User{
 		UID: data.User,
 
@@ -44,7 +44,7 @@ func registerUser(
 
 	dbInsert := databaseConnection.Create(user)
 	if dbInsert.Error != nil {
-		return nil, helpers.NewServerError("Error inserting user into database", "Oops! Something went wrong")
+		return nil, errors.Server("Error inserting user into database", "Oops! Something went wrong")
 	}
 
 	return user, nil

@@ -3,6 +3,7 @@ package domainList
 import (
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -12,12 +13,12 @@ func fetchDomainsByUserID(
 	user *models.User,
 	pagination Input,
 	databaseConnection *gorm.DB,
-) ([]*models.UserDomain, int64, helpers.AppError) {
+) ([]*models.UserDomain, int64, errors.AppError) {
 
 	var count int64
 	domains := make([]*models.UserDomain, 0)
 	dbQuery := databaseConnection.
-		Select(helpers.BuildColumnList([]string{
+		Select([]string{
 			"p_id",
 			"domain",
 			"verified",
@@ -27,7 +28,7 @@ func fetchDomainsByUserID(
 			"public_key",
 			"symmetric_root_key",
 			"version",
-		})).
+		}).
 		Where("user_id = ?", user.ID).
 		Limit(pagination.PerPage).
 		Order(fmt.Sprintf("created_at %s", helpers.FormatOrderString(pagination.Order))).
@@ -36,7 +37,7 @@ func fetchDomainsByUserID(
 		Count(&count)
 
 	if dbQuery.Error != nil {
-		return nil, 0, helpers.NewServerError(
+		return nil, 0, errors.User(
 			"The requested domains could not be found.",
 			"Domains not found!",
 		)

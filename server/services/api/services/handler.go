@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/middleware"
@@ -30,7 +31,7 @@ func ExecuteRoute[InputType any, OutputType any](
 	ctx *gin.Context,
 	baseRoute *BaseRoute,
 	sessionFilter *session.APIConfiguration,
-	handler func(input *InputType, data *Handler) (*OutputType, helpers.AppError),
+	handler func(input *InputType, data *Handler) (*OutputType, errors.AppError),
 ) {
 	// -- Session management
 	sessionClaims, sessionErr := middleware.SessionManagerMiddleware(ctx, sessionFilter, baseRoute.DatabaseConnection)
@@ -41,7 +42,7 @@ func ExecuteRoute[InputType any, OutputType any](
 	}
 
 	// -- Input validation
-	input, err := helpers.ValidateInputData[InputType](ctx)
+	input, err := ValidateInputData[InputType](ctx)
 	if err != nil {
 		zap.L().Debug("Error ValidateInputData", zap.Error(err), zap.Any("input", input))
 		helpers.ErrorResponse(ctx, err)
@@ -84,7 +85,7 @@ func ExecuteRoute[InputType any, OutputType any](
 	}
 
 	// -- Output validation
-	if outErr := helpers.ValidateOutputData(output); outErr != nil {
+	if outErr := ValidateOutputData(output); outErr != nil {
 		zap.L().Debug("Error ValidateOutputData", zap.Error(outErr), zap.Any("output", output))
 		helpers.ErrorResponse(ctx, outErr)
 		return

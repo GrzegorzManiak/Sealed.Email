@@ -3,6 +3,7 @@ package encrypted
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/email"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
@@ -14,14 +15,14 @@ func getDomain(
 	user *models.User,
 	domainID string,
 	databaseConnection *gorm.DB,
-) (*models.UserDomain, helpers.AppError) {
+) (*models.UserDomain, errors.AppError) {
 	var domain models.UserDomain
 	result := databaseConnection.
 		Where("p_id = ? AND user_id = ?", domainID, user.ID).
 		First(&domain)
 
 	if result.Error != nil {
-		return &models.UserDomain{}, helpers.NewNotFoundError(
+		return &models.UserDomain{}, errors.NotFound(
 			"We could not find the domain you are looking for. Please try again.",
 			"Domain not found!",
 		)
@@ -62,20 +63,20 @@ func sendEmail(
 	input *Input,
 	data *services.Handler,
 	fromDomain *models.UserDomain,
-) (string, helpers.AppError) {
+) (string, errors.AppError) {
 	cc, bcc := email.CleanEncryptedRecipients(input.To, input.Cc, input.Bcc)
 	recipients := email.FormatEncryptedRecipients(input.To, cc, bcc)
 	headers := &email.Headers{}
 
 	messageId, err := setHeaders(headers, input, fromDomain, input.From, input.To, cc)
 	if err != nil {
-		return "", helpers.NewUserError(err.Error(), "Failed to set headers")
+		return "", errors.User(err.Error(), "Failed to set headers")
 	}
 
 	zap.L().Debug("Email headers", zap.Any("headers", headers))
 	signedEmail, err := email.SignEmailWithDkim(headers, input.Body, fromDomain.Domain, fromDomain.DKIMPrivateKey)
 	if err != nil {
-		return "", helpers.NewServerError("Failed to sign email. Please try again later.", "Failed to sign email")
+		return "", errors.User("Failed to sign email. Please try again later.", "Failed to sign email")
 	}
 
 	if err := email.Send(data.Context, data.ConnectionPool, &smtpService.Email{
@@ -92,7 +93,7 @@ func sendEmail(
 		FromDomainId:  uint64(fromDomain.ID),
 		PublicKey:     fromDomain.PublicKey,
 	}); err != nil {
-		return "", helpers.NewServerError("Failed to send email. Please try again later.", "Failed to send email")
+		return "", errors.User("Failed to send email. Please try again later.", "Failed to send email")
 	}
 
 	return messageId, nil
