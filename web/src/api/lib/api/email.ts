@@ -54,6 +54,10 @@ type EmailListFilters = {
     perPage?: number;
     order?: 'asc' | 'desc';
     read?: 'all' | 'read' | 'unread';
+    spam?: 'all' | 'only' | 'none';
+    folders?: string[];
+    encrypted?: 'all' | 'original' | 'post';
+    sent?: 'all' | 'in' | 'out';
 }
 
 type Email = {
@@ -106,6 +110,11 @@ const GetEmailList = async (session: Session, filters: EmailListFilters): Promis
         perPage: 10,
         order: 'asc',
         read: 'all',
+        spam: 'all',
+        folders: [],
+        encrypted: 'all',
+        sent: 'all',
+        ...filters,
     }
 
     return await HandleRequest<EmailListResponse>({

@@ -58,7 +58,7 @@ import {sleep} from "bun";
 	await sleep(5000);
 
 	console.log('Plain DOmain', domainService.Domain);
-	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc' });
+	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc', });
 	if (emails.emails.length > 0) {
 		const email = await API.Email.GetEmail(session, domainService.DomainID, emails.emails[0].bucketPath);
 		const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);

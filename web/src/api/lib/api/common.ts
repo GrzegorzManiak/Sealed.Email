@@ -18,10 +18,14 @@ type HeaderOptions = {
 };
 
 type QueryOptions = {
-    query?: Record<string, string | number | boolean | undefined | null>;
+    query?: Record<string, string | number | boolean | undefined | null | Array<string | number | boolean | undefined | null>>;
 };
 
 type Options = RequiredOptions & BodyOptions & HeaderOptions & QueryOptions;
+
+function StringifyArray(key: string, arr: Array<string | number | boolean | undefined | null>): string {
+    return arr.map((value) => `${key}=${value}`).join('&');
+}
 
 async function HandleRequest<T>(options: Options): Promise<T> {
     const { session, endpoint, fallbackError, query, body, headers: customHeaders } = options;
@@ -31,8 +35,14 @@ async function HandleRequest<T>(options: Options): Promise<T> {
     if (session.IsTokenAuthenticated) headers.set("cookie", session.CookieToken);
 
     const parsedQuery = new URLSearchParams();
-    for (const [key, value] of Object.entries(query ?? {})) parsedQuery.append(key, (value ?? '').toString());
-    const endpointWithQuery = query ? `${endpoint[0]}?${parsedQuery}` : endpoint[0];
+    const arrays: Array<string> = [];
+    for (const [key, value] of Object.entries(query ?? {})) {
+        if (Array.isArray(value)) arrays.push(StringifyArray(key, value));
+        else parsedQuery.append(key, (value ?? '').toString());
+    }
+
+    let endpointWithQuery = query ? `${endpoint[0]}?${parsedQuery}` : endpoint[0];
+    if (arrays.length > 0) endpointWithQuery += parsedQuery.size > 0 ? '&' : '?' + `${arrays.join('&')}`;
 
     const response = await fetch(endpointWithQuery, {
         method: endpoint[1],

@@ -12,6 +12,48 @@ import (
 	"strings"
 )
 
+func buildFilters(
+	pagination Input,
+	dbQuery *gorm.DB,
+) {
+	// -- Folder
+	if len(pagination.Folders) > 0 {
+		dbQuery = dbQuery.Where("folder IN (?)", pagination.Folders)
+	}
+
+	// -- Read
+	pagination.Read = strings.ToLower(pagination.Read)
+	if pagination.Read == "only" {
+		dbQuery = dbQuery.Where("read = 1")
+	} else if pagination.Read == "unread" {
+		dbQuery = dbQuery.Where("read = 0")
+	}
+
+	// -- Sent
+	pagination.Sent = strings.ToLower(pagination.Sent)
+	if pagination.Sent == "in" {
+		dbQuery = dbQuery.Where("sent = 1")
+	} else if pagination.Sent == "out" {
+		dbQuery = dbQuery.Where("sent = 0")
+	}
+
+	// -- Encrypted
+	pagination.Encrypted = strings.ToLower(pagination.Encrypted)
+	if pagination.Encrypted == "original" {
+		dbQuery = dbQuery.Where("originally_encrypted = 1")
+	} else if pagination.Encrypted == "post" {
+		dbQuery = dbQuery.Where("originally_encrypted = 0")
+	}
+
+	// -- Spam
+	pagination.Spam = strings.ToLower(pagination.Spam)
+	if pagination.Spam == "only" {
+		dbQuery = dbQuery.Where("spam = 1")
+	} else if pagination.Spam == "none" {
+		dbQuery = dbQuery.Where("spam = 0")
+	}
+}
+
 func fetchEmails(
 	user *models.User,
 	pagination Input,
@@ -20,26 +62,10 @@ func fetchEmails(
 	emails = make([]*models.UserEmail, 0)
 	dbQuery := databaseConnection.
 		Table("user_emails").
-		Select([]string{"read", "folder", "p_id", "domain_p_id", "`to`", "received_at", "sent", "bucket_path"}).
+		Select([]string{"read", "folder", "p_id", "domain_p_id", "`to`", "received_at", "sent", "bucket_path", "originally_encrypted", "spam"}).
 		Where("user_id = ? AND domain_p_id = ?", user.ID, pagination.DomainID)
 
-	if len(pagination.Folders) > 0 {
-		dbQuery = dbQuery.Where("folder IN (?)", pagination.Folders)
-	}
-
-	pagination.Read = strings.ToLower(pagination.Read)
-	if pagination.Read == "only" {
-		dbQuery = dbQuery.Where("read = 1")
-	} else if pagination.Read == "unread" {
-		dbQuery = dbQuery.Where("read = 0")
-	}
-
-	pagination.Sent = strings.ToLower(pagination.Sent)
-	if pagination.Sent == "in" {
-		dbQuery = dbQuery.Where("sent = 1")
-	} else if pagination.Sent == "out" {
-		dbQuery = dbQuery.Where("sent = 0")
-	}
+	buildFilters(pagination, dbQuery)
 
 	if err := dbQuery.
 		Limit(pagination.PerPage).

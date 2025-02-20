@@ -16,7 +16,7 @@ import {ClientError} from "$api/lib/errors";
 	const domain = await API.Domain.GetDomain(session, domainId);
 	const domainService = await API.DomainService.Decrypt(session, domain);
 
-	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc' });
+	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc', folders: ['test', 'boss'] });
 	console.log('Emails:', emails);
 
 	if (emails.emails.length > 0) {
