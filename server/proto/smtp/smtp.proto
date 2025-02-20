@@ -25,6 +25,7 @@ message Email {
   string fromDomainPID = 12;
   uint64 fromUserId = 13;
   uint64 fromDomainId = 14;
+  string publicKey = 15;
 }
 
 message SendEmailResponse {
