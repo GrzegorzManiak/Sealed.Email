@@ -85,7 +85,7 @@ func validateProofOfPossession(
 	input *Input,
 ) bool {
 	proof := crypto.B64DecodeBytes(input.ProofOfPossession)
-	publicKey, err := cryptography.ByteArrToECDSAPublicKey(config.CURVE, crypto.B64DecodeBytes(input.PublicKey))
+	publicKey, err := cryptography.ByteArrToECDSAPublicKey(crypto.B64DecodeBytes(input.PublicKey))
 	if err != nil {
 		return false
 	}
