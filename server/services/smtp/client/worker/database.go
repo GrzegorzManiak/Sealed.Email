@@ -25,8 +25,8 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Out
 
 func insertIntoBucket(minioClient *minio.Client, email *models.OutboundEmail) error {
 	if _, err := minioClient.PutObject(context.Background(), "emails", email.RefID, bytes.NewReader(email.Body), int64(len(email.Body)), minio.PutObjectOptions{
-		ContentType:  "message/rfc822",
-		UserMetadata: map[string]string{"type": "outbound"},
+		ContentType: "message/rfc822",
+		UserTags:    map[string]string{"type": "outbound"},
 	}); err != nil {
 		zap.L().Debug("Failed to insert email into bucket", zap.Error(err))
 		return err

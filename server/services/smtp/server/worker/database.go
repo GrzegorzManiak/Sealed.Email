@@ -57,8 +57,8 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Inboun
 
 func insertIntoBucket(minioClient *minio.Client, email *models.InboundEmail) error {
 	if _, err := minioClient.PutObject(context.Background(), "emails", email.RefID, bytes.NewReader(email.RawData), int64(len(email.RawData)), minio.PutObjectOptions{
-		ContentType:  "message/rfc822",
-		UserMetadata: map[string]string{"type": "inbound"},
+		ContentType: "message/rfc822",
+		UserTags:    map[string]string{"type": "inbound"},
 	}); err != nil {
 		zap.L().Debug("Failed to insert email into bucket", zap.Error(err))
 		return err

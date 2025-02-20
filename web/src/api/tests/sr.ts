@@ -10,7 +10,7 @@ import {ClientError} from "$api/lib/errors";
 	const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
 	await session.DecryptKeys();
 	const domain_ = 'beta.grzegorz.ie';
-	const send = false;
+	const send = true;
 
 	const domainId = 'Yu3T9EkwRzw1kyOOeb1IDlO7NqSJPQdMJ0UpRV9L8wrnjF8kFmi0w1yzK6eNKmdl';
 	const domain = await API.Domain.GetDomain(session, domainId);
