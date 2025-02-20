@@ -11,6 +11,14 @@ import (
 	"gorm.io/gorm"
 )
 
+func saveQueueEmail(queueDatabaseConnection *gorm.DB, email *models.OutboundEmail) error {
+	if err := queueDatabaseConnection.Save(email).Error; err != nil {
+		zap.L().Debug("Failed to save email", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
 func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm.DB, primaryDatabaseConnection *gorm.DB, minioClient *minio.Client) queue.WorkerResponse {
 	zap.L().Debug("Processing smtp queue", zap.Any("entry", entry))
 
@@ -43,16 +51,15 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 		return queue.Failed
 	}
 
-	if !email.InBucket {
-		if err := insertIntoBucket(minioClient, email); err != nil {
-			return queue.Failed
-		}
-		zap.L().Debug("Inserted email into bucket")
-		email.InBucket = true
+	if err = ensureEncryptedBucketInsertion(minioClient, email); err != nil {
+		zap.L().Debug("Failed to insert email into bucket", zap.Error(err))
+		return queue.Failed
 	}
 
 	if !email.InDatabase {
 		if err := insertIntoDatabase(primaryDatabaseConnection, email); err != nil {
+			err = saveQueueEmail(queueDatabaseConnection, email)
+			zap.L().Debug("Attempt to save email", zap.Error(err))
 			return queue.Failed
 		}
 		zap.L().Debug("Inserted email into database")
@@ -61,7 +68,7 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 
 	code, sentSuccessfully := sendEmails(certs, email, groupedRecipients)
 	email.SentSuccessfully = sentSuccessfully
-	if err := queueDatabaseConnection.Save(email).Error; err != nil {
+	if err := saveQueueEmail(queueDatabaseConnection, email); err != nil {
 		zap.L().Debug("Failed to save email", zap.Error(err))
 		return queue.Failed
 	}

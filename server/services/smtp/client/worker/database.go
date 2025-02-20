@@ -3,8 +3,10 @@ package worker
 import (
 	"bytes"
 	"context"
+	"fmt"
 	primaryModels "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
+	emailHelper "github.com/GrzegorzManiak/NoiseBackend/internal/email"
 	"github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -23,8 +25,9 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Out
 	return email, nil
 }
 
-func insertIntoBucket(minioClient *minio.Client, email *models.OutboundEmail) error {
-	if _, err := minioClient.PutObject(context.Background(), "emails", email.RefID, bytes.NewReader(email.Body), int64(len(email.Body)), minio.PutObjectOptions{
+func insertIntoBucket(minioClient *minio.Client, email *[]byte, refID string) error {
+	emailBody := *email
+	if _, err := minioClient.PutObject(context.Background(), "emails", refID, bytes.NewReader(emailBody), int64(len(emailBody)), minio.PutObjectOptions{
 		ContentType: "message/rfc822",
 		UserTags:    map[string]string{"type": "outbound"},
 	}); err != nil {
@@ -57,5 +60,44 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Outbou
 	}
 
 	zap.L().Debug("Inserted emails", zap.Any("emails", insert))
+	return nil
+}
+
+func ensureEncryptedBucketInsertion(minioClient *minio.Client, email *models.OutboundEmail) error {
+	if email.InBucket {
+		zap.L().Debug("Email already in bucket")
+		return nil
+	}
+
+	emailBody := &email.Body
+
+	if !email.Encrypted {
+		zap.L().Debug("Email is not encrypted, encrypting...")
+		key, err := emailHelper.CreateInboxKey()
+		if err != nil {
+			return fmt.Errorf("failed to create inbox key: %w", err)
+		}
+
+		encryptedKey, err := emailHelper.EncryptEmailKey(key, email.PublicKey)
+		if err != nil {
+			return fmt.Errorf("failed to encrypt email key: %w", err)
+		}
+
+		headers := &emailHelper.Headers{}
+		headers.EncryptionKeys([]*emailHelper.EncryptionKey{encryptedKey})
+		stringified := headers.Stringify()
+
+		zap.L().Debug("Encrypting email", zap.Any("email", email.RefID), zap.Any("key", stringified))
+
+		email.Encrypted = true
+	}
+
+	if err := insertIntoBucket(minioClient, emailBody, email.RefID); err != nil {
+		return fmt.Errorf("failed to insert email into bucket: %w", err)
+	}
+
+	zap.L().Debug("Inserted email into bucket")
+	email.InBucket = true
+
 	return nil
 }

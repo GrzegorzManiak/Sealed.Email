@@ -50,6 +50,8 @@ func insertOutboundEmail(email *smtp.Email, id string, entry *queue.Entry, db *g
 		FromDomainPID: email.FromDomainPID,
 		FromDomainId:  uint(email.FromDomainId),
 
+		PublicKey: email.PublicKey,
+
 		Version: 1,
 	}
 
