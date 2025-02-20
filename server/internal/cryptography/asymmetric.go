@@ -1,109 +1,71 @@
+//
+// This contains code from:
+// https://asecuritysite.com/encryption/goecdh
+// https://wiki.openssl.org/index.php/Elliptic_Curve_Cryptography
+// https://learnmeabitcoin.com/technical/keys/public-key/
+//
+
 package cryptography
 
 import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/base64"
+	"crypto/sha256"
 	"errors"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
-	"math/big"
 )
 
-func ByteArrToECDSAPublicKey(curve elliptic.Curve, publicKey []byte) (*ecdsa.PublicKey, error) {
-	x, y := elliptic.UnmarshalCompressed(curve, publicKey)
+func AsymEncrypt(pub *ecdsa.PublicKey, data []byte) ([]byte, error) {
+	ephemeralPriv, err := ecdsa.GenerateKey(pub.Curve, rand.Reader)
+	if err != nil {
+		return nil, err
+	}
+	ephemeralPub := ephemeralPriv.PublicKey
+	ephemeralPubBytes := elliptic.Marshal(pub.Curve, ephemeralPub.X, ephemeralPub.Y)
+
+	sharedX, _ := pub.Curve.ScalarMult(pub.X, pub.Y, ephemeralPriv.D.Bytes())
+	sharedKey := sha256.Sum256(sharedX.Bytes())
+
+	iv, ciphertext, err := SymEncrypt(data, sharedKey[:])
+	if err != nil {
+		return nil, err
+	}
+
+	encrypted := append(ephemeralPubBytes, Compress(iv, ciphertext)...)
+	return encrypted, nil
+}
+
+func AsymDecrypt(priv *ecdsa.PrivateKey, encryptedData []byte) ([]byte, error) {
+	curve := priv.Curve
+	// -- 1 (byte, compression prefix) + 2 * (curve bit size / 8) (256 bits / 1 byte = 32 bytes)
+	// We will allways have uncompressed keys, if not it will fail, thats
+	// why we multiply by 2
+	keySize := 1 + 2*(curve.Params().BitSize/8)
+	if len(encryptedData) < keySize+IVLength {
+		return nil, errors.New("invalid encrypted data format")
+	}
+
+	x, y := elliptic.Unmarshal(curve, encryptedData[:keySize])
 	if x == nil || y == nil {
-		return nil, errors.New("failed to unmarshal public key")
-	}
-	return &ecdsa.PublicKey{
-		Curve: curve,
-		X:     x,
-		Y:     y,
-	}, nil
-}
-
-func VerifyMessageBytes(publicKey *ecdsa.PublicKey, message []byte, signature []byte) bool {
-	if len(signature) != 64 {
-		return false
+		return nil, errors.New("invalid ephemeral public key")
 	}
 
-	r := new(big.Int).SetBytes(signature[:32])
-	s := new(big.Int).SetBytes(signature[32:])
+	ephemeralPub := &ecdsa.PublicKey{Curve: curve, X: x, Y: y}
+	sharedX, _ := curve.ScalarMult(ephemeralPub.X, ephemeralPub.Y, priv.D.Bytes())
+	sharedKey := sha256.Sum256(sharedX.Bytes())
 
-	return ecdsa.Verify(publicKey, message, r, s)
-}
-
-func VerifyMessage(publicKey *ecdsa.PublicKey, message string, signature []byte) bool {
-	return VerifyMessageBytes(publicKey, []byte(message), signature)
-}
-
-func SignMessage(privateKey *ecdsa.PrivateKey, message string) ([]byte, error) {
-	r, s, err := ecdsa.Sign(rand.Reader, privateKey, []byte(message))
+	iv, ciphertext, err := Decompress(encryptedData[keySize:])
 	if err != nil {
 		return nil, err
 	}
 
-	signature := append(r.Bytes(), s.Bytes()...)
-	return signature, nil
+	return SymDecrypt(iv, ciphertext, sharedKey[:])
 }
 
-func GenerateKeyPair(curve elliptic.Curve) (*ecdsa.PrivateKey, *ecdsa.PublicKey, error) {
-	privateKey, err := ecdsa.GenerateKey(curve, rand.Reader)
-	if err != nil {
-		return nil, nil, err
+func AsymPrivateKey() (*ecdsa.PrivateKey, error) {
+	if config.CURVE == nil {
+		return nil, errors.New("curve not set")
 	}
-
-	return privateKey, &privateKey.PublicKey, nil
-}
-
-func GenerateP256KeyPair() (*ecdsa.PrivateKey, *ecdsa.PublicKey, error) {
-	return GenerateKeyPair(config.CURVE)
-}
-
-type RSAKeyPair struct {
-	PrivateKey []byte
-	PublicKey  []byte
-}
-
-func (rsaKeyPair *RSAKeyPair) EncodePrivateKey() string {
-	return string(rsaKeyPair.PrivateKey)
-}
-
-func (rsaKeyPair *RSAKeyPair) EncodePublicKey() string {
-	return string(rsaKeyPair.PublicKey)
-}
-
-func GenerateRSAKeyPair(length int) (*RSAKeyPair, error) {
-	if length < 2048 {
-		return &RSAKeyPair{}, errors.New("key length must be at least 2048 bits")
-	}
-
-	private, err := rsa.GenerateKey(rand.Reader, length)
-	if err != nil {
-		return &RSAKeyPair{}, err
-	}
-
-	privateBytes := x509.MarshalPKCS1PrivateKey(private)
-	privateKey := base64.StdEncoding.EncodeToString(privateBytes)
-	pubBytes, err := x509.MarshalPKIXPublicKey(&private.PublicKey)
-	if err != nil {
-		return &RSAKeyPair{}, err
-	}
-
-	publicKey := base64.StdEncoding.EncodeToString(pubBytes)
-	return &RSAKeyPair{
-		PrivateKey: []byte(privateKey),
-		PublicKey:  []byte(publicKey),
-	}, nil
-}
-
-func DecodeRSAPrivateKey(key string) (*rsa.PrivateKey, error) {
-	decoded, err := base64.StdEncoding.DecodeString(key)
-	if err != nil {
-		return nil, err
-	}
-
-	return x509.ParsePKCS1PrivateKey(decoded)
+	return ecdsa.GenerateKey(config.CURVE, rand.Reader)
 }
