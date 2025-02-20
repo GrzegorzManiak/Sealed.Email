@@ -10,15 +10,16 @@ import {ClientError} from "$api/lib/errors";
 	const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
 	await session.DecryptKeys();
 	const domain_ = 'beta.grzegorz.ie';
-	const send = true;
+	const send = false;
 
-	const domainId = 'Yu3T9EkwRzw1kyOOeb1IDlO7NqSJPQdMJ0UpRV9L8wrnjF8kFmi0w1yzK6eNKmdl';
+
+	const domainId = 'NZ1lQfo8t3HV47t2E99KmEIATbIIQmLTGFRFeqO9CD9fh4hrhsLhbxMlrali9ohr';
 	const domain = await API.Domain.GetDomain(session, domainId);
 	const domainService = await API.DomainService.Decrypt(session, domain);
 
-
-	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID });
-	console.log('Emails:', emails);
+	console.log('Plain DOmain', domainService.Domain);
+	// const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID });
+	// console.log('Emails:', emails);
 
 	if (send) {
 		const emailKey = API.Sym.NewKey();
@@ -42,6 +43,19 @@ import {ClientError} from "$api/lib/errors";
 
 		console.log(await email.Send(session))
 	}
+
+	await API.Email.SendPlainEmail(session, {
+		domainID: domainService.DomainID,
+		inReplyTo: '',
+		from: { displayName: 'Greg', email: `test@${domain_}` },
+		to: { displayName: '', email: 'test@sealed.email' },
+		bcc: [],
+		cc: [],
+		subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF',
+		body: 'Hello world SDFG SDFGS DFG ',
+		nonce: EncodeToBase64(API.Sym.NewKey()),
+		signature: EncodeToBase64(API.Sym.NewKey()),
+	})
 })();
 
 

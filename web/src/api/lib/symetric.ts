@@ -1,6 +1,6 @@
 import {ALG, IVLength, DefaultKeyLength} from "./constants";
 
-async function Encrypt(text: string, key: Uint8Array): Promise<{ iv: number[], data: number[] }> {
+async function Encrypt(text: string, key: Uint8Array): Promise<{ iv: Uint8Array, data: Uint8Array }> {
     const encoder = new TextEncoder();
     const data = encoder.encode(text);
 
@@ -12,27 +12,24 @@ async function Encrypt(text: string, key: Uint8Array): Promise<{ iv: number[], d
     const cryptoKey = await crypto.subtle.importKey("raw", key, algorithm, false, ["encrypt"]);
     const encryptedData = await crypto.subtle.encrypt(algorithm, cryptoKey, data);
 
-    return { iv: Array.from(iv), data: Array.from(new Uint8Array(encryptedData)) };
+    return { iv, data: new Uint8Array(encryptedData) };
 }
 
-async function Decrypt(encryptedData: { iv: number[], data: number[] }, key: Uint8Array): Promise<string> {
+async function Decrypt(encryptedData: { iv: Uint8Array, data: Uint8Array }, key: Uint8Array): Promise<string> {
     const { iv, data } = encryptedData;
-    const ivArray = new Uint8Array(iv);
-    const dataArray = new Uint8Array(data);
-
     if (key.length !== DefaultKeyLength) throw new Error(`Key must be ${DefaultKeyLength} bytes, got ${key.length}`);
 
-    const algorithm = { name: ALG, iv: ivArray };
+    const algorithm = { name: ALG, iv };
     const cryptoKey = await crypto.subtle.importKey('raw', key, algorithm, false, ['decrypt']);
-    const decrypted = await crypto.subtle.decrypt(algorithm, cryptoKey, dataArray);
+    const decrypted = await crypto.subtle.decrypt(algorithm, cryptoKey, data);
 
     const decoder = new TextDecoder();
     return decoder.decode(decrypted);
 }
 
-function Compress(iv: Uint8Array, data: Uint8Array): Uint8Array {
-    const ivLen = new Uint8Array([iv.length]);
-    return new Uint8Array([...ivLen, ...iv, ...data]);
+function Compress(uncompressed: { iv: Uint8Array,  data: Uint8Array}): Uint8Array {
+    const ivLen = new Uint8Array([uncompressed.iv.length]);
+    return new Uint8Array([...ivLen, ...uncompressed.iv, ...uncompressed.data]);
 }
 
 function Decompress(compressedData: Uint8Array): { iv: Uint8Array; data: Uint8Array } {
