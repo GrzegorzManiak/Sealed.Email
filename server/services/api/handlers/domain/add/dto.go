@@ -4,9 +4,9 @@ import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
 	Domain              string `json:"domain" validate:"required,fqdn,min=6"`
-	SymmetricRootKey    string `json:"symmetricRootKey" validate:"Encrypted-B64-Key"`
-	PublicKey           string `json:"publicKey" validate:"P256-B64-Key"`
-	EncryptedPrivateKey string `json:"encryptedPrivateKey" validate:"Encrypted-B64-Key"`
+	SymmetricRootKey    string `json:"symmetricRootKey" validate:"EncodedEncryptedKey"`
+	PublicKey           string `json:"publicKey" validate:"EncodedP256Key"`
+	EncryptedPrivateKey string `json:"encryptedPrivateKey" validate:"EncodedEncryptedKey"`
 	ProofOfPossession   string `json:"proofOfPossession" validate:"required,base64,gte=40,lte=200"`
 }
 

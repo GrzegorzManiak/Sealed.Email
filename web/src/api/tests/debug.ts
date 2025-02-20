@@ -1,6 +1,5 @@
 
 import * as API from '../lib';
-import {EncodeToBase64, Hash} from "gowl-client-lib";
 
 const username = 'test5515' + Math.random().toString(36).substring(7);
 const password = 'test5515';
@@ -106,8 +105,8 @@ console.log('Domain:', domain);
 //
 // // const sentEmail = await API.Email.SendPlainEmail(session, {
 // //     ...email,
-// // 	signature: await domainService.SignData(EncodeToBase64(await Hash(email.body))),
-// // 	nonce: EncodeToBase64(API.Sym.NewKey())
+// // 	signature: await domainService.SignData(UrlSafeBase64Encode(await Hash(email.body))),
+// // 	nonce: UrlSafeBase64Encode(API.Sym.NewKey())
 // // });
 //
 // // console.log('Sent email:', sentEmail);

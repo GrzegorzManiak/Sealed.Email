@@ -1,6 +1,7 @@
 package loginInit
 
 import (
+	"encoding/base64"
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
@@ -57,23 +58,23 @@ func insertVerifyData(
 	clientAuthInit *owl.ClientAuthInitRequestPayload,
 	databaseConnection *gorm.DB,
 ) (string, helpers.AppError) {
-	PID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
+	PID := base64.RawURLEncoding.EncodeToString(crypto.GenerateKey(config.CURVE.Params().N).Bytes())
 	newUserVerify := databaseConnection.Create(&models2.UserVerify{
 		PID:      PID,
 		UserID:   fetchedUser.ID,
-		XPub4:    crypto.B64Encode(serverAuthInit.Xx4),
-		XPri4:    crypto.B64Encode(serverAuthInit.Payload.X4),
-		Beta:     crypto.B64Encode(serverAuthInit.Payload.Beta),
-		PIBeta_R: crypto.B64Encode(serverAuthInit.Payload.PIBeta.R),
-		PIBeta_V: crypto.B64Encode(serverAuthInit.Payload.PIBeta.V),
-		PI4_R:    crypto.B64Encode(serverAuthInit.Payload.PI4.R),
-		PI4_V:    crypto.B64Encode(serverAuthInit.Payload.PI4.V),
-		PI1_R:    crypto.B64Encode(clientAuthInit.PI1.R),
-		PI1_V:    crypto.B64Encode(clientAuthInit.PI1.V),
-		PI2_R:    crypto.B64Encode(clientAuthInit.PI2.R),
-		PI2_V:    crypto.B64Encode(clientAuthInit.PI2.V),
-		X1:       crypto.B64Encode(clientAuthInit.X1),
-		X2:       crypto.B64Encode(clientAuthInit.X2),
+		XPub4:    base64.RawURLEncoding.EncodeToString(serverAuthInit.Xx4.Bytes()),
+		XPri4:    base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.X4),
+		Beta:     base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.Beta),
+		PIBeta_R: base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.PIBeta.R.Bytes()),
+		PIBeta_V: base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.PIBeta.V),
+		PI4_R:    base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.PI4.R.Bytes()),
+		PI4_V:    base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.PI4.V),
+		PI1_R:    base64.RawURLEncoding.EncodeToString(clientAuthInit.PI1.R.Bytes()),
+		PI1_V:    base64.RawURLEncoding.EncodeToString(clientAuthInit.PI1.V),
+		PI2_R:    base64.RawURLEncoding.EncodeToString(clientAuthInit.PI2.R.Bytes()),
+		PI2_V:    base64.RawURLEncoding.EncodeToString(clientAuthInit.PI2.V),
+		X1:       base64.RawURLEncoding.EncodeToString(clientAuthInit.X1),
+		X2:       base64.RawURLEncoding.EncodeToString(clientAuthInit.X2),
 	})
 
 	if newUserVerify.Error != nil {
@@ -86,14 +87,14 @@ func insertVerifyData(
 func encodeOutput(PID string, serverAuthInit *owl.ServerAuthInitResponse) *Output {
 	return &Output{
 		PID:      PID,
-		X3:       crypto.B64Encode(serverAuthInit.Payload.X3),
-		X4:       crypto.B64Encode(serverAuthInit.Payload.X4),
-		Beta:     crypto.B64Encode(serverAuthInit.Payload.Beta),
-		PI3_R:    crypto.B64Encode(serverAuthInit.Payload.PI3.R),
-		PI3_V:    crypto.B64Encode(serverAuthInit.Payload.PI3.V),
-		PI4_R:    crypto.B64Encode(serverAuthInit.Payload.PI4.R),
-		PI4_V:    crypto.B64Encode(serverAuthInit.Payload.PI4.V),
-		PIBeta_R: crypto.B64Encode(serverAuthInit.Payload.PIBeta.R),
-		PIBeta_V: crypto.B64Encode(serverAuthInit.Payload.PIBeta.V),
+		X3:       base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.X3),
+		X4:       base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.X4),
+		Beta:     base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.Beta),
+		PI3_R:    base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.PI3.R.Bytes()),
+		PI3_V:    base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.PI3.V),
+		PI4_R:    base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.PI4.R.Bytes()),
+		PI4_V:    base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.PI4.V),
+		PIBeta_R: base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.PIBeta.R.Bytes()),
+		PIBeta_V: base64.RawURLEncoding.EncodeToString(serverAuthInit.Payload.PIBeta.V),
 	}
 }

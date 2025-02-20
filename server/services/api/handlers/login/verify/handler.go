@@ -1,6 +1,7 @@
 package loginVerify
 
 import (
+	"encoding/base64"
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
@@ -63,7 +64,7 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 	}
 
 	return &Output{
-		ServerKCTag:   crypto.B64Encode(serverAuthValidate.Payload.ServerKCTag),
+		ServerKCTag:   base64.RawURLEncoding.EncodeToString(serverAuthValidate.Payload.ServerKCTag.Bytes()),
 		IntegrityHash: user.IntegrityHash,
 
 		SymmetricRootKey:     user.SymmetricRootKey,

@@ -2,6 +2,7 @@ package session
 
 import (
 	"crypto/ecdsa"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
@@ -26,8 +27,8 @@ func (claims *Claims) Sign(key *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	content := crypto.B64Encode(marshaledContent)
-	header := crypto.B64Encode(marshaledHeader)
+	content := base64.RawURLEncoding.EncodeToString(marshaledContent)
+	header := base64.RawURLEncoding.EncodeToString(marshaledHeader)
 	message := fmt.Sprintf("%s.%s", header, content)
 
 	signature, err := cryptography.SignMessage(key, message)
@@ -36,13 +37,13 @@ func (claims *Claims) Sign(key *ecdsa.PrivateKey) error {
 	}
 
 	claims.Signature = signature
-	claims.Token = fmt.Sprintf("%s.%s.%s", header, content, crypto.B64Encode(signature))
+	claims.Token = fmt.Sprintf("%s.%s.%s", header, content, base64.RawURLEncoding.EncodeToString(signature))
 	return nil
 }
 
 func CreateSession(user models2.User, group TokenGroup, databaseConnection *gorm.DB) (models2.Session, error) {
 	unix := time.Now().Unix()
-	SessionID := crypto.B64Encode(crypto.GenerateKey(config.CURVE.Params().N))
+	SessionID := base64.RawURLEncoding.EncodeToString(crypto.GenerateKey(config.CURVE.Params().N).Bytes())
 
 	session := models2.Session{
 		UserID:    user.ID,

@@ -1,6 +1,8 @@
 package email
 
 import (
+	"fmt"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -360,4 +362,23 @@ func TestParseHeader(t *testing.T) {
 
 		assert.Equal(t, err.Error(), "invalid folded header format", "Error should be 'invalid folded header format'")
 	})
+}
+
+func TestHashInboxEmail(t *testing.T) {
+	t.Run("TestHashInboxEmail", func(t *testing.T) {
+		t.Parallel()
+
+		valid := "elgPNORN/QZTQG1U9QsE68jgpgEHyHtC6X1TifbWZis=@test.com"
+		email := "test@test.com"
+		hashedEmail, err := HashInboxEmail(email)
+		if err != nil {
+			t.Errorf("Error hashing email: %v", err)
+		}
+
+		assert.True(t,
+			helpers.CompareEmails(valid, hashedEmail),
+			fmt.Sprintf("Hashed email should be %s but got %s", valid, hashedEmail),
+		)
+	})
+
 }

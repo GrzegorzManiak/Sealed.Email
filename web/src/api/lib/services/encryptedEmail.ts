@@ -1,8 +1,9 @@
 import Domain from "./domain";
 import {EncryptedInbox, Session} from "../index";
 import * as Sym from "../symetric";
-import {EncodeToBase64, Hash} from "gowl-client-lib";
+import {Hash} from "gowl-client-lib";
 import {PostEncryptedEmail, SendEncryptedEmail} from "../api/email";
+import {UrlSafeBase64Encode} from "../common";
 
 type EncryptedEmailContent = {
 	domain: Domain;
@@ -50,14 +51,14 @@ class EncryptedEmail {
 		const b64Body = Buffer.from(this._body).toString('base64');
 		const encryptedBody = await Sym.Encrypt(b64Body, this._key);
 		const compressedBody = Sym.Compress(encryptedBody);
-		return EncodeToBase64(compressedBody);
+		return UrlSafeBase64Encode(compressedBody);
 	}
 
 	public async EncryptSubject(): Promise<string> {
 		const b64Subject = Buffer.from(this._subject).toString('base64');
 		const encryptedSubject = await Sym.Encrypt(b64Subject, this._key);
 		const compressedSubject = Sym.Compress(encryptedSubject);
-		return EncodeToBase64(compressedSubject);
+		return UrlSafeBase64Encode(compressedSubject);
 	}
 
 	public async Encrypt(): Promise<PostEncryptedEmail> {
@@ -91,7 +92,7 @@ class EncryptedEmail {
 		data += '\n' + this._references.join('\n');
 
 		const dataHash = await Hash(data);
-		this._signature = await this._domain.SignData(EncodeToBase64(dataHash));
+		this._signature = await this._domain.SignData(UrlSafeBase64Encode(dataHash));
 		return this._signature;
 	}
 

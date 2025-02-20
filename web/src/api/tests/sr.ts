@@ -1,10 +1,6 @@
 import * as API from '../lib';
-import {EncodeToBase64} from "gowl-client-lib";
-import Session from "../lib/session/session";
-import {HandleRequest} from "$api/lib/api/common";
-import {Endpoints} from "$api/lib/constants";
-import {ClientError} from "$api/lib/errors";
 import {sleep} from "bun";
+import {UrlSafeBase64Encode} from "$api/lib/common";
 
 (async () => {
 	const details = ['test', 'test'];
@@ -18,16 +14,28 @@ import {sleep} from "bun";
 	const domain = await API.Domain.GetDomain(session, domainId);
 	const domainService = await API.DomainService.Decrypt(session, domain);
 
+	const emailKey = API.Sym.NewKey();
+	const recipientAKeys = API.Asym.GenerateKeyPair();
+	const recipientAInbox = await API.EncryptedInbox.Create(
+		'test@test.com',
+		'Test',
+		recipientAKeys.pub,
+		emailKey
+	);
+	console.log('Recipient A:', recipientAInbox);
 
+	return
 	if (send) {
 		const emailKey = API.Sym.NewKey();
 		const recipientAKeys = API.Asym.GenerateKeyPair();
 		const recipientAInbox = await API.EncryptedInbox.Create(
-			'test@sealed.email',
+			'test@test.com',
 			'Test',
 			recipientAKeys.pub,
 			emailKey
 		);
+
+		console.log('Recipient A:', recipientAInbox);
 
 		const sender = await domainService.GetSender(emailKey, 'Greg', 'Grzegorz Maniak')
 		const email = new API.EncryptedEmail({
@@ -51,8 +59,8 @@ import {sleep} from "bun";
 		cc: [],
 		subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF',
 		body: 'Hello world SDFG SDFGS DFG ',
-		nonce: EncodeToBase64(API.Sym.NewKey()),
-		signature: EncodeToBase64(API.Sym.NewKey()),
+		nonce: UrlSafeBase64Encode(API.Sym.NewKey()),
+		signature: UrlSafeBase64Encode(API.Sym.NewKey()),
 	})
 
 	await sleep(5000);
@@ -77,6 +85,6 @@ import {sleep} from "bun";
 // 	cc: [],
 // 	subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF',
 // 	body: 'Hello world SDFG SDFGS DFG ',
-// 	nonce: EncodeToBase64(API.Sym.NewKey()),
-// 	signature: EncodeToBase64(API.Sym.NewKey()),
+// 	nonce: UrlSafeBase64Encode(API.Sym.NewKey()),
+// 	signature: UrlSafeBase64Encode(API.Sym.NewKey()),
 // })

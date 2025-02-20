@@ -1,7 +1,7 @@
-import { GetCurve, Hash, EncodeToBase64, Client, BigIntToByteArray } from 'gowl-client-lib';
+import { GetCurve, Client } from 'gowl-client-lib';
 import { CurrentCurve, Endpoints, ServerName } from '../constants';
-import {Compress, Decompress, Encrypt, NewKey} from '../symetric';
-import { ProcessDetails, CalculateIntegrityHash } from '../common';
+import {Compress, Encrypt, NewKey} from '../symetric';
+import { ProcessDetails, CalculateIntegrityHash, UrlSafeBase64Encode } from '../common';
 import {ClientError, GenericError} from '../errors';
 import { UserKeys } from './types';
 
@@ -17,9 +17,9 @@ async function GenerateKeys(passwordHash: Uint8Array): Promise<UserKeys> {
     const priv = curve.utils.randomPrivateKey();
     const pub = curve.getPublicKey(priv);
     
-    const EncryptedRootKey = await Encrypt(EncodeToBase64(rootKey), passwordHash);
-    const EncryptedPrivateKey = await Encrypt(EncodeToBase64(priv), rootKey);
-    const EncryptedContactKey = await Encrypt(EncodeToBase64(contactKey), rootKey);
+    const EncryptedRootKey = await Encrypt(UrlSafeBase64Encode(rootKey), passwordHash);
+    const EncryptedPrivateKey = await Encrypt(UrlSafeBase64Encode(priv), rootKey);
+    const EncryptedContactKey = await Encrypt(UrlSafeBase64Encode(contactKey), rootKey);
 
     const integrityHash = await StandardIntegrityHash(rootKey, priv, contactKey);
 
@@ -80,11 +80,11 @@ async function RegisterUser(username: string, password: string): Promise<UserKey
         body: JSON.stringify({
             ...payload,
             TOS: true,
-            Proof: EncodeToBase64(proof),
-            PublicKey: EncodeToBase64(keys.PublicKey),
-            EncryptedRootKey: EncodeToBase64(keys.EncryptedRootKey),
-            EncryptedPrivateKey: EncodeToBase64(keys.EncryptedPrivateKey),
-            EncryptedContactsKey: EncodeToBase64(keys.EncryptedContactsKey),
+            Proof: UrlSafeBase64Encode(proof),
+            PublicKey: UrlSafeBase64Encode(keys.PublicKey),
+            EncryptedRootKey: UrlSafeBase64Encode(keys.EncryptedRootKey),
+            EncryptedPrivateKey: UrlSafeBase64Encode(keys.EncryptedPrivateKey),
+            EncryptedContactsKey: UrlSafeBase64Encode(keys.EncryptedContactsKey),
             IntegrityHash: keys.IntegrityHash
         })
     });

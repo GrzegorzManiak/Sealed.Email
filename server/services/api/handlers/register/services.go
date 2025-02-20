@@ -1,7 +1,7 @@
 package register
 
 import (
-	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
+	"encoding/base64"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
@@ -25,9 +25,9 @@ func registerUser(
 		ServerName: "NoiseEmailServer>V1.0.0",
 		T:          data.T,
 		PI:         data.PI,
-		X3:         crypto.B64Encode(registeredUser.Payload.X3),
-		PI3_V:      crypto.B64Encode(registeredUser.Payload.PI3.V),
-		PI3_R:      crypto.B64Encode(registeredUser.Payload.PI3.R),
+		X3:         base64.RawURLEncoding.EncodeToString(registeredUser.Payload.X3),
+		PI3_V:      base64.RawURLEncoding.EncodeToString(registeredUser.Payload.PI3.V),
+		PI3_R:      base64.RawURLEncoding.EncodeToString(registeredUser.Payload.PI3.R.Bytes()),
 
 		IntegrityHash: data.IntegrityHash,
 

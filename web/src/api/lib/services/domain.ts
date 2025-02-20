@@ -1,11 +1,9 @@
 
 import Session from "../session/session";
 import {DomainDnsData, DomainFull, DomainRefID} from "../api/domain";
-import {Compress, Decompress, Decrypt, Encrypt, NewKey} from "../symetric";
+import {Compress, Decompress, Decrypt, Encrypt} from "../symetric";
 import { SignData} from "../asymmetric";
-import {BigIntToByteArray, EncodeToBase64, GetCurve, Hash, HighEntropyRandom} from "gowl-client-lib";
-import {DecodeFromBase64} from "../common";
-import {ComputedEncryptedInbox, PlainEmail} from "../api/email";
+import {UrlSafeBase64Decode, UrlSafeBase64Encode} from "../common";
 import EncryptedInbox from "./encryptedInbox";
 
 class Domain {
@@ -51,25 +49,25 @@ class Domain {
         domain: DomainFull
     ): Promise<Domain> {
         const encodedRootKey = await session.DecryptKey(domain.symmetricRootKey);
-        const rootKey = DecodeFromBase64(encodedRootKey);
+        const rootKey = UrlSafeBase64Decode(encodedRootKey);
 
-        const decodedPrivateKey = DecodeFromBase64(domain.encryptedPrivateKey);
+        const decodedPrivateKey = UrlSafeBase64Decode(domain.encryptedPrivateKey);
         const decompressedPrivateKey = Decompress(decodedPrivateKey);
         const encodedPrivateKey = await Decrypt(decompressedPrivateKey, rootKey);
-        const privateKey = DecodeFromBase64(encodedPrivateKey);
+        const privateKey = UrlSafeBase64Decode(encodedPrivateKey);
 
         return new Domain(domain, rootKey, privateKey);
     }
 
     public async EncryptKey(key: Uint8Array | string): Promise<string> {
-        if (typeof key !== 'string') key = EncodeToBase64(key);
+        if (typeof key !== 'string') key = UrlSafeBase64Encode(key);
         const encryptedKey = Compress(await Encrypt(key, this._decryptedRootKey));
-        return EncodeToBase64(encryptedKey);
+        return UrlSafeBase64Encode(encryptedKey);
     }
 
     public async DecryptKey(key: Uint8Array | string): Promise<string> {
-        if (typeof key !== 'string') key = EncodeToBase64(key);
-        const decompressedKey = Decompress(DecodeFromBase64(key));
+        if (typeof key !== 'string') key = UrlSafeBase64Encode(key);
+        const decompressedKey = Decompress(UrlSafeBase64Decode(key));
         return await Decrypt(decompressedKey, this._decryptedRootKey);
     }
 
@@ -87,7 +85,7 @@ class Domain {
         return EncryptedInbox.Create(
             this.FormatEmail(user),
             displayName,
-            DecodeFromBase64(this._publicKey),
+            UrlSafeBase64Decode(this._publicKey),
             emailKey
         );
     }

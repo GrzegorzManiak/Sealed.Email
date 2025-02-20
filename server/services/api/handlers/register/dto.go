@@ -4,16 +4,16 @@ import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
 	// -- Required fields
-	User string `json:"User" validate:"Generic-B64-Key"`
-	PI   string `json:"PI" validate:"P256-B64-Key"`
-	T    string `json:"T" validate:"P256-B64-Key"`
+	User string `json:"User" validate:"PublicID"`
+	PI   string `json:"PI" validate:"EncodedP256Key"`
+	T    string `json:"T" validate:"EncodedP256Key"`
 	TOS  bool   `json:"tos" validate:"required"`
 
 	Proof                string `json:"proof" validate:"required,base64,gte=40,lte=200"`
-	PublicKey            string `json:"publicKey" validate:"P256-B64-Key"`
-	EncryptedRootKey     string `json:"encryptedRootKey" validate:"Encrypted-B64-Key"`
-	EncryptedPrivateKey  string `json:"encryptedPrivateKey" validate:"Encrypted-B64-Key"`
-	EncryptedContactsKey string `json:"encryptedContactsKey" validate:"Encrypted-B64-Key"`
+	PublicKey            string `json:"publicKey" validate:"EncodedP256Key"`
+	EncryptedRootKey     string `json:"encryptedRootKey" validate:"EncodedEncryptedKey"`
+	EncryptedPrivateKey  string `json:"encryptedPrivateKey" validate:"EncodedEncryptedKey"`
+	EncryptedContactsKey string `json:"encryptedContactsKey" validate:"EncodedEncryptedKey"`
 	IntegrityHash        string `json:"integrityHash" validate:"required,base64,gte=40,lte=200"`
 
 	// -- Optional fields

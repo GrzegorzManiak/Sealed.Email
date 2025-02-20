@@ -3,6 +3,7 @@ package email
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
@@ -12,8 +13,8 @@ import (
 type EncryptedInbox struct {
 	DisplayName       string `json:"displayName" validate:"lte=200"`
 	EmailHash         string `json:"emailHash" validate:"required,email"`
-	PublicKey         string `json:"publicKey" validate:"P256-B64-Key"`
-	EncryptedEmailKey string `json:"encryptedEmailKey" validate:"Encrypted-B64-Key"`
+	PublicKey         string `json:"publicKey" validate:"EncodedP256Key"`
+	EncryptedEmailKey string `json:"encryptedEmailKey" validate:"EncodedEncryptedKey"`
 }
 
 type EncryptionKey struct {
@@ -88,4 +89,19 @@ func EncryptEmailKey(emailKey []byte, publicKey string) (*EncryptionKey, error) 
 		EmailKey:  base64.RawURLEncoding.EncodeToString(cipherText),
 		PublicKey: publicKey,
 	}, nil
+}
+
+func HashInboxEmail(email string) (string, error) {
+	email = helpers.NormalizeEmail(email)
+	domain, err := helpers.ExtractDomainFromEmail(email)
+	if err != nil {
+		return "", err
+	}
+
+	user := strings.SplitN(email, "@", 2)[0]
+	email = fmt.Sprintf("%s@%s", user, domain)
+	hashedEmail := crypto.Hash(email)
+	encodedEmail := base64.RawURLEncoding.EncodeToString(hashedEmail.Bytes())
+
+	return fmt.Sprintf("%s@%s", encodedEmail, domain), nil
 }

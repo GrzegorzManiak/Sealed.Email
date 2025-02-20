@@ -2,10 +2,10 @@ import {Statistics} from "./types";
 import {ReturnedVerifyData} from "../auth/types";
 import { Login } from "../auth/login";
 import {Compress, Decompress, Decrypt, Encrypt} from "../symetric";
-import {DecodeFromBase64} from "../common";
+import {UrlSafeBase64Decode, UrlSafeBase64Encode} from "../common";
 import {CryptoGenericError} from "../errors";
 import {StandardIntegrityHash} from "../auth/register";
-import {BigIntToByteArray, EncodeToBase64} from "gowl-client-lib";
+import {BigIntToByteArray} from "gowl-client-lib";
 import {COOKIE_NAME} from "../constants";
 
 class Session {
@@ -69,17 +69,17 @@ class Session {
 
         // -- Key decryption
         try {
-            const decompressedRootKey = Decompress(DecodeFromBase64(this._encryptedSymetricRootKey));
+            const decompressedRootKey = Decompress(UrlSafeBase64Decode(this._encryptedSymetricRootKey));
             const decryptedRootKey = await Decrypt(decompressedRootKey, this._passwordHash);
-            this._rootKey = DecodeFromBase64(decryptedRootKey);
+            this._rootKey = UrlSafeBase64Decode(decryptedRootKey);
 
-            const decompressedPrivateKey = Decompress(DecodeFromBase64(this._encryptedAsymetricPrivateKey));
+            const decompressedPrivateKey = Decompress(UrlSafeBase64Decode(this._encryptedAsymetricPrivateKey));
             const decryptedPrivateKey = await Decrypt(decompressedPrivateKey, this._rootKey);
-            this._privateKey = DecodeFromBase64(decryptedPrivateKey);
+            this._privateKey = UrlSafeBase64Decode(decryptedPrivateKey);
 
-            const decompressedContactsKey = Decompress(DecodeFromBase64(this._encryptedSymetricContactsKey));
+            const decompressedContactsKey = Decompress(UrlSafeBase64Decode(this._encryptedSymetricContactsKey));
             const decryptedContactsKey = await Decrypt(decompressedContactsKey, this._rootKey);
-            this._contactsKey = DecodeFromBase64(decryptedContactsKey);
+            this._contactsKey = UrlSafeBase64Decode(decryptedContactsKey);
         }
 
         catch (UnknownError) {
@@ -105,14 +105,14 @@ class Session {
     }
 
     public async EncryptKey(key: Uint8Array | string): Promise<string> {
-        if (typeof key !== 'string') key = EncodeToBase64(key);
+        if (typeof key !== 'string') key = UrlSafeBase64Encode(key);
         const encryptedKey = Compress(await Encrypt(key, this._rootKey));
-        return EncodeToBase64(encryptedKey);
+        return UrlSafeBase64Encode(encryptedKey);
     }
 
     public async DecryptKey(key: Uint8Array | string): Promise<string> {
-        if (typeof key !== 'string') key = EncodeToBase64(key);
-        const decompressedKey = Decompress(DecodeFromBase64(key));
+        if (typeof key !== 'string') key = UrlSafeBase64Encode(key);
+        const decompressedKey = Decompress(UrlSafeBase64Decode(key));
         return await Decrypt(decompressedKey, this._rootKey);
     }
 

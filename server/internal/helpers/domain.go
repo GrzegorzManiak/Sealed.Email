@@ -161,3 +161,9 @@ func NormalizeEmail(email string) string {
 
 	return fmt.Sprintf("%s@%s", username, domain)
 }
+
+func CompareEmails(email1 string, email2 string) bool {
+	email1 = NormalizeEmail(email1)
+	email2 = NormalizeEmail(email2)
+	return email1 == email2
+}

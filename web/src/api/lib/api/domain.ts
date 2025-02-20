@@ -1,13 +1,12 @@
 import { parseDomain, ParseResultType } from "parse-domain";
 import Session from "../session/session";
 import {Endpoints} from "../constants";
-import {ClientError, GenericError} from "../errors";
+import {ClientError} from "../errors";
 import {NewKey} from "../symetric";
-import {BytesToBigInt, EncodeToBase64} from "gowl-client-lib";
 import {HandleRequest} from "./common";
 import * as Asym from "../asymmetric";
 import * as Sym from "../symetric";
-import {DecodeFromBase64} from "../common";
+import { UrlSafeBase64Encode } from "../common";
 
 
 //
@@ -76,7 +75,7 @@ const AddDomain = async (session: Session, domain: string): Promise<AddDomainRes
     const symmetricRootKey = await session.EncryptKey(domainKey);
 
     const key = Asym.GenerateKeyPair();
-    const encryptedKey = await Sym.Encrypt(EncodeToBase64(key.priv), domainKey);
+    const encryptedKey = await Sym.Encrypt(UrlSafeBase64Encode(key.priv), domainKey);
     const compressedKey = Sym.Compress(encryptedKey);
     const signature = await Asym.SignData(domain, key.priv);
 
@@ -85,8 +84,8 @@ const AddDomain = async (session: Session, domain: string): Promise<AddDomainRes
         body: {
             domain,
             symmetricRootKey,
-            publicKey: EncodeToBase64(key.pub),
-            encryptedPrivateKey: EncodeToBase64(compressedKey),
+            publicKey: UrlSafeBase64Encode(key.pub),
+            encryptedPrivateKey: UrlSafeBase64Encode(compressedKey),
             proofOfPossession: signature,
         },
         endpoint: Endpoints.DOMAIN_ADD,

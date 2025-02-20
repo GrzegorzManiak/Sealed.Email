@@ -1,6 +1,7 @@
 package session
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
@@ -62,8 +63,8 @@ func (claims *Claims) Verify() bool {
 		return false
 	}
 
-	content := crypto.B64Encode(contentBytes)
-	header := crypto.B64Encode(headerBytes)
+	content := base64.RawURLEncoding.EncodeToString(contentBytes)
+	header := base64.RawURLEncoding.EncodeToString(headerBytes)
 	message := fmt.Sprintf("%s.%s", header, content)
 
 	return cryptography.VerifyMessage(&config.Session.PublicKey, message, claims.Signature)

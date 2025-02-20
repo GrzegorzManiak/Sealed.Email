@@ -21,9 +21,9 @@ type Domain struct {
 	CatchAll  bool   `json:"catchAll"`
 	Version   uint   `json:"version"`
 
-	EncryptedPrivateKey string `json:"encryptedPrivateKey" validate:"Encrypted-B64-Key"`
-	PublicKey           string `json:"publicKey" validate:"P256-B64-Key"`
-	SymmetricRootKey    string `json:"symmetricRootKey" validate:"Encrypted-B64-Key"`
+	EncryptedPrivateKey string `json:"encryptedPrivateKey" validate:"EncodedEncryptedKey"`
+	PublicKey           string `json:"publicKey" validate:"EncodedP256Key"`
+	SymmetricRootKey    string `json:"symmetricRootKey" validate:"EncodedEncryptedKey"`
 }
 
 var SessionFilter = &session.APIConfiguration{

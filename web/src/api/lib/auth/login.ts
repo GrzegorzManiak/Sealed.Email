@@ -1,4 +1,4 @@
-import { BigIntToByteArray, Client, Hash, EncodeToBase64, ServerAuthInit, ServerAuthVerify } from "gowl-client-lib";
+import { Client, ServerAuthInit, ServerAuthVerify } from "gowl-client-lib";
 import { ProcessDetails } from "../common";
 import { CurrentCurve, Endpoints, ServerName } from "../constants";
 import { ClientError, GenericError } from "../errors";

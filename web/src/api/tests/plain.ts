@@ -1,5 +1,6 @@
 import * as API from "$api/lib";
-import {EncodeToBase64, Hash} from "gowl-client-lib";
+import { UrlSafeBase64Encode } from "$api/lib/common";
+import {Hash} from "gowl-client-lib";
 
 const username = 'test';
 const password = 'test';
@@ -29,6 +30,6 @@ const email = {
 
 const sentEmail = await API.Email.SendPlainEmail(session, {
     ...email,
-	signature: await domainService.SignData(EncodeToBase64(await Hash(email.body))),
-	nonce: EncodeToBase64(API.Sym.NewKey())
+	signature: await domainService.SignData(UrlSafeBase64Encode(await Hash(email.body))),
+	nonce: UrlSafeBase64Encode(API.Sym.NewKey())
 });

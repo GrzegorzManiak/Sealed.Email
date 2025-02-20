@@ -1,8 +1,6 @@
-import Domain from "./domain";
 import * as Sym from "../symetric";
 import * as Asym from "../asymmetric";
-import {DecodeFromBase64, EnsureFqdn, SplitEmail} from "../common";
-import {EncodeToBase64, Hash} from "gowl-client-lib";
+import {HashInboxEmail, UrlSafeBase64Encode} from "../common";
 import {ComputedEncryptedInbox} from "../api/email";
 
 class EncryptedInbox {
@@ -40,13 +38,8 @@ class EncryptedInbox {
 	): Promise<EncryptedInbox> {
 
 		const encryptedDisplayName = Sym.Compress(await Sym.Encrypt(displayName, emailKey));
-		const encodedDisplayName = EncodeToBase64(encryptedDisplayName);
-
-		const { domain, username } = SplitEmail(email);
-		if (!domain || !username) throw new Error("Invalid email");
-		const userHash = await Hash(`${username}@${EnsureFqdn(domain)}`);
-		const encodedUserHash = `${EncodeToBase64(userHash)}@${domain}`;
-
+		const encodedDisplayName = UrlSafeBase64Encode(encryptedDisplayName);
+		const encodedUserHash = await HashInboxEmail(email);
 		const encryptedEmailKey = await Asym.Encrypt(emailKey, publicKey);
 
 		return new EncryptedInbox(
@@ -69,7 +62,7 @@ class EncryptedInbox {
 		return {
 			displayName: this._encryptedDisplayName,
 			emailHash: this._userHash,
-			publicKey: EncodeToBase64(this._publicKey),
+			publicKey: UrlSafeBase64Encode(this._publicKey),
 			encryptedEmailKey: this._encryptedEmailKey
 		}
 	}
