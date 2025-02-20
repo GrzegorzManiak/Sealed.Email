@@ -86,9 +86,6 @@ func Decompress(compressedData []byte) ([]byte, []byte, error) {
 }
 
 func NewKey(length int) ([]byte, error) {
-	if length != 32 {
-		return nil, errors.New(fmt.Sprintf("key length must be %d bytes", length))
-	}
 	key := make([]byte, length)
 	_, err := rand.Read(key)
 	if err != nil {

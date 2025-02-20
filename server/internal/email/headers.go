@@ -30,6 +30,8 @@ const (
 	HeaderNoiseExtension HeaderStatus = iota
 )
 
+const CRLF = "\r\n"
+
 var (
 	From        WellKnownHeader = WellKnownHeader{"from", "From"}
 	To          WellKnownHeader = WellKnownHeader{"to", "To"}
@@ -107,17 +109,6 @@ func (h Headers) IsEncrypted() bool {
 	_, nek := h[NoiseInboxKeys.Lower]
 	_, ns := h[NoiseSignature.Lower]
 	return nv && nek && ns
-}
-
-func (h Headers) Marshal() []byte {
-	var bytes []byte
-	for k, v := range h {
-		bytes = append(bytes, []byte(k)...)
-		bytes = append(bytes, []byte(": ")...)
-		bytes = append(bytes, []byte(v.Value)...)
-		bytes = append(bytes, []byte("\r\n")...)
-	}
-	return bytes
 }
 
 func (h Headers) Stringify() string {
@@ -216,7 +207,7 @@ func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {
 	}
 
 	// -- Empty line (2 chars is the minimum for a valid header)
-	if rawHeader == "\r\n" || rawHeader == "\n" || len(rawHeader) <= 2 {
+	if rawHeader == CRLF || rawHeader == "\n" || len(rawHeader) <= 2 {
 		return "", "", fmt.Errorf("empty line")
 	}
 
@@ -230,4 +221,15 @@ func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {
 	value := strings.Trim(headerParts[1], " ")
 
 	return header, value, nil
+}
+
+func FuseHeadersToBody(headers Headers, body string) string {
+	var str strings.Builder
+	for _, v := range headers {
+		formatted := FormatSmtpHeader(&v)
+		str.WriteString(formatted)
+	}
+	str.WriteString(CRLF)
+	str.WriteString(body)
+	return str.String()
 }

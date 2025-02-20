@@ -4,6 +4,7 @@ import Session from "../lib/session/session";
 import {HandleRequest} from "$api/lib/api/common";
 import {Endpoints} from "$api/lib/constants";
 import {ClientError} from "$api/lib/errors";
+import {sleep} from "bun";
 
 (async () => {
 	const details = ['test', 'test'];
@@ -17,9 +18,6 @@ import {ClientError} from "$api/lib/errors";
 	const domain = await API.Domain.GetDomain(session, domainId);
 	const domainService = await API.DomainService.Decrypt(session, domain);
 
-	console.log('Plain DOmain', domainService.Domain);
-	// const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID });
-	// console.log('Emails:', emails);
 
 	if (send) {
 		const emailKey = API.Sym.NewKey();
@@ -56,6 +54,17 @@ import {ClientError} from "$api/lib/errors";
 		nonce: EncodeToBase64(API.Sym.NewKey()),
 		signature: EncodeToBase64(API.Sym.NewKey()),
 	})
+
+	await sleep(5000);
+
+	console.log('Plain DOmain', domainService.Domain);
+	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc' });
+	if (emails.emails.length > 0) {
+		const email = await API.Email.GetEmail(session, domainService.DomainID, emails.emails[0].bucketPath);
+		const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
+		console.log('Email:', emailData);
+	}
+
 })();
 
 

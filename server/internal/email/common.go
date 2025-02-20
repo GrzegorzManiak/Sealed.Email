@@ -121,3 +121,11 @@ func (h Headers) EncryptionKeys(encryptionKeys []*EncryptionKey) {
 
 	h.Add(NoisePostEncryptionKey.Cased, strings.Join(stringifiedEncryptionKeys, ", "))
 }
+
+func (h Headers) MIMEVersion() {
+	h.Add(MIMEVersion.Cased, "1.0")
+}
+
+func (h Headers) ContentType(contentType string) {
+	h.Add(ContentType.Cased, contentType)
+}
