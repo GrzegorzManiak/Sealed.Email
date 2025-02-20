@@ -1,12 +1,12 @@
-import {ALG, IV_LENGTH} from "./constants";
+import {ALG, IVLength, DefaultKeyLength} from "./constants";
 
 async function Encrypt(text: string, key: Uint8Array): Promise<{ iv: number[], data: number[] }> {
     const encoder = new TextEncoder();
     const data = encoder.encode(text);
 
-    if (key.length !== 32) throw new Error("Key must be 32 bytes, got " + key.length);
+    if (key.length !== DefaultKeyLength) throw new Error(`Key must be ${DefaultKeyLength} bytes, got ${key.length}`);
 
-    const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+    const iv = crypto.getRandomValues(new Uint8Array(IVLength));
 
     const algorithm = { name: ALG, iv };
     const cryptoKey = await crypto.subtle.importKey("raw", key, algorithm, false, ["encrypt"]);
@@ -15,13 +15,12 @@ async function Encrypt(text: string, key: Uint8Array): Promise<{ iv: number[], d
     return { iv: Array.from(iv), data: Array.from(new Uint8Array(encryptedData)) };
 }
 
-
 async function Decrypt(encryptedData: { iv: number[], data: number[] }, key: Uint8Array): Promise<string> {
     const { iv, data } = encryptedData;
     const ivArray = new Uint8Array(iv);
     const dataArray = new Uint8Array(data);
 
-    if (key.length !== 32) throw new Error("Key must be 32 bytes, got " + key.length);
+    if (key.length !== DefaultKeyLength) throw new Error(`Key must be ${DefaultKeyLength} bytes, got ${key.length}`);
 
     const algorithm = { name: ALG, iv: ivArray };
     const cryptoKey = await crypto.subtle.importKey('raw', key, algorithm, false, ['decrypt']);
@@ -31,20 +30,27 @@ async function Decrypt(encryptedData: { iv: number[], data: number[] }, key: Uin
     return decoder.decode(decrypted);
 }
 
-function Compress(encryptedData: { iv: number[], data: number[] }): Uint8Array {
-    const { iv, data } = encryptedData;
-    const ivArray = new Uint8Array(iv);
-    const dataArray = new Uint8Array(data);
-    return new Uint8Array([...ivArray, ...dataArray]);
+function Compress(iv: Uint8Array, data: Uint8Array): Uint8Array {
+    const ivLen = new Uint8Array([iv.length]);
+    return new Uint8Array([...ivLen, ...iv, ...data]);
 }
 
-function Decompress(compressedData: Uint8Array): { iv: number[], data: number[] } {
-    const iv = compressedData.slice(0, IV_LENGTH);
-    const data = compressedData.slice(IV_LENGTH);
-    return { iv: Array.from(iv), data: Array.from(data) };
+function Decompress(compressedData: Uint8Array): { iv: Uint8Array; data: Uint8Array } {
+    if (compressedData.length < 2) {
+        throw new Error("Invalid compressed data: too short");
+    }
+
+    const ivLen = compressedData[0];
+    if (compressedData.length < 1 + ivLen) {
+        throw new Error("Invalid compressed data: truncated IV");
+    }
+
+    const iv = compressedData.slice(1, 1 + ivLen);
+    const data = compressedData.slice(1 + ivLen);
+    return { iv, data };
 }
 
-function NewKey(length = 32): Uint8Array {
+function NewKey(length = DefaultKeyLength): Uint8Array {
     return crypto.getRandomValues(new Uint8Array(length));
 }
   

@@ -1,4 +1,5 @@
 import { SupportedCurves } from "gowl-client-lib";
+import { secp256k1 } from "@noble/curves/secp256k1";
 
 const ROOT = 'http://localhost:2095/api';
 const COOKIE_NAME = 'NES-DEV';
@@ -23,16 +24,18 @@ const Endpoints: { [key: string]: [string, string] } = {
 };
 
 const ServerName: string = 'NoiseEmailServer>V1.0.0';
-const CurrentCurve: SupportedCurves = SupportedCurves.P256;
+const CurrentCurve = SupportedCurves.P256;
 const ALG = 'AES-GCM'
-const IV_LENGTH = 12;
+const IVLength = 12;
+const DefaultKeyLength = 32;
 
 export {
     CurrentCurve,
     ServerName,
     Endpoints,
     COOKIE_NAME,
-    IV_LENGTH,
+    DefaultKeyLength,
+    IVLength,
     ROOT,
     ALG
 }
