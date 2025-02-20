@@ -90,6 +90,7 @@ func sendEmail(
 		FromUserId:    uint64(fromDomain.UserID),
 		FromDomainPID: fromDomain.PID,
 		FromDomainId:  uint64(fromDomain.ID),
+		PublicKey:     fromDomain.PublicKey,
 	}); err != nil {
 		return "", helpers.NewServerError("Failed to send email. Please try again later.", "Failed to send email")
 	}
