@@ -20,6 +20,8 @@ type OutboundEmail struct {
 	RefID     string `gorm:"uniqueIndex"`
 	MessageId string `gorm:"index"`
 
+	PublicKey string
+
 	FromUserId    uint
 	FromDomainId  uint
 	FromDomainPID string
