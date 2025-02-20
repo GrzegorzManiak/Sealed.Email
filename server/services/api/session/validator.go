@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"gorm.io/gorm"
@@ -17,14 +16,25 @@ func ParseToken(token string) (Header, Content, []byte, error) {
 		return Header{}, Content{}, nil, fmt.Errorf("invalid token format")
 	}
 
-	headerBytes := crypto.B64DecodeBytes(parts[0])
-	contentBytes := crypto.B64DecodeBytes(parts[1])
-	signature := crypto.B64DecodeBytes(parts[2])
+	headerBytes, err := base64.RawURLEncoding.DecodeString(parts[0])
+	if err != nil {
+		return Header{}, Content{}, nil, err
+	}
+
+	contentBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return Header{}, Content{}, nil, err
+	}
+
+	signature, err := base64.RawURLEncoding.DecodeString(parts[2])
+	if err != nil {
+		return Header{}, Content{}, nil, err
+	}
 
 	header := Header{}
 	content := Content{}
 
-	err := json.Unmarshal(headerBytes, &header)
+	err = json.Unmarshal(headerBytes, &header)
 	if err != nil {
 		return Header{}, Content{}, nil, err
 	}

@@ -3,7 +3,7 @@ package structs
 import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
+	"encoding/base64"
 	"math/big"
 )
 
@@ -41,12 +41,22 @@ type ParsedSessionConfig struct {
 }
 
 func (s *RawSessionConfig) Parse() (*ParsedSessionConfig, error) {
-	privateKey, err := ByteArrToECDSAPrivateKey(elliptic.P256(), crypto.B64DecodeBytes(s.PrivateKey))
+	decodedPrivateKey, err := base64.RawURLEncoding.DecodeString(s.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
-	emailAccessPrivateKey, err := ByteArrToECDSAPrivateKey(elliptic.P256(), crypto.B64DecodeBytes(s.EmailAccessKey))
+	privateKey, err := ByteArrToECDSAPrivateKey(elliptic.P256(), decodedPrivateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	decodedEmailAccessKey, err := base64.RawURLEncoding.DecodeString(s.EmailAccessKey)
+	if err != nil {
+		return nil, err
+	}
+
+	emailAccessPrivateKey, err := ByteArrToECDSAPrivateKey(elliptic.P256(), decodedEmailAccessKey)
 	if err != nil {
 		return nil, err
 	}

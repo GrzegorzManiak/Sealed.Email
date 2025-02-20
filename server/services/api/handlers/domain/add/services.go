@@ -1,7 +1,7 @@
 package domainAdd
 
 import (
-	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
+	"encoding/base64"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
@@ -84,8 +84,17 @@ func domainAlreadyAdded(domain string, userID uint, databaseConnection *gorm.DB)
 func validateProofOfPossession(
 	input *Input,
 ) bool {
-	proof := crypto.B64DecodeBytes(input.ProofOfPossession)
-	publicKey, err := cryptography.ByteArrToECDSAPublicKey(crypto.B64DecodeBytes(input.PublicKey))
+	proof, err := base64.RawURLEncoding.DecodeString(input.ProofOfPossession)
+	if err != nil {
+		return false
+	}
+
+	decodedPublicKey, err := base64.RawURLEncoding.DecodeString(input.PublicKey)
+	if err != nil {
+		return false
+	}
+
+	publicKey, err := cryptography.ByteArrToECDSAPublicKey(decodedPublicKey)
 	if err != nil {
 		return false
 	}
