@@ -2,7 +2,6 @@ package loginVerify
 
 import (
 	"encoding/base64"
-	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
@@ -31,8 +30,8 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 
 	owlServer, err := owl.ServerInit(user.ServerName, config.CURVE, &owl.RegistrationRequestPayload{
 		U:  user.UID,
-		T:  crypto.B64DecodeBytes(user.T),
-		PI: crypto.B64DecodeBigInt(user.PI),
+		T:  helpers.DecodeUrlSafeBase64ToBytes(user.T),
+		PI: helpers.DecodeUrlSafeBase64ToBigInt(user.PI),
 	})
 	if err != nil {
 		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")

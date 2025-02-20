@@ -9,13 +9,13 @@ import (
 
 func parseClientValidate(data *Input) (*owl.ClientAuthValidateRequestPayload, helpers.AppError) {
 	clientValidate := owl.ClientAuthValidateRequestPayload{
-		ClientKCTag: crypto.B64DecodeBigInt(data.ClientKCTag),
-		Alpha:       crypto.B64DecodeBytes(data.Alpha),
+		ClientKCTag: helpers.DecodeUrlSafeBase64ToBigInt(data.ClientKCTag),
+		Alpha:       helpers.DecodeUrlSafeBase64ToBytes(data.Alpha),
 		PIAlpha: &crypto.SchnorrZKP{
-			V: crypto.B64DecodeBytes(data.PIAlpha_V),
-			R: crypto.B64DecodeBigInt(data.PIAlpha_R),
+			V: helpers.DecodeUrlSafeBase64ToBytes(data.PIAlpha_V),
+			R: helpers.DecodeUrlSafeBase64ToBigInt(data.PIAlpha_R),
 		},
-		R: crypto.B64DecodeBigInt(data.R),
+		R: helpers.DecodeUrlSafeBase64ToBigInt(data.R),
 	}
 
 	return &clientValidate, nil
@@ -24,15 +24,15 @@ func parseClientValidate(data *Input) (*owl.ClientAuthValidateRequestPayload, he
 func parseClientAuthInit(userVerify *models2.UserVerify, user *models2.User) (*owl.ClientAuthInitRequestPayload, helpers.AppError) {
 	clientAuthInit := owl.ClientAuthInitRequestPayload{
 		U:  user.UID,
-		X1: crypto.B64DecodeBytes(userVerify.X1),
-		X2: crypto.B64DecodeBytes(userVerify.X2),
+		X1: helpers.DecodeUrlSafeBase64ToBytes(userVerify.X1),
+		X2: helpers.DecodeUrlSafeBase64ToBytes(userVerify.X2),
 		PI1: &crypto.SchnorrZKP{
-			V: crypto.B64DecodeBytes(userVerify.PI1_V),
-			R: crypto.B64DecodeBigInt(userVerify.PI1_R),
+			V: helpers.DecodeUrlSafeBase64ToBytes(userVerify.PI1_V),
+			R: helpers.DecodeUrlSafeBase64ToBigInt(userVerify.PI1_R),
 		},
 		PI2: &crypto.SchnorrZKP{
-			V: crypto.B64DecodeBytes(userVerify.PI2_V),
-			R: crypto.B64DecodeBigInt(userVerify.PI2_R),
+			V: helpers.DecodeUrlSafeBase64ToBytes(userVerify.PI2_V),
+			R: helpers.DecodeUrlSafeBase64ToBigInt(userVerify.PI2_R),
 		},
 	}
 
@@ -41,22 +41,22 @@ func parseClientAuthInit(userVerify *models2.UserVerify, user *models2.User) (*o
 
 func parseServerAuthInit(userVerify *models2.UserVerify, user *models2.User) (*owl.ServerAuthInitResponse, helpers.AppError) {
 	serverAuthInit := owl.ServerAuthInitResponse{
-		Xx4: crypto.B64DecodeBigInt(userVerify.XPub4),
+		Xx4: helpers.DecodeUrlSafeBase64ToBigInt(userVerify.XPub4),
 		Payload: &owl.ServerAuthInitResponsePayload{
-			X3: crypto.B64DecodeBytes(user.X3),
-			X4: crypto.B64DecodeBytes(userVerify.XPri4),
+			X3: helpers.DecodeUrlSafeBase64ToBytes(user.X3),
+			X4: helpers.DecodeUrlSafeBase64ToBytes(userVerify.XPri4),
 			PI3: &crypto.SchnorrZKP{
-				V: crypto.B64DecodeBytes(user.PI3_V),
-				R: crypto.B64DecodeBigInt(user.PI3_R),
+				V: helpers.DecodeUrlSafeBase64ToBytes(user.PI3_V),
+				R: helpers.DecodeUrlSafeBase64ToBigInt(user.PI3_R),
 			},
 			PI4: &crypto.SchnorrZKP{
-				V: crypto.B64DecodeBytes(userVerify.PI4_V),
-				R: crypto.B64DecodeBigInt(userVerify.PI4_R),
+				V: helpers.DecodeUrlSafeBase64ToBytes(userVerify.PI4_V),
+				R: helpers.DecodeUrlSafeBase64ToBigInt(userVerify.PI4_R),
 			},
-			Beta: crypto.B64DecodeBytes(userVerify.Beta),
+			Beta: helpers.DecodeUrlSafeBase64ToBytes(userVerify.Beta),
 			PIBeta: &crypto.SchnorrZKP{
-				V: crypto.B64DecodeBytes(userVerify.PIBeta_V),
-				R: crypto.B64DecodeBigInt(userVerify.PIBeta_R),
+				V: helpers.DecodeUrlSafeBase64ToBytes(userVerify.PIBeta_V),
+				R: helpers.DecodeUrlSafeBase64ToBigInt(userVerify.PIBeta_R),
 			},
 		},
 	}

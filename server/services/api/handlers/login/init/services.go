@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
-	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"gorm.io/gorm"
@@ -13,15 +12,15 @@ import (
 func prepareClientAuthInit(data *Input) (*owl.ClientAuthInitRequestPayload, helpers.AppError) {
 	clientAuthInit := &owl.ClientAuthInitRequestPayload{
 		U:  data.User,
-		X1: crypto.B64DecodeBytes(data.X1),
-		X2: crypto.B64DecodeBytes(data.X2),
+		X1: helpers.DecodeUrlSafeBase64ToBytes(data.X1),
+		X2: helpers.DecodeUrlSafeBase64ToBytes(data.X2),
 		PI1: &crypto.SchnorrZKP{
-			V: crypto.B64DecodeBytes(data.PI1_V),
-			R: crypto.B64DecodeBigInt(data.PI1_R),
+			V: helpers.DecodeUrlSafeBase64ToBytes(data.PI1_V),
+			R: helpers.DecodeUrlSafeBase64ToBigInt(data.PI1_R),
 		},
 		PI2: &crypto.SchnorrZKP{
-			V: crypto.B64DecodeBytes(data.PI2_V),
-			R: crypto.B64DecodeBigInt(data.PI2_R),
+			V: helpers.DecodeUrlSafeBase64ToBytes(data.PI2_V),
+			R: helpers.DecodeUrlSafeBase64ToBigInt(data.PI2_R),
 		},
 	}
 
@@ -43,10 +42,10 @@ func parseRegisteredUser(fetchedUser *models2.User) (*owl.RegistrationResponse, 
 
 	return &owl.RegistrationResponse{
 		Payload: &owl.RegistrationResponsePayload{
-			X3: crypto.B64DecodeBytes(fetchedUser.X3),
+			X3: helpers.DecodeUrlSafeBase64ToBytes(fetchedUser.X3),
 			PI3: &crypto.SchnorrZKP{
-				V: crypto.B64DecodeBytes(fetchedUser.PI3_V),
-				R: crypto.B64DecodeBigInt(fetchedUser.PI3_R),
+				V: helpers.DecodeUrlSafeBase64ToBytes(fetchedUser.PI3_V),
+				R: helpers.DecodeUrlSafeBase64ToBigInt(fetchedUser.PI3_R),
 			},
 		},
 	}, nil
@@ -58,7 +57,7 @@ func insertVerifyData(
 	clientAuthInit *owl.ClientAuthInitRequestPayload,
 	databaseConnection *gorm.DB,
 ) (string, helpers.AppError) {
-	PID := base64.RawURLEncoding.EncodeToString(crypto.GenerateKey(config.CURVE.Params().N).Bytes())
+	PID := helpers.GeneratePublicId(64)
 	newUserVerify := databaseConnection.Create(&models2.UserVerify{
 		PID:      PID,
 		UserID:   fetchedUser.ID,

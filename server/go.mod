@@ -6,7 +6,7 @@ toolchain go1.23.1
 
 require (
 	blitiri.com.ar/go/spf v1.5.1
-	github.com/GrzegorzManiak/GOWL v1.1.2
+	github.com/GrzegorzManiak/GOWL v1.2.1
 	github.com/emersion/go-msgauth v0.6.8
 	github.com/gin-contrib/pprof v1.5.0
 	github.com/gin-contrib/zap v1.1.4

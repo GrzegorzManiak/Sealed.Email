@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -43,7 +43,7 @@ func (claims *Claims) Sign(key *ecdsa.PrivateKey) error {
 
 func CreateSession(user models2.User, group TokenGroup, databaseConnection *gorm.DB) (models2.Session, error) {
 	unix := time.Now().Unix()
-	SessionID := base64.RawURLEncoding.EncodeToString(crypto.GenerateKey(config.CURVE.Params().N).Bytes())
+	SessionID := helpers.GeneratePublicId(64)
 
 	session := models2.Session{
 		UserID:    user.ID,

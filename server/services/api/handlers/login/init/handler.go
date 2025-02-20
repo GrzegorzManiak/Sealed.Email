@@ -1,7 +1,6 @@
 package loginInit
 
 import (
-	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
@@ -19,8 +18,8 @@ func Handler(input *Input, data *services.Handler) (*Output, helpers.AppError) {
 
 	owlServer, err := owl.ServerInit(fetchedUser.ServerName, config.CURVE, &owl.RegistrationRequestPayload{
 		U:  input.User,
-		T:  crypto.B64DecodeBytes(fetchedUser.T),
-		PI: crypto.B64DecodeBigInt(fetchedUser.PI),
+		T:  helpers.DecodeUrlSafeBase64ToBytes(fetchedUser.T),
+		PI: helpers.DecodeUrlSafeBase64ToBigInt(fetchedUser.PI),
 	})
 	if err != nil {
 		return nil, helpers.NewUserError("Sorry! We couldn't find your account. Please try again.", "User not found")
