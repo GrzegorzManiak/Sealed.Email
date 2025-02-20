@@ -32,11 +32,11 @@ func (i Inbox) String() string {
 }
 
 func (h Headers) From(from Inbox) {
-	h.Add("From", from.String())
+	h.Add(From.Cased, from.String())
 }
 
 func (h Headers) To(to Inbox) {
-	h.Add("To", to.String())
+	h.Add(To.Cased, to.String())
 }
 
 func (h Headers) Cc(cc []Inbox) {
@@ -47,25 +47,25 @@ func (h Headers) Cc(cc []Inbox) {
 	for i, c := range cc {
 		ccStrings[i] = c.String()
 	}
-	h.Add("Cc", strings.Join(ccStrings, ", "))
+	h.Add(CC.Cased, strings.Join(ccStrings, ", "))
 }
 
 func (h Headers) Date() {
-	h.Add("Date", helpers.GetFormattedTime())
+	h.Add(Date.Cased, helpers.GetFormattedTime())
 }
 
 func (h Headers) Subject(subject string) {
-	h.Add("Subject", subject)
+	h.Add(Subject.Cased, subject)
 }
 
 func (h Headers) MessageId(domain string) string {
 	messageId := "<" + helpers.GeneratePublicId(64) + "@" + helpers.RemoveTrailingDot(domain) + ">"
-	h.Add("Message-ID", messageId)
+	h.Add(MessageID.Cased, messageId)
 	return messageId
 }
 
 func (h Headers) ReplyTo(replyTo Inbox) {
-	h.Add("Reply-To", replyTo.String())
+	h.Add(ReplyTo.Cased, replyTo.String())
 }
 
 func (h Headers) InReplyTo(inReplyTo string) error {
@@ -75,7 +75,7 @@ func (h Headers) InReplyTo(inReplyTo string) error {
 	if err := ValidateMessageId(inReplyTo); err != nil {
 		return err
 	}
-	h.Add("In-Reply-To", inReplyTo)
+	h.Add(InReplyTo.Cased, inReplyTo)
 	return nil
 }
 
@@ -88,17 +88,17 @@ func (h Headers) References(references []string) error {
 			return err
 		}
 	}
-	h.Add("References", strings.Join(references, " "))
+	h.Add(References.Cased, strings.Join(references, " "))
 	return nil
 }
 
 func (h Headers) NoiseNonce(nonce string) {
-	h.Add("X-Noise-Nonce", nonce)
+	h.Add(NoiseNonce.Cased, nonce)
 }
 
 func (h Headers) NoiseSignature(signature string) {
-	h.Add("X-Noise-Signature", signature)
-	h.Add("X-Noise-Version", "1.0")
+	h.Add(NoiseSignature.Cased, signature)
+	h.Add(NoiseVersion.Cased, "1.0")
 }
 
 func (h Headers) InboxKeys(inboxKeys []EncryptedInbox) {
@@ -106,5 +106,9 @@ func (h Headers) InboxKeys(inboxKeys []EncryptedInbox) {
 		return
 	}
 	stringifiedInboxKeys := StringifyInboxKeys(inboxKeys)
-	h.Add("X-Noise-Inbox-Keys", stringifiedInboxKeys)
+	h.Add(NoiseInboxKeys.Cased, stringifiedInboxKeys)
+}
+
+func (h Headers) EncryptionKey(encryptionKey string) {
+	h.Add(NoiseEncryptionKey.Cased, encryptionKey)
 }

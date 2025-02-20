@@ -1,6 +1,9 @@
 package email
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type HeaderKey struct {
 	Lower string
@@ -39,6 +42,7 @@ var (
 	ContentType WellKnownHeader = WellKnownHeader{"content-type", "Content-Type"}
 	CC          WellKnownHeader = WellKnownHeader{"cc", "Cc"}
 	BCC         WellKnownHeader = WellKnownHeader{"bcc", "Bcc"}
+	References  WellKnownHeader = WellKnownHeader{"references", "References"}
 )
 
 var (
@@ -47,6 +51,7 @@ var (
 	NoiseSignature      NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-signature", "X-Noise-Signature"}
 	NoiseNonce          NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-nonce", "X-Noise-Nonce"}
 	NoiseInboxKeys      NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-inbox-keys", "X-Noise-Inbox-Keys"}
+	NoiseEncryptionKey  NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-encryption-key", "X-Noise-Encryption-Key"}
 )
 
 var RequiredHeaders = []WellKnownHeader{
@@ -167,6 +172,8 @@ func GetNoiseExtensionHeader(h string) NoiseExtensionHeader {
 		return NoiseNonce
 	case NoiseInboxKeys.Lower:
 		return NoiseInboxKeys
+	case NoiseEncryptionKey.Lower:
+		return NoiseEncryptionKey
 	default:
 		return NoiseExtensionHeader{}
 	}
@@ -194,4 +201,33 @@ func FormatSmtpHeader(header *Header) string {
 	}
 
 	return foldedHeader.String()
+}
+
+func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {
+
+	// -- Folded header
+	if rawHeader[0] == ' ' || rawHeader[0] == '\t' {
+		if lastHeader.Key == "" {
+			return "", "", fmt.Errorf("invalid folded header format")
+		}
+
+		lastHeader.Value += rawHeader
+		return lastHeader.Key, lastHeader.Value, nil
+	}
+
+	// -- Empty line (2 chars is the minimum for a valid header)
+	if rawHeader == "\r\n" || rawHeader == "\n" || len(rawHeader) <= 2 {
+		return "", "", fmt.Errorf("empty line")
+	}
+
+	// -- Normal header
+	headerParts := strings.SplitN(rawHeader, ":", 2)
+	if len(headerParts) != 2 {
+		return "", "", fmt.Errorf("invalid header format")
+	}
+
+	header := strings.Trim(headerParts[0], " ")
+	value := strings.Trim(headerParts[1], " ")
+
+	return header, value, nil
 }
