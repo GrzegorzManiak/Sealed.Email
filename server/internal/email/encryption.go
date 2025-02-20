@@ -1,7 +1,9 @@
 package email
 
 import (
+	"encoding/base64"
 	"fmt"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
 	"strings"
@@ -12,6 +14,15 @@ type EncryptedInbox struct {
 	EmailHash         string `json:"emailHash" validate:"required,email"`
 	PublicKey         string `json:"publicKey" validate:"P256-B64-Key"`
 	EncryptedEmailKey string `json:"encryptedEmailKey" validate:"Encrypted-B64-Key"`
+}
+
+type EncryptionKey struct {
+	EmailKey  string
+	PublicKey string
+}
+
+func (i EncryptionKey) String() string {
+	return fmt.Sprintf("%s <%s>", i.PublicKey, i.EmailKey)
 }
 
 func (i EncryptedInbox) BasicInbox() Inbox {
@@ -51,4 +62,30 @@ func StringifyInboxKeys(inboxes []EncryptedInbox) string {
 		result = append(result, stringified)
 	}
 	return strings.Join(result, ",")
+}
+
+func CreateInboxKey() ([]byte, error) {
+	return cryptography.NewKey(cryptography.DefaultKeyLength)
+}
+
+func EncryptEmailKey(emailKey []byte, publicKey string) (*EncryptionKey, error) {
+	decodedKey, err := base64.StdEncoding.DecodeString(publicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	ecdsaPublicKey, err := cryptography.ByteArrToECDSAPublicKey(decodedKey)
+	if err != nil {
+		return nil, err
+	}
+
+	cipherText, err := cryptography.AsymEncrypt(ecdsaPublicKey, emailKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &EncryptionKey{
+		EmailKey:  base64.RawURLEncoding.EncodeToString(cipherText),
+		PublicKey: publicKey,
+	}, nil
 }

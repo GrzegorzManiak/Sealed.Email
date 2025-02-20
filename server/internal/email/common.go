@@ -109,6 +109,15 @@ func (h Headers) InboxKeys(inboxKeys []EncryptedInbox) {
 	h.Add(NoiseInboxKeys.Cased, stringifiedInboxKeys)
 }
 
-func (h Headers) EncryptionKey(encryptionKey string) {
-	h.Add(NoiseEncryptionKey.Cased, encryptionKey)
+func (h Headers) EncryptionKeys(encryptionKeys []*EncryptionKey) {
+	if encryptionKeys == nil {
+		return
+	}
+
+	var stringifiedEncryptionKeys []string
+	for _, key := range encryptionKeys {
+		stringifiedEncryptionKeys = append(stringifiedEncryptionKeys, key.String())
+	}
+
+	h.Add(NoisePostEncryptionKey.Cased, strings.Join(stringifiedEncryptionKeys, ", "))
 }

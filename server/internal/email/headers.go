@@ -46,12 +46,12 @@ var (
 )
 
 var (
-	NoiseVersion        NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-version", "X-Noise-Version"}
-	NoiseEncryptionKeys NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-encryption-keys", "X-Noise-Encryption-Keys"}
-	NoiseSignature      NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-signature", "X-Noise-Signature"}
-	NoiseNonce          NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-nonce", "X-Noise-Nonce"}
-	NoiseInboxKeys      NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-inbox-keys", "X-Noise-Inbox-Keys"}
-	NoiseEncryptionKey  NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-encryption-key", "X-Noise-Encryption-Key"}
+	NoiseVersion           NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-version", "X-Noise-Version"}
+	NoiseEncryptionKeys    NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-encryption-keys", "X-Noise-Encryption-Keys"}
+	NoiseSignature         NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-signature", "X-Noise-Signature"}
+	NoiseNonce             NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-nonce", "X-Noise-Nonce"}
+	NoiseInboxKeys         NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-inbox-keys", "X-Noise-Inbox-Keys"}
+	NoisePostEncryptionKey NoiseExtensionHeader = NoiseExtensionHeader{"x-noise-post-encryption-keys", "X-Noise-Post-Encryption-Keys"}
 )
 
 var RequiredHeaders = []WellKnownHeader{
@@ -172,8 +172,8 @@ func GetNoiseExtensionHeader(h string) NoiseExtensionHeader {
 		return NoiseNonce
 	case NoiseInboxKeys.Lower:
 		return NoiseInboxKeys
-	case NoiseEncryptionKey.Lower:
-		return NoiseEncryptionKey
+	case NoisePostEncryptionKey.Lower:
+		return NoisePostEncryptionKey
 	default:
 		return NoiseExtensionHeader{}
 	}
