@@ -2,7 +2,7 @@ package worker
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"go.uber.org/zap"
 	"slices"
 	"strings"
@@ -14,7 +14,7 @@ func groupRecipients(email *models.OutboundEmail, sentSuccessfully []string) (ma
 
 	for _, recipient := range email.To {
 		recipient = strings.ToLower(recipient)
-		domain, err := helpers.ExtractDomainFromEmail(recipient)
+		domain, err := validation.ExtractDomainFromEmail(recipient)
 		if err != nil {
 			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
 			return nil, err

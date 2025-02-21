@@ -3,8 +3,8 @@ package worker
 import (
 	"crypto/tls"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"github.com/GrzegorzManiak/NoiseBackend/services/domain/services"
 	"github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
@@ -40,7 +40,7 @@ func Worker(certs *tls.Config, entry *queue.Entry, queueDatabaseConnection *gorm
 		return queue.Failed
 	}
 
-	fromDomain, err := helpers.ExtractDomainFromEmail(email.From)
+	fromDomain, err := validation.ExtractDomainFromEmail(email.From)
 	if err != nil {
 		zap.L().Debug("Failed to extract domain from email", zap.Error(err))
 		return queue.Failed

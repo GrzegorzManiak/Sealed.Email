@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
 	"strings"
 )
@@ -48,7 +48,7 @@ func ConvertToInboxKeys(inboxes ...[]EncryptedInbox) []*smtpService.InboxKeys {
 			result = append(result, &smtpService.InboxKeys{
 				DisplayName:       encryptedInbox.DisplayName,
 				PublicKey:         encryptedInbox.PublicKey,
-				EmailHash:         helpers.NormalizeEmail(encryptedInbox.EmailHash),
+				EmailHash:         validation.NormalizeEmail(encryptedInbox.EmailHash),
 				EncryptedEmailKey: encryptedInbox.EncryptedEmailKey,
 			})
 		}
@@ -92,8 +92,8 @@ func EncryptEmailKey(emailKey []byte, publicKey string) (*EncryptionKey, error) 
 }
 
 func HashInboxEmail(email string) (string, error) {
-	email = helpers.NormalizeEmail(email)
-	domain, err := helpers.ExtractDomainFromEmail(email)
+	email = validation.NormalizeEmail(email)
+	domain, err := validation.ExtractDomainFromEmail(email)
 	if err != nil {
 		return "", err
 	}

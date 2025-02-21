@@ -4,7 +4,7 @@ import (
 	"fmt"
 	primaryModels "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"maps"
@@ -24,7 +24,7 @@ func extractUniqueRecipientDomains(email *models.InboundEmail) []string {
 	processedMap := buildProcessedRecipientsMap(email)
 
 	for _, recipient := range email.To {
-		domain, err := helpers.ExtractDomainFromEmail(recipient)
+		domain, err := validation.ExtractDomainFromEmail(recipient)
 		if err != nil {
 			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
 		} else if _, ok := processedMap[domain]; !ok {
@@ -49,7 +49,7 @@ func batchRecipientsByDomain(tos []string, processedSuccessfully []string) map[s
 	batchedRecipients := make(map[string][]string)
 
 	for _, to := range tos {
-		domain, err := helpers.ExtractDomainFromEmail(to)
+		domain, err := validation.ExtractDomainFromEmail(to)
 		if err != nil || slices.Contains(processedSuccessfully, domain) {
 			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
 			continue

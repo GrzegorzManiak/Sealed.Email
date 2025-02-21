@@ -4,8 +4,8 @@ import (
 	"blitiri.com.ar/go/spf"
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/services"
 	"github.com/grzegorzmaniak/go-smtp"
 	"go.uber.org/zap"
@@ -37,7 +37,7 @@ type Session struct {
 func (s *Session) Mail(from string, opts *smtp.MailOptions) error {
 	from = strings.ToLower(from)
 	email, err := mail.ParseAddress(from)
-	if err != nil || !helpers.ValidateEmailDomain(email.Address[strings.Index(email.Address, "@")+1:]) {
+	if err != nil || !validation.ValidateEmailDomain(email.Address[strings.Index(email.Address, "@")+1:]) {
 		return fmt.Errorf("the 'from' address is invalid")
 	}
 
@@ -57,7 +57,7 @@ func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
 	}
 
 	to = strings.ToLower(to)
-	if !helpers.ValidateEmailDomain(to[strings.Index(to, "@")+1:]) {
+	if !validation.ValidateEmailDomain(to[strings.Index(to, "@")+1:]) {
 		return fmt.Errorf("the 'to' address is invalid")
 	}
 

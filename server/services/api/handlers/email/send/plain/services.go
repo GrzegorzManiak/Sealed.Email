@@ -4,7 +4,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/email"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"go.uber.org/zap"
@@ -77,7 +77,7 @@ func sendEmail(
 	}
 
 	if err := email.Send(data.Context, data.ConnectionPool, &smtpService.Email{
-		From:          helpers.NormalizeEmail(input.From.Email),
+		From:          validation.NormalizeEmail(input.From.Email),
 		To:            recipients,
 		Body:          []byte(signedEmail),
 		Challenge:     fromDomain.TxtChallenge,

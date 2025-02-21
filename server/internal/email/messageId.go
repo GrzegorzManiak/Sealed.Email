@@ -2,7 +2,7 @@ package email
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"strings"
 )
 
@@ -12,7 +12,7 @@ func ValidateMessageId(messageId string) error {
 	}
 
 	messageId = strings.Trim(messageId, "<>")
-	if _, err := helpers.ExtractDomainFromEmail(messageId); err != nil {
+	if _, err := validation.ExtractDomainFromEmail(messageId); err != nil {
 		return errors.User("Message ID contains invalid domain", "Invalid message ID")
 	}
 

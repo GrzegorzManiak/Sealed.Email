@@ -3,13 +3,13 @@ package domainAdd
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"go.uber.org/zap"
 )
 
 func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
-	domain, err := helpers.TrimDomain(input.Domain)
+	domain, err := validation.TrimDomain(input.Domain)
 	if err != nil {
 		return nil, errors.User("The domain name you provided is invalid.", "Invalid domain name!")
 	}
@@ -39,11 +39,11 @@ func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 		DomainID:         domainModel.PID,
 		SentVerification: sentVerification,
 		DNS: &DNSRecords{
-			DKIM:         helpers.BuildDKIMRecord(domain, domainModel.DKIMPublicKey),
+			DKIM:         validation.BuildDKIMRecord(domain, domainModel.DKIMPublicKey),
 			MX:           config.Domain.MxRecords,
-			Verification: helpers.BuildChallengeTemplate(domain, domainModel.TxtChallenge),
-			Identity:     helpers.BuildIdentity(domain),
-			SPF:          helpers.BuildSPFRecord(domain),
+			Verification: validation.BuildChallengeTemplate(domain, domainModel.TxtChallenge),
+			Identity:     validation.BuildIdentity(domain),
+			SPF:          validation.BuildSPFRecord(domain),
 		},
 	}, nil
 }

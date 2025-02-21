@@ -2,7 +2,7 @@ package email
 
 import (
 	"fmt"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -376,7 +376,7 @@ func TestHashInboxEmail(t *testing.T) {
 		}
 
 		assert.True(t,
-			helpers.CompareEmails(valid, hashedEmail),
+			validation.CompareEmails(valid, hashedEmail),
 			fmt.Sprintf("Hashed email should be %s but got %s", valid, hashedEmail),
 		)
 	})

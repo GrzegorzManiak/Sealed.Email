@@ -21,18 +21,11 @@ func Worker(entry *queue.Entry, queueDatabaseConnection *gorm.DB, primaryDatabas
 		return queue.Failed
 	}
 
-	zap.L().Debug("Fetched recipients", zap.Any("recipients", recipients))
+	if err := ensureEncryptedBucketInsertion(minioClient, email, recipients); err != nil {
+		return queue.Failed
+	}
 	batchedRecipients := batchRecipientsByDomain(email.To, email.ProcessedSuccessfully)
 	successfulInserts, code := insertIntoDatabase(primaryDatabaseConnection, email, recipients, batchedRecipients)
-	zap.L().Debug("Successful inserts", zap.Any("domains", successfulInserts), zap.Error(err))
-
-	if !email.InBucket {
-		if err := insertIntoBucket(minioClient, email); err != nil {
-			return queue.Failed
-		}
-		zap.L().Debug("Inserted email into bucket")
-		email.InBucket = true
-	}
 
 	email.ProcessedSuccessfully = append(email.ProcessedSuccessfully, successfulInserts...)
 	if err := queueDatabaseConnection.Save(email).Error; err != nil {

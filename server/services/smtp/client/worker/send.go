@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/client"
 	"go.uber.org/zap"
 	"slices"
@@ -52,7 +52,7 @@ func sendEmails(certs *tls.Config, email *models.OutboundEmail, groupedRecipient
 			continue
 		}
 		zap.L().Debug("Sending email to bcc", zap.Any("bccKeys", bccKeys))
-		domain, err := helpers.ExtractDomainFromEmail(bccKeys.EmailHash)
+		domain, err := validation.ExtractDomainFromEmail(bccKeys.EmailHash)
 		if err != nil {
 			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
 			return 2, sentSuccessfully

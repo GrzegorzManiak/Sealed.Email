@@ -3,6 +3,7 @@ package email
 import (
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"strings"
 )
 
@@ -25,10 +26,10 @@ func (i Inbox) EscapeDisplayName() string {
 
 func (i Inbox) String() string {
 	if i.DisplayName == "" {
-		return helpers.NormalizeEmail(i.Email)
+		return validation.NormalizeEmail(i.Email)
 	}
 
-	return fmt.Sprintf("%s <%s>", i.EscapeDisplayName(), helpers.NormalizeEmail(i.Email))
+	return fmt.Sprintf("%s <%s>", i.EscapeDisplayName(), validation.NormalizeEmail(i.Email))
 }
 
 func (h Headers) From(from Inbox) {
@@ -59,7 +60,7 @@ func (h Headers) Subject(subject string) {
 }
 
 func (h Headers) MessageId(domain string) string {
-	messageId := "<" + helpers.GeneratePublicId(64) + "@" + helpers.RemoveTrailingDot(domain) + ">"
+	messageId := "<" + helpers.GeneratePublicId(64) + "@" + validation.RemoveTrailingDot(domain) + ">"
 	h.Add(MessageID.Cased, messageId)
 	return messageId
 }

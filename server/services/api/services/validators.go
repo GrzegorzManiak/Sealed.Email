@@ -3,11 +3,9 @@ package services
 import (
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
-
-var validate = validator.New()
 
 func ValidateInputData[T any](ctx *gin.Context) (*T, errors.AppError) {
 	var input T
@@ -26,7 +24,7 @@ func ValidateInputData[T any](ctx *gin.Context) (*T, errors.AppError) {
 		}
 	}
 
-	if err := validate.Struct(input); err != nil {
+	if err := validation.CustomValidator.Struct(input); err != nil {
 		return nil, errors.Validation(fmt.Sprintf("struct: %s", err.Error()))
 	}
 
@@ -34,7 +32,7 @@ func ValidateInputData[T any](ctx *gin.Context) (*T, errors.AppError) {
 }
 
 func ValidateOutputData[Output any](output *Output) errors.AppError {
-	if err := validate.Struct(output); err != nil {
+	if err := validation.CustomValidator.Struct(output); err != nil {
 		return errors.Validation(err.Error())
 	}
 	return nil

@@ -3,8 +3,12 @@ package worker
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
+	"fmt"
 	primaryModels "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
+	emailHelper "github.com/GrzegorzManiak/NoiseBackend/internal/email"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/minio/minio-go/v7"
@@ -29,7 +33,7 @@ func prepareInserts(email *models.InboundEmail, domain primaryModels.UserDomain,
 			UserDomainID:        domain.ID,
 			To:                  recipient,
 			ReceivedAt:          email.ReceivedAt,
-			OriginallyEncrypted: email.IsEncrypted,
+			OriginallyEncrypted: email.Encrypted,
 			BucketPath:          email.RefID,
 			DomainPID:           domain.PID,
 		})
@@ -55,13 +59,70 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Inboun
 	return successfulInserts, queue.Verified
 }
 
-func insertIntoBucket(minioClient *minio.Client, email *models.InboundEmail) error {
-	if _, err := minioClient.PutObject(context.Background(), "emails", email.RefID, bytes.NewReader(email.RawData), int64(len(email.RawData)), minio.PutObjectOptions{
+func insertIntoBucket(minioClient *minio.Client, email *[]byte, refID string) error {
+	emailBody := *email
+	if _, err := minioClient.PutObject(context.Background(), "emails", refID, bytes.NewReader(emailBody), int64(len(emailBody)), minio.PutObjectOptions{
 		ContentType: "message/rfc822",
 		UserTags:    map[string]string{"type": "inbound"},
 	}); err != nil {
 		zap.L().Debug("Failed to insert email into bucket", zap.Error(err))
 		return err
 	}
+	return nil
+}
+
+func insertEncrypted(minioClient *minio.Client, email *models.InboundEmail, recipients *[]primaryModels.UserDomain) error {
+	key, err := emailHelper.CreateInboxKey()
+	if err != nil {
+		return fmt.Errorf("failed to create inbox key: %w", err)
+	}
+
+	keys := make([]*emailHelper.EncryptionKey, 0, len(*recipients))
+	for _, recipient := range *recipients {
+		encryptedKey, err := emailHelper.EncryptEmailKey(key, recipient.PublicKey)
+		if err != nil {
+			return fmt.Errorf("failed to encrypt email key: %w", err)
+		}
+
+		keys = append(keys, encryptedKey)
+	}
+
+	headers := &emailHelper.Headers{}
+	headers.EncryptionKeys(keys)
+	headers.ContentType("application/json")
+
+	cipherText, iv, err := cryptography.SymEncrypt(email.RawData, key)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt email body: %w", err)
+	}
+
+	compressedCipher := cryptography.Compress(iv, cipherText)
+	encodedCipher := base64.RawURLEncoding.EncodeToString(compressedCipher)
+	emailBody := emailHelper.FuseHeadersToBody(*headers, encodedCipher)
+	email.Encrypted = true
+	emailBytes := []byte(emailBody)
+
+	return insertIntoBucket(minioClient, &emailBytes, email.RefID)
+}
+
+func ensureEncryptedBucketInsertion(minioClient *minio.Client, email *models.InboundEmail, recipients *[]primaryModels.UserDomain) error {
+	if email.InBucket {
+		zap.L().Debug("Email already in bucket")
+		return nil
+	}
+
+	insertFunc := insertEncrypted
+	if email.Encrypted {
+		insertFunc = func(minioClient *minio.Client, email *models.InboundEmail, recipients *[]primaryModels.UserDomain) error {
+			return insertIntoBucket(minioClient, &email.RawData, email.RefID)
+		}
+	}
+
+	if err := insertFunc(minioClient, email, recipients); err != nil {
+		return fmt.Errorf("failed to insert email into bucket: %w", err)
+	}
+
+	zap.L().Debug("Inserted email into bucket")
+	email.InBucket = true
 	return nil
 }

@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	database "github.com/GrzegorzManiak/NoiseBackend/database/domain/models"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/domain"
 	"github.com/GrzegorzManiak/NoiseBackend/services/domain/services"
 	"go.uber.org/zap"
 )
 
 func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSVerificationRequest) (*domain.QueueDNSVerificationResponse, error) {
-	cleanDomain, domainErr := helpers.TrimDomain(req.DomainName)
+	cleanDomain, domainErr := validation.TrimDomain(req.DomainName)
 	if domainErr != nil {
 		return &domain.QueueDNSVerificationResponse{
 			Message:      "Invalid domain name",

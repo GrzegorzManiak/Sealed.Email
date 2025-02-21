@@ -24,8 +24,9 @@ type InboundEmail struct {
 	SpfResult  spf.Result
 	Version    uint
 
-	IsEncrypted bool
-	Processed   bool
-	ReceivedAt  int64
-	InBucket    bool
+	Encrypted  bool
+	Processed  bool
+	ReceivedAt int64
+
+	InBucket bool
 }

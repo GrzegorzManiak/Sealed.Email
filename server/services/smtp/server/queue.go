@@ -59,10 +59,10 @@ func (s *Session) prepareInboundEmail() error {
 		DkimResult: s.DkimResult,
 		SpfResult:  s.SpfResult,
 
-		Version:     1,
-		Processed:   false,
-		IsEncrypted: s.Headers.Data.IsEncrypted(),
-		ReceivedAt:  s.ReceivedAt,
+		Version:    1,
+		Processed:  false,
+		Encrypted:  s.Headers.Data.IsEncrypted(),
+		ReceivedAt: s.ReceivedAt,
 	}
 
 	zap.L().Debug("Inbound email created", zap.Any("email", inboundEmail.EmailId))

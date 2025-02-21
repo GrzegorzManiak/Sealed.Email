@@ -1,7 +1,7 @@
 package email
 
 import (
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 )
 
 func CleanRecipients(to Inbox, cc []Inbox, bcc []Inbox) ([]Inbox, []Inbox) {
@@ -9,10 +9,10 @@ func CleanRecipients(to Inbox, cc []Inbox, bcc []Inbox) ([]Inbox, []Inbox) {
 	newBcc := make([]Inbox, 0)
 
 	recipients := make(map[string]struct{})
-	recipients[helpers.NormalizeEmail(to.Email)] = struct{}{}
+	recipients[validation.NormalizeEmail(to.Email)] = struct{}{}
 
 	for _, cc := range cc {
-		normalizedEmail := helpers.NormalizeEmail(cc.Email)
+		normalizedEmail := validation.NormalizeEmail(cc.Email)
 		if _, ok := recipients[normalizedEmail]; !ok {
 			recipients[normalizedEmail] = struct{}{}
 			cc.Email = normalizedEmail
@@ -21,7 +21,7 @@ func CleanRecipients(to Inbox, cc []Inbox, bcc []Inbox) ([]Inbox, []Inbox) {
 	}
 
 	for _, bcc := range bcc {
-		normalizedEmail := helpers.NormalizeEmail(bcc.Email)
+		normalizedEmail := validation.NormalizeEmail(bcc.Email)
 		if _, ok := recipients[normalizedEmail]; !ok {
 			recipients[normalizedEmail] = struct{}{}
 			bcc.Email = normalizedEmail
@@ -52,10 +52,10 @@ func CleanEncryptedRecipients(to EncryptedInbox, cc []EncryptedInbox, bcc []Encr
 	newBcc := make([]EncryptedInbox, 0)
 
 	recipients := make(map[string]struct{})
-	recipients[helpers.NormalizeEmail(to.EmailHash)] = struct{}{}
+	recipients[validation.NormalizeEmail(to.EmailHash)] = struct{}{}
 
 	for _, cc := range cc {
-		normalizedEmail := helpers.NormalizeEmail(cc.EmailHash)
+		normalizedEmail := validation.NormalizeEmail(cc.EmailHash)
 		if _, ok := recipients[normalizedEmail]; !ok {
 			recipients[normalizedEmail] = struct{}{}
 			cc.EmailHash = normalizedEmail
@@ -64,7 +64,7 @@ func CleanEncryptedRecipients(to EncryptedInbox, cc []EncryptedInbox, bcc []Encr
 	}
 
 	for _, bcc := range bcc {
-		normalizedEmail := helpers.NormalizeEmail(bcc.EmailHash)
+		normalizedEmail := validation.NormalizeEmail(bcc.EmailHash)
 		if _, ok := recipients[normalizedEmail]; !ok {
 			recipients[normalizedEmail] = struct{}{}
 			bcc.EmailHash = normalizedEmail
