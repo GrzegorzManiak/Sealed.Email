@@ -19,7 +19,7 @@ type Input struct {
 	Subject string `json:"subject" validate:"required,gte=1,lte=200"`
 	Body    string `json:"body" validate:"required,gte=1,lte=10000"`
 
-	Signature string `json:"signature" validate:"required,base64,gte=40,lte=200"`
+	Signature string `json:"signature" validate:"required,base64rawurl,gte=40,lte=200"`
 }
 
 type Output struct {

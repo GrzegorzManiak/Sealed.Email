@@ -70,7 +70,7 @@ func CreateInboxKey() ([]byte, error) {
 }
 
 func EncryptEmailKey(emailKey []byte, publicKey string) (*EncryptionKey, error) {
-	decodedKey, err := base64.StdEncoding.DecodeString(publicKey)
+	decodedKey, err := base64.RawURLEncoding.DecodeString(publicKey)
 	if err != nil {
 		return nil, err
 	}

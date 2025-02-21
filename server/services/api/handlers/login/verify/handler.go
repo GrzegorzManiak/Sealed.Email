@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
-	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
+	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
@@ -13,7 +13,7 @@ import (
 )
 
 func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
-	userVerify := models2.UserVerify{}
+	userVerify := models.UserVerify{}
 	dbErr := data.DatabaseConnection.Where("p_id = ?", input.PID).First(&userVerify)
 	if dbErr.Error != nil {
 		return nil, errors.User("Sorry! We couldn't find your account. Please try again.", "User not found")
@@ -23,7 +23,7 @@ func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 		return nil, errors.User("Sorry! Your verification window has expired. Please try again.", "Verification window expired")
 	}
 
-	user := models2.User{}
+	user := models.User{}
 	dbErr = data.DatabaseConnection.Where("id = ?", userVerify.UserID).First(&user)
 	if dbErr.Error != nil {
 		return nil, errors.User("Sorry! We couldn't find your account. Please try again.", "User not found")

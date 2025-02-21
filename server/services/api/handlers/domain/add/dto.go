@@ -7,7 +7,7 @@ type Input struct {
 	SymmetricRootKey    string `json:"symmetricRootKey" validate:"EncodedEncryptedKey"`
 	PublicKey           string `json:"publicKey" validate:"EncodedP256Key"`
 	EncryptedPrivateKey string `json:"encryptedPrivateKey" validate:"EncodedEncryptedKey"`
-	ProofOfPossession   string `json:"proofOfPossession" validate:"required,base64,gte=40,lte=200"`
+	ProofOfPossession   string `json:"proofOfPossession" validate:"required,base64rawurl,gte=40,lte=200"`
 }
 
 type DNSRecords struct {

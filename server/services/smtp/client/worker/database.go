@@ -88,7 +88,7 @@ func insertEncrypted(minioClient *minio.Client, email *models.OutboundEmail) err
 	}
 
 	compressedCipher := cryptography.Compress(iv, cipherText)
-	encodedCipher := base64.RawURLEncoding.EncodeToString(compressedCipher)
+	encodedCipher := base64.RawStdEncoding.EncodeToString(compressedCipher)
 	emailBody := emailHelper.FuseHeadersToBody(*headers, encodedCipher)
 	email.Encrypted = true
 	emailBytes := []byte(emailBody)
