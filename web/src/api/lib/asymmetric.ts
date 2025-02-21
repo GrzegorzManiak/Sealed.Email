@@ -1,6 +1,6 @@
 import {CurrentCurve} from "./constants";
 import {BigIntToByteArray, BytesToBigInt, GetCurve, Hash} from "gowl-client-lib";
-import {UrlSafeBase64Decode} from "./common";
+import {UrlSafeBase64Decode, UrlSafeBase64Encode} from "./common";
 import * as Sym from "./symetric";
 
 function GenerateKeyPair(curve= GetCurve(CurrentCurve)) {
@@ -9,20 +9,14 @@ function GenerateKeyPair(curve= GetCurve(CurrentCurve)) {
 	return {priv, pub};
 }
 
-function UrlSafeBase64Encode(data: Uint8Array | string) {
-	if (typeof data === 'string') return Buffer.from(data).toString('base64');
-	else return Buffer.from(data).toString('base64');
-}
-
 async function SignData(data: string | Uint8Array, priv: Uint8Array, curve= GetCurve(CurrentCurve)) {
-	const encodedData = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
+	const encodedData = typeof data === 'string' ? new TextEncoder().encode(data) : data;
 	const signature = curve.sign(encodedData, priv);
-	const bytes = signature.toCompactRawBytes();
-	return UrlSafeBase64Encode(bytes);
+	return UrlSafeBase64Encode(signature.toCompactRawBytes());
 }
 
 async function VerifySignature(data: string | Uint8Array, signature: string, pub: Uint8Array, curve = GetCurve(CurrentCurve)) {
-	const encodedData = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
+	const encodedData = typeof data === 'string' ? new TextEncoder().encode(data) : data;
 	return curve.verify(UrlSafeBase64Decode(signature), encodedData, pub);
 }
 
@@ -31,7 +25,7 @@ async function SharedKey(priv: Uint8Array, pub: Uint8Array, curve = GetCurve(Cur
 }
 
 async function Encrypt(
-	data: string | Uint8Array,
+	data: Uint8Array,
 	sharedKey: Uint8Array
 ): Promise<string> {
 	const stringData = UrlSafeBase64Encode(data);
@@ -42,11 +36,10 @@ async function Encrypt(
 }
 
 async function Decrypt(
-	data: string | Uint8Array,
+	cipherText: Uint8Array,
 	sharedKey: Uint8Array
 ): Promise<string> {
-	const bytes = data instanceof Uint8Array ? data : UrlSafeBase64Decode(data);
-	const decompressed = Sym.Decompress(bytes);
+	const decompressed = Sym.Decompress(cipherText);
 	const sizedKey = await Hash(sharedKey);
 	const decrypted = await Sym.Decrypt(decompressed, BigIntToByteArray(sizedKey));
 	return Buffer.from(decrypted, 'base64').toString();

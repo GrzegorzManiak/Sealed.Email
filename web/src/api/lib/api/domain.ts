@@ -78,7 +78,7 @@ const AddDomain = async (session: Session, domain: string): Promise<AddDomainRes
     const encryptedKey = await Sym.Encrypt(UrlSafeBase64Encode(key.priv), domainKey);
     const compressedKey = Sym.Compress(encryptedKey);
     const signature = await Asym.SignData(domain, key.priv);
-
+    console.log('signature', signature);
     return HandleRequest<AddDomainResponse>({
         session,
         body: {

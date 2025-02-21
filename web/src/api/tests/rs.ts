@@ -4,17 +4,45 @@ import {HandleRequest} from "$api/lib/api/common";
 import {ClientError} from "$api/lib/errors";
 
 
+const details = ['test2', 'test2'];
+const createAccount = false;
+const addDomain = false;
+const domain_ = 'sealed.email.';
+
+if (createAccount) {
+	await (async () => {
+		await API.Register.RegisterUser(details[0], details[1]);
+		const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
+		await session.DecryptKeys();
+		const domain = await API.Domain.AddDomain(session, domain_);
+		console.log('Domain:', domain);
+	})();
+}
+
+if (addDomain) {
+	await (async () => {
+		const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
+		await session.DecryptKeys();
+		const domain = await API.Domain.AddDomain(session, domain_);
+		console.log('Domain:', domain);
+	})();
+}
+
+
 (async () => {
-	const details = ['test2', 'test2'];
 	const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
 	await session.DecryptKeys();
-	const domain_ = 'sealed.email';
 
-
-
-	const domainId = 'cj9HVZZhI3HpW1ArfYccqYyQn4qt5cQdjeIHu0mRhn32iomOOJfGy1xZ4jP2LZOZ';
+	const domains = await API.Domain.GetDomainList(session, 0, 10);
+	console.log('Domains:', domains);
+	const domainId = domains.domains[0].domainID;
 	const domain = await API.Domain.GetDomain(session, domainId);
 	const domainService = await API.DomainService.Decrypt(session, domain);
+
+	if (domainService.Domain !== domain_) {
+		console.error('Domain mismatch');
+		return;
+	}
 
 	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc', folders: ['test', 'boss'] });
 	console.log('Emails:', emails);

@@ -2,29 +2,47 @@ import * as API from '../lib';
 import {sleep} from "bun";
 import {UrlSafeBase64Encode} from "$api/lib/common";
 
+const details = ['test', 'test'];
+const createAccount = false;
+const addDomain = false;
+const domain_ = 'beta.grzegorz.ie.';
+
+if (createAccount) {
+	await (async () => {
+		await API.Register.RegisterUser(details[0], details[1]);
+		const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
+		await session.DecryptKeys();
+	})();
+}
+
+if (addDomain) {
+	await (async () => {
+		const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
+		await session.DecryptKeys();
+		const domain = await API.Domain.AddDomain(session, domain_);
+		console.log('Domain:', domain);
+	})();
+}
+
+
 (async () => {
-	const details = ['test', 'test'];
 	const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
 	await session.DecryptKeys();
-	const domain_ = 'beta.grzegorz.ie';
 	const send = false;
 
 
-	const domainId = 'NZ1lQfo8t3HV47t2E99KmEIATbIIQmLTGFRFeqO9CD9fh4hrhsLhbxMlrali9ohr';
+	const domains = await API.Domain.GetDomainList(session, 0, 10);
+	console.log('Domains:', domains);
+	const domainId = domains.domains[0].domainID;
 	const domain = await API.Domain.GetDomain(session, domainId);
 	const domainService = await API.DomainService.Decrypt(session, domain);
 
-	const emailKey = API.Sym.NewKey();
-	const recipientAKeys = API.Asym.GenerateKeyPair();
-	const recipientAInbox = await API.EncryptedInbox.Create(
-		'test@test.com',
-		'Test',
-		recipientAKeys.pub,
-		emailKey
-	);
-	console.log('Recipient A:', recipientAInbox);
+	if (domainService.Domain !== domain_) {
+		console.error('Domain mismatch');
+		return;
+	}
 
-	return
+
 	if (send) {
 		const emailKey = API.Sym.NewKey();
 		const recipientAKeys = API.Asym.GenerateKeyPair();
