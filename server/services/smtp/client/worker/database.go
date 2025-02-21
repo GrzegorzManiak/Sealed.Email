@@ -44,11 +44,28 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Outbou
 		return nil
 	}
 
+	to := email.To[0]
+	from := email.From
+
+	if !email.Encrypted {
+		var err error
+		to, err = emailHelper.HashInboxEmail(to)
+		if err != nil {
+			return fmt.Errorf("failed to hash inbox email: %w", err)
+		}
+
+		from, err = emailHelper.HashInboxEmail(from)
+		if err != nil {
+			return fmt.Errorf("failed to hash inbox email: %w", err)
+		}
+	}
+
 	insert := primaryModels.UserEmail{
 		PID:                 email.RefID,
 		UserID:              email.FromUserId,
 		UserDomainID:        email.FromDomainId,
-		To:                  email.To[0],
+		To:                  to,
+		From:                from,
 		ReceivedAt:          email.CreatedAt.Unix(),
 		BucketPath:          email.RefID,
 		DomainPID:           email.FromDomainPID,
@@ -90,7 +107,6 @@ func insertEncrypted(minioClient *minio.Client, email *models.OutboundEmail) err
 	compressedCipher := cryptography.Compress(iv, cipherText)
 	encodedCipher := base64.RawStdEncoding.EncodeToString(compressedCipher)
 	emailBody := emailHelper.FuseHeadersToBody(*headers, encodedCipher)
-	email.Encrypted = true
 	emailBytes := []byte(emailBody)
 
 	return insertIntoBucket(minioClient, &emailBytes, email.RefID)

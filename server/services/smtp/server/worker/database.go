@@ -27,11 +27,30 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Inb
 func prepareInserts(email *models.InboundEmail, domain primaryModels.UserDomain, inbox []string) []primaryModels.UserEmail {
 	inserts := make([]primaryModels.UserEmail, 0, len(inbox))
 	for _, recipient := range inbox {
+		to := recipient
+		from := email.From
+
+		if !email.Encrypted {
+			var err error
+			to, err = emailHelper.HashInboxEmail(to)
+			if err != nil {
+				zap.L().Warn("Failed to hash inbox email", zap.Error(err))
+				continue
+			}
+
+			from, err = emailHelper.HashInboxEmail(from)
+			if err != nil {
+				zap.L().Warn("Failed to hash inbox email", zap.Error(err))
+				continue
+			}
+		}
+
 		inserts = append(inserts, primaryModels.UserEmail{
 			PID:                 helpers.GeneratePublicId(64),
 			UserID:              domain.UserID,
 			UserDomainID:        domain.ID,
-			To:                  recipient,
+			To:                  to,
+			From:                from,
 			ReceivedAt:          email.ReceivedAt,
 			OriginallyEncrypted: email.Encrypted,
 			BucketPath:          email.RefID,
@@ -99,7 +118,6 @@ func insertEncrypted(minioClient *minio.Client, email *models.InboundEmail, reci
 	compressedCipher := cryptography.Compress(iv, cipherText)
 	encodedCipher := base64.RawStdEncoding.EncodeToString(compressedCipher)
 	emailBody := emailHelper.FuseHeadersToBody(*headers, encodedCipher)
-	email.Encrypted = true
 	emailBytes := []byte(emailBody)
 
 	return insertIntoBucket(minioClient, &emailBytes, email.RefID)

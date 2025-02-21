@@ -12,6 +12,7 @@ type UserEmail struct {
 
 	DomainPID string `gorm:"index"`
 	To        string
+	From      string
 	Read      bool
 	Folder    string
 	Spam      bool

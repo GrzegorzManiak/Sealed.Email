@@ -26,6 +26,7 @@ type Email struct {
 	Read       bool   `json:"read"`
 	Folder     string `json:"folder"`
 	To         string `json:"to"`
+	From       string `json:"from"`
 	Spam       bool   `json:"spam"`
 	Sent       bool   `json:"sent"`
 	AccessKey  string `json:"accessKey"`

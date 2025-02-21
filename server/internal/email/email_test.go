@@ -368,7 +368,7 @@ func TestHashInboxEmail(t *testing.T) {
 	t.Run("TestHashInboxEmail", func(t *testing.T) {
 		t.Parallel()
 
-		valid := "elgPNORN/QZTQG1U9QsE68jgpgEHyHtC6X1TifbWZis=@test.com"
+		valid := "elgPNORN_QZTQG1U9QsE68jgpgEHyHtC6X1TifbWZis@test.com"
 		email := "test@test.com"
 		hashedEmail, err := HashInboxEmail(email)
 		if err != nil {
@@ -381,4 +381,35 @@ func TestHashInboxEmail(t *testing.T) {
 		)
 	})
 
+	t.Run("TestHashInboxEmail case insensitive", func(t *testing.T) {
+		t.Parallel()
+
+		valid := "elgPNORN_QZTQG1U9QsE68jgpgEHyHtC6X1TifbWZis@test.com"
+		email := "TEST@TEST.COM"
+		hashedEmail, err := HashInboxEmail(email)
+		if err != nil {
+			t.Errorf("Error hashing email: %v", err)
+		}
+
+		assert.True(t,
+			validation.CompareEmails(valid, hashedEmail),
+			fmt.Sprintf("Hashed email should be %s but got %s", valid, hashedEmail),
+		)
+	})
+
+	t.Run("TestHashInboxEmail FQDN", func(t *testing.T) {
+		t.Parallel()
+
+		valid := "elgPNORN_QZTQG1U9QsE68jgpgEHyHtC6X1TifbWZis@test.com"
+		email := "TEST@TEST.COM."
+		hashedEmail, err := HashInboxEmail(email)
+		if err != nil {
+			t.Errorf("Error hashing email: %v", err)
+		}
+
+		assert.True(t,
+			validation.CompareEmails(valid, hashedEmail),
+			fmt.Sprintf("Hashed email should be %s but got %s", valid, hashedEmail),
+		)
+	})
 }

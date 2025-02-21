@@ -63,7 +63,7 @@ func fetchEmails(
 	emails = make([]*models.UserEmail, 0)
 	dbQuery := databaseConnection.
 		Table("user_emails").
-		Select([]string{"read", "folder", "p_id", "domain_p_id", "`to`", "received_at", "sent", "bucket_path", "originally_encrypted", "spam"}).
+		Select([]string{"read", "folder", "p_id", "domain_p_id", "`to`", "`from`", "received_at", "sent", "bucket_path", "originally_encrypted", "spam"}).
 		Where("user_id = ? AND domain_p_id = ?", user.ID, pagination.DomainID)
 
 	buildFilters(pagination, dbQuery)
@@ -105,6 +105,7 @@ func ParseEmail(
 		ReceivedAt: email.ReceivedAt,
 		Read:       email.Read,
 		To:         email.To,
+		From:       email.From,
 		Folder:     email.Folder,
 		Spam:       email.Spam,
 		Sent:       email.Sent,

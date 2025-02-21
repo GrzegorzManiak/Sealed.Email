@@ -43,6 +43,8 @@ if (addDomain) {
 	}
 
 
+
+
 	if (send) {
 		const emailKey = API.Sym.NewKey();
 		const recipientAKeys = API.Asym.GenerateKeyPair();
@@ -88,6 +90,7 @@ if (addDomain) {
 	if (emails.emails.length > 0) {
 		const email = await API.Email.GetEmail(session, domainService.DomainID, emails.emails[0].bucketPath);
 		const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
+		console.log('Email:', emails.emails[0]);
 		console.log('Email:', emailData);
 	}
 
