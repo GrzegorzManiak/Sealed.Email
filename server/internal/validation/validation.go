@@ -11,7 +11,7 @@ var validators = map[string]string{
 	"EncodedP256Key":      "required,base64rawurl,gte=42,lte=46",
 	"UserID":              "required,base64rawurl,gte=40,lte=46",
 	"EncodedEncryptedKey": "required,base64rawurl,gte=94,lte=106",
-	"PublicID":            "required,alphanum,gte=42,lte=65",
+	"PublicID":            "required,alphanum,gte=32,lte=65",
 }
 
 func validateField(fl validator.FieldLevel, rule string) bool {

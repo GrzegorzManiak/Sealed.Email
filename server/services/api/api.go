@@ -73,6 +73,7 @@ func Start() {
 	routes.DomainRoutes(router, baseRoute)
 	routes.DevRoutes(router, baseRoute)
 	routes.EmailRoutes(router, baseRoute)
+	routes.FolderRoutes(router, baseRoute)
 
 	err = router.Run(fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port))
 	if err != nil {

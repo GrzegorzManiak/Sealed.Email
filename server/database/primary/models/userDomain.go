@@ -24,4 +24,6 @@ type UserDomain struct {
 	SymmetricRootKey    string
 	PublicKey           string
 	EncryptedPrivateKey string
+
+	Folders []UserFolder `gorm:"foreignKey:UserDomainID"`
 }

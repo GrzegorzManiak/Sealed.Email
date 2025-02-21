@@ -21,6 +21,10 @@ const Endpoints: { [key: string]: [string, string] } = {
     EMAIL_LIST: [`${ROOT}/email/list`, 'GET'],
     EMAIL_GET: [`${ROOT}/email/get`, 'GET'],
     EMAIL_DATA: [`${ROOT}/email/data`, 'GET'],
+
+    FOLDER_CREATE: [`${ROOT}/folder/create`, 'POST'],
+    FOLDER_DELETE: [`${ROOT}/folder/delete`, 'DELETE'],
+    FOLDER_LIST: [`${ROOT}/folder/list`, 'GET'],
 };
 
 const ServerName: string = 'NoiseEmailServer>V1.0.0';

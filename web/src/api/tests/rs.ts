@@ -39,24 +39,32 @@ if (addDomain) {
 	const domain = await API.Domain.GetDomain(session, domainId);
 	const domainService = await API.DomainService.Decrypt(session, domain);
 
-	if (domainService.Domain !== domain_) {
-		console.error('Domain mismatch');
-		return;
-	}
+	const folder = await API.Folder.FolderCreate(session, domainService, 'test');
+	console.log('Folder:', folder);
+	console.log('folders', (await API.Folder.FolderList(session, domainId)).total);
+	await API.Folder.FolderDelete(session, domainService.DomainID, folder.folderID);
+	console.log('folders', (await API.Folder.FolderList(session, domainId)).total);
 
-	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc', folders: ['test', 'boss'] });
-	console.log('Emails:', emails);
 
-	if (emails.emails.length > 0) {
-		const email = await API.Email.GetEmail(session, domainService.DomainID, emails.emails[0].bucketPath);
-		const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
-
-		console.log('Email:', emailData);
-	}
-
-	// const bucketPath = 'C2LMBhwH9jUj1eLyUfZpJiy1g2W8qWjQAbb5ejg4SZUk6GmkWP9y6ZFcaokTc72A:plain:fa0lux/84dv58hxqkja6lnatc0oacbaiupziua4x4qu=@beta.noise.email';
-	// const email = await API.Email.GetEmail(session, domainService.DomainID, bucketPath);
-	// const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
 	//
-	// console.log('Email:', emailData);
+	// if (domainService.Domain !== domain_) {
+	// 	console.error('Domain mismatch');
+	// 	return;
+	// }
+	//
+	// const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc', folders: ['test', 'boss'] });
+	// console.log('Emails:', emails);
+	//
+	// if (emails.emails.length > 0) {
+	// 	const email = await API.Email.GetEmail(session, domainService.DomainID, emails.emails[0].bucketPath);
+	// 	const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
+	//
+	// 	console.log('Email:', emailData);
+	// }
+	//
+	// // const bucketPath = 'C2LMBhwH9jUj1eLyUfZpJiy1g2W8qWjQAbb5ejg4SZUk6GmkWP9y6ZFcaokTc72A:plain:fa0lux/84dv58hxqkja6lnatc0oacbaiupziua4x4qu=@beta.noise.email';
+	// // const email = await API.Email.GetEmail(session, domainService.DomainID, bucketPath);
+	// // const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
+	// //
+	// // console.log('Email:', emailData);
 })();

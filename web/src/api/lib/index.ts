@@ -7,6 +7,7 @@ export * as Login from "./auth/login";
 export * as Register from "./auth/register";
 export * as Domain from "./api/domain";
 export * as Email from "./api/email";
+export * as Folder from "./api/folder";
 
 // -- Services
 export { default as GenericError } from "./errors";

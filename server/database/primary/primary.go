@@ -34,4 +34,5 @@ func AutoMigrateTables(databaseConnection *gorm.DB) {
 	databaseConnection.AutoMigrate(&models.UserHold{})
 	databaseConnection.AutoMigrate(&models.UserQuota{})
 	databaseConnection.AutoMigrate(&models.UserEmail{})
+	databaseConnection.AutoMigrate(&models.UserFolder{})
 }

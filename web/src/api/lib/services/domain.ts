@@ -59,13 +59,13 @@ class Domain {
         return new Domain(domain, rootKey, privateKey);
     }
 
-    public async EncryptKey(key: Uint8Array | string): Promise<string> {
+    public async EncryptData(key: Uint8Array | string): Promise<string> {
         if (typeof key !== 'string') key = UrlSafeBase64Encode(key);
         const encryptedKey = Compress(await Encrypt(key, this._decryptedRootKey));
         return UrlSafeBase64Encode(encryptedKey);
     }
 
-    public async DecryptKey(key: Uint8Array | string): Promise<string> {
+    public async DecryptData(key: Uint8Array | string): Promise<string> {
         if (typeof key !== 'string') key = UrlSafeBase64Encode(key);
         const decompressedKey = Decompress(UrlSafeBase64Decode(key));
         return await Decrypt(decompressedKey, this._decryptedRootKey);
