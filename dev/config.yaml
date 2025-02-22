@@ -4,7 +4,7 @@ server:
   id: 'dev-sealed-email(Smtp)'
 
 bucket:
-  endpoint: '192.168.0.144:9000'
+  endpoint: 'minio.sealed.email:9000'
   accessKey: 'VBexCBLv7YGQvNew2duP'
   secretKey: '28Mzu6GgvI3bXkjal2hUCOEYG0aNssj8Jv8T0Vbu'
   useSSL: false
