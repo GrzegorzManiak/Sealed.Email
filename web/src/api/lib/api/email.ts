@@ -58,6 +58,7 @@ type EmailListFilters = {
     folders?: string[];
     encrypted?: 'all' | 'original' | 'post';
     sent?: 'all' | 'in' | 'out';
+    pinned?: 'all' | 'only' | 'none';
 }
 
 type Email = {
@@ -114,6 +115,7 @@ const GetEmailList = async (session: Session, filters: EmailListFilters): Promis
         folders: [],
         encrypted: 'all',
         sent: 'all',
+        pinned: 'all',
         ...filters,
     }
 

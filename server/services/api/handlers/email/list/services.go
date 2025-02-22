@@ -46,6 +46,14 @@ func buildFilters(
 		dbQuery = dbQuery.Where("originally_encrypted = 0")
 	}
 
+	// -- Pinned
+	pagination.Pinned = strings.ToLower(pagination.Pinned)
+	if pagination.Pinned == "only" {
+		dbQuery = dbQuery.Where("pinned = 1")
+	} else if pagination.Pinned == "none" {
+		dbQuery = dbQuery.Where("pinned = 0")
+	}
+
 	// -- Spam
 	pagination.Spam = strings.ToLower(pagination.Spam)
 	if pagination.Spam == "only" {
@@ -63,7 +71,7 @@ func fetchEmails(
 	emails = make([]*models.UserEmail, 0)
 	dbQuery := databaseConnection.
 		Table("user_emails").
-		Select([]string{"read", "folder", "p_id", "domain_p_id", "`to`", "`from`", "received_at", "sent", "bucket_path", "originally_encrypted", "spam"}).
+		Select([]string{"read", "folder", "p_id", "domain_p_id", "`to`", "`from`", "received_at", "sent", "bucket_path", "originally_encrypted", "spam", "pinned"}).
 		Where("user_id = ? AND domain_p_id = ?", user.ID, pagination.DomainID)
 
 	buildFilters(pagination, dbQuery)
@@ -109,6 +117,8 @@ func ParseEmail(
 		Folder:     email.Folder,
 		Spam:       email.Spam,
 		Sent:       email.Sent,
+		Pinned:     email.Pinned,
+		Encrypted:  email.OriginallyEncrypted,
 		AccessKey:  account,
 		Expiration: exp,
 	}

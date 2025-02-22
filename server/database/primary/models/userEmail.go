@@ -17,6 +17,7 @@ type UserEmail struct {
 	Folder    string
 	Spam      bool
 	Sent      bool
+	Pinned    bool
 
 	OriginallyEncrypted bool
 	ReceivedAt          int64
