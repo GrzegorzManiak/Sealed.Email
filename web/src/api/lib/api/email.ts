@@ -182,7 +182,24 @@ const ModifyEmails = async (session: Session, domainID: DomainRefID, emails: Ema
         ),
     });
 
-    const chunkSize = 100;
+    const chunkSize = 99;
+    for (let i = 0; i < emails.length; i += chunkSize)
+        await send(emails.slice(i, i + chunkSize).map(email => email.emailID));
+}
+
+const DeleteEmails = async (session: Session, domainID: DomainRefID, emails: Email[]): Promise<void> => {
+    const send = (emailIds: string[]) => HandleRequest<void>({
+        session,
+        body: { emailIds },
+        endpoint: Endpoints.EMAIL_DELETE,
+        fallbackError: new ClientError(
+            'Failed to delete emails',
+            'Sorry, we were unable to delete the emails',
+            'EMAIL-DELETE-FAIL'
+        ),
+    });
+
+    const chunkSize = 99;
     for (let i = 0; i < emails.length; i += chunkSize)
         await send(emails.slice(i, i + chunkSize).map(email => email.emailID));
 }
@@ -194,6 +211,7 @@ export {
     GetEmail,
     GetEmailData,
     ModifyEmails,
+    DeleteEmails,
     
     type PlainEmail,
     type SignedPlainEmail,
