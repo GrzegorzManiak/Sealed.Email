@@ -61,6 +61,13 @@ type EmailListFilters = {
     pinned?: 'all' | 'only' | 'none';
 }
 
+type EmailModifiers = {
+    read?: 'read' | 'unread' | 'unchanged';
+    folder?: string;
+    spam?: 'true' | 'false' | 'unchanged';
+    pinned?: 'true' | 'false' | 'unchanged';
+}
+
 type Email = {
     emailID: string;
     receivedAt: number;
@@ -163,12 +170,30 @@ const GetEmailData = async (session: Session, domainID: DomainRefID, email: Emai
     }).then(response => response.text());
 }
 
+const ModifyEmails = async (session: Session, domainID: DomainRefID, emails: Email[], modifiers: EmailModifiers): Promise<void> => {
+    const send = (emailIds: string[]) => HandleRequest<void>({
+        session,
+        body: { emailIds, ...modifiers },
+        endpoint: Endpoints.EMAIL_MODIFY,
+        fallbackError: new ClientError(
+            'Failed to modify emails',
+            'Sorry, we were unable to modify the emails',
+            'EMAIL-MODIFY-FAIL'
+        ),
+    });
+
+    const chunkSize = 100;
+    for (let i = 0; i < emails.length; i += chunkSize)
+        await send(emails.slice(i, i + chunkSize).map(email => email.emailID));
+}
+
 export {
     SendPlainEmail,
     SendEncryptedEmail,
     GetEmailList,
     GetEmail,
     GetEmailData,
+    ModifyEmails,
     
     type PlainEmail,
     type SignedPlainEmail,
@@ -177,5 +202,6 @@ export {
     type ComputedEncryptedInbox,
     type Inbox,
     type Email,
-    type EmailListResponse
+    type EmailListResponse,
+    type EmailModifiers,
 }

@@ -21,6 +21,7 @@ const Endpoints: { [key: string]: [string, string] } = {
     EMAIL_LIST: [`${ROOT}/email/list`, 'GET'],
     EMAIL_GET: [`${ROOT}/email/get`, 'GET'],
     EMAIL_DATA: [`${ROOT}/email/data`, 'GET'],
+    EMAIL_MODIFY: [`${ROOT}/email/modify`, 'PUT'],
 
     FOLDER_CREATE: [`${ROOT}/folder/create`, 'POST'],
     FOLDER_DELETE: [`${ROOT}/folder/delete`, 'DELETE'],
