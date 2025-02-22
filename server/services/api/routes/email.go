@@ -32,4 +32,7 @@ func EmailRoutes(router *gin.Engine, baseRoute *services.BaseRoute) {
 	router.PUT("/api/email/modify", func(ctx *gin.Context) {
 		services.ExecuteRoute[emailModify.Input, emailModify.Output](ctx, baseRoute, emailModify.SessionFilter, emailModify.Handler)
 	})
+	router.DELETE("/api/email/delete", func(ctx *gin.Context) {
+		services.ExecuteRoute[emailModify.Input, emailModify.Output](ctx, baseRoute, emailModify.SessionFilter, emailModify.Handler)
+	})
 }
