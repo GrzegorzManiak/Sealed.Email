@@ -171,27 +171,38 @@ func GetNoiseExtensionHeader(h string) NoiseExtensionHeader {
 }
 
 func FormatSmtpHeader(header *Header) string {
-	escapedValue := strings.ReplaceAll(header.Value, "\n", "")
-	escapedValue = strings.ReplaceAll(escapedValue, "\r", "")
-	escapedValue = strings.ReplaceAll(escapedValue, "\"", "\\\"")
-	formatted := header.Key + ": " + escapedValue
+	normalizedValue := strings.ReplaceAll(header.Value, CRLF+" ", "")
+	normalizedValue = strings.ReplaceAll(normalizedValue, "\n", "")
+	normalizedValue = strings.ReplaceAll(normalizedValue, "\r", "")
+	normalizedValue = strings.ReplaceAll(normalizedValue, "\"", "\\\"")
 
-	var foldedHeader strings.Builder
-	lineLength := 0
-	for i, char := range formatted {
-		if lineLength == 76 {
-			foldedHeader.WriteString("\r\n ")
-			lineLength = 1
-		}
-		foldedHeader.WriteRune(char)
-		lineLength++
+	baseHeader := header.Key + ": "
+	maxLineLength := 78
+	foldedHeader := baseHeader
 
-		if i == len(formatted)-1 {
-			foldedHeader.WriteString("\r\n")
+	if len(baseHeader)+len(normalizedValue) > maxLineLength {
+		// -- Fold header
+		var sb strings.Builder
+		sb.WriteString(baseHeader)
+
+		for i := 0; i < len(normalizedValue); i += (maxLineLength - len(baseHeader)) {
+			end := i + (maxLineLength - len(baseHeader))
+			if end > len(normalizedValue) {
+				end = len(normalizedValue)
+			}
+
+			if i > 0 {
+				sb.WriteString(CRLF + " ")
+			}
+			sb.WriteString(normalizedValue[i:end])
 		}
+		foldedHeader = sb.String()
+	} else {
+		// -- Dont fold header
+		foldedHeader += normalizedValue
 	}
 
-	return foldedHeader.String()
+	return foldedHeader + CRLF
 }
 
 func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {

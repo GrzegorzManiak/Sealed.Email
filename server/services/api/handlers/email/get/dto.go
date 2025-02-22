@@ -6,7 +6,7 @@ import (
 )
 
 type Input struct {
-	BucketPath string `form:"bucketPath" validate:"required,gte=64,lte=200"`
+	BucketPath string `form:"bucketPath" validate:"required,gte=64,lte=250"`
 	DomainID   string `form:"domainID" validate:"required,PublicID"`
 }
 

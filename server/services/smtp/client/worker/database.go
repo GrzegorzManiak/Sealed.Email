@@ -9,6 +9,7 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	emailHelper "github.com/GrzegorzManiak/NoiseBackend/internal/email"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -61,7 +62,7 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Outbou
 	}
 
 	insert := primaryModels.UserEmail{
-		PID:                 email.RefID,
+		PID:                 helpers.GeneratePublicId(64),
 		UserID:              email.FromUserId,
 		UserDomainID:        email.FromDomainId,
 		To:                  to,
