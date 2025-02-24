@@ -10,7 +10,7 @@ import (
 )
 
 func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration, databaseConnection *gorm.DB) (*session.Claims, errors.AppError) {
-	if filter.Bypass == true {
+	if filter.Bypass {
 		filter.SessionRequired = false
 		return nil, nil
 	}
@@ -25,7 +25,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration
 
 	cookie, err := ctx.Cookie(config.Session.CookieName)
 	if err != nil {
-		if filter.SessionRequired == false {
+		if !filter.SessionRequired {
 			return nil, nil
 		}
 
@@ -45,7 +45,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration
 	}
 
 	if sessionClaims.IsExpired() {
-		if filter.SessionRequired == false {
+		if !filter.SessionRequired {
 			return nil, nil
 		}
 

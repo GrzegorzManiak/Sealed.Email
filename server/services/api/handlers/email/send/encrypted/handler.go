@@ -17,7 +17,7 @@ func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 		return nil, appErr
 	}
 
-	if fromDomain.Verified == false {
+	if !fromDomain.Verified {
 		return nil, errors.Access("You must verify your domain before sending emails.")
 	}
 

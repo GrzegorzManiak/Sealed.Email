@@ -20,7 +20,7 @@ const DefaultKeyLength = 32
 
 func SymEncrypt(text, key []byte) ([]byte, []byte, error) {
 	if len(key) != 32 {
-		return nil, nil, errors.New(fmt.Sprintf("key must be %d bytes, got %d", DefaultKeyLength, len(key)))
+		return nil, nil, fmt.Errorf("key must be %d bytes, got %d", DefaultKeyLength, len(key))
 	}
 
 	block, err := aes.NewCipher(key)
@@ -44,7 +44,7 @@ func SymEncrypt(text, key []byte) ([]byte, []byte, error) {
 
 func SymDecrypt(iv, data, key []byte) ([]byte, error) {
 	if len(key) != 32 {
-		return nil, errors.New(fmt.Sprintf("key must be %d bytes", DefaultKeyLength))
+		return nil, fmt.Errorf("key must be %d bytes", DefaultKeyLength)
 	}
 
 	block, err := aes.NewCipher(key)
