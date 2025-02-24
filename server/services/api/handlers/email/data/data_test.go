@@ -1,11 +1,12 @@
 package data
 
 import (
+	"testing"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/email/list"
 	"go.uber.org/zap"
-	"testing"
 )
 
 func TestData(t *testing.T) {
@@ -13,6 +14,7 @@ func TestData(t *testing.T) {
 	if err != nil {
 		zap.L().Panic("failed to load config", zap.Error(err))
 	}
+
 	validation.RegisterCustomValidators()
 
 	t.Run("validateAccessKey pass", func(t *testing.T) {
@@ -22,6 +24,7 @@ func TestData(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
 		input := &Input{
 			AccessKey:  accessKey,
 			BucketPath: "test",

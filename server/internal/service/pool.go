@@ -1,13 +1,15 @@
 package service
 
 import (
+	"errors"
 	"fmt"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 	"math/rand"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 type Pool struct {
@@ -33,15 +35,17 @@ func (g *GrpcConnection) initializeGrpcConnection(pool *Pool) error {
 
 	if g.Conn != nil && !g.Working {
 		zap.L().Info("Connection is not working, closing connection", zap.String("service", g.Announcement.Service.Prefix))
+
 		err := g.Conn.Close()
 		if err != nil {
 			zap.L().Warn("failed to close connection!", zap.Error(err))
 		}
+
 		g.Conn = nil
 	}
 
 	if pool.Security == nil {
-		return fmt.Errorf("security option not provided")
+		return errors.New("security option not provided")
 	}
 
 	conn, err := grpc.NewClient(
@@ -55,7 +59,6 @@ func (g *GrpcConnection) initializeGrpcConnection(pool *Pool) error {
 			Timeout: 5 * time.Second,  // Timeout after 5 seconds of no response
 		}),
 	)
-
 	if err != nil {
 		return fmt.Errorf("failed to dial: %w", err)
 	}
@@ -74,20 +77,21 @@ func (p *Pool) GetConnection() (*GrpcConnection, error) {
 	defer p.Mutex.RUnlock()
 
 	if len(p.Pool) == 0 {
-		return nil, fmt.Errorf("no connections available")
+		return nil, errors.New("no connections available")
 	}
 
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		randKey := p.Keys[rand.Intn(len(p.Keys))]
 		conn := p.Pool[randKey]
 
 		if err := conn.initializeGrpcConnection(p); err != nil {
 			zap.L().Warn("Failed to initialize connection", zap.String("key", randKey), zap.Error(err))
+
 			continue
 		}
 
 		return conn, nil
 	}
 
-	return nil, fmt.Errorf("no connections available (tried 3 times)")
+	return nil, errors.New("no connections available (tried 3 times)")
 }

@@ -1,11 +1,13 @@
 package queue
 
 import (
+	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"strings"
 	"sync"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Queue struct {
@@ -41,7 +43,7 @@ func (q *Queue) GetBatch() (error error) {
 	}
 
 	if q.database == nil {
-		return fmt.Errorf("database is not initialized")
+		return errors.New("database is not initialized")
 	}
 
 	var entries []Entry
@@ -51,7 +53,6 @@ func (q *Queue) GetBatch() (error error) {
 		Limit(numToFetch).
 		Find(&entries).
 		Error
-
 	if err != nil {
 		return fmt.Errorf("failed to fetch entries: %w", err)
 	}
@@ -68,6 +69,7 @@ func (q *Queue) GetBatch() (error error) {
 	}
 
 	*q.entries = append(*q.entries, entries...)
+
 	return nil
 }
 
@@ -85,6 +87,7 @@ func (q *Queue) BatchUpdate() (error error) {
 	}
 
 	*q.ready = nil
+
 	return nil
 }
 
@@ -102,6 +105,7 @@ func (q *Queue) FlushQueue() (error error) {
 	}
 
 	*q.queue = nil
+
 	return nil
 }
 
@@ -132,12 +136,14 @@ func (q *Queue) RequestWork() (entry *Entry) {
 	entry = &(*q.entries)[0]
 	*q.entries = (*q.entries)[1:]
 	q.workers++
+
 	return entry
 }
 
 func (q *Queue) FinishWork(entry *Entry) {
 	q.workLock.Lock()
 	defer q.workLock.Unlock()
+
 	q.workers--
 }
 
@@ -148,6 +154,7 @@ func NewQueue(
 	maximumWorkers int,
 ) *Queue {
 	queueName = strings.ToLower(queueName)
+
 	return &Queue{
 		Name:         queueName,
 		BatchTimeout: timeout,

@@ -7,8 +7,7 @@ type Input struct {
 	FolderID string `form:"folderID" validate:"required,PublicID"`
 }
 
-type Output struct {
-}
+type Output struct{}
 
 var SessionFilter = &session.APIConfiguration{
 	Allow:           []string{"default"},

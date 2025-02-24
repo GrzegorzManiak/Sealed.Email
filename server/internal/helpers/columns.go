@@ -7,5 +7,6 @@ func FormatOrderString(order string) string {
 	if order != "ASC" && order != "DESC" {
 		return "DESC"
 	}
+
 	return order
 }

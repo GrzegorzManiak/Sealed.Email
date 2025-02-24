@@ -3,17 +3,19 @@ package session
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"gorm.io/gorm"
-	"strings"
 )
 
 func ParseToken(token string) (Header, Content, []byte, error) {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
-		return Header{}, Content{}, nil, fmt.Errorf("invalid token format")
+		return Header{}, Content{}, nil, errors.New("invalid token format")
 	}
 
 	headerBytes, err := base64.RawURLEncoding.DecodeString(parts[0])
@@ -49,6 +51,7 @@ func ParseToken(token string) (Header, Content, []byte, error) {
 
 func ParseSessionToken(token string) (Claims, error) {
 	claims := Claims{}
+
 	header, content, signature, err := ParseToken(token)
 	if err != nil {
 		return Claims{}, err
@@ -87,11 +90,11 @@ func RefreshSessionToken(claims Claims, databaseConnection *gorm.DB) (Claims, er
 	}
 
 	if session.SessionID == "" {
-		return Claims{}, fmt.Errorf("session not found")
+		return Claims{}, errors.New("session not found")
 	}
 
 	if session.Revoked {
-		return Claims{}, fmt.Errorf("session has been revoked")
+		return Claims{}, errors.New("session has been revoked")
 	}
 
 	newClaims, err := CreateSessionToken(DefaultTokenGroup, claims.Content, session)

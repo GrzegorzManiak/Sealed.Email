@@ -1,11 +1,12 @@
 package server
 
 import (
-	"blitiri.com.ar/go/spf"
 	"fmt"
-	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"net"
 	"strings"
+
+	"blitiri.com.ar/go/spf"
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 )
 
 func GetRemoteConnectionIp(smtpCtx *Session) string {
@@ -13,6 +14,7 @@ func GetRemoteConnectionIp(smtpCtx *Session) string {
 	if strings.Contains(ipStr, ":") {
 		ipStr = strings.Split(ipStr, ":")[0]
 	}
+
 	return ipStr
 }
 
@@ -21,6 +23,7 @@ func ValidateMailFromSpf(ipStr, from, host string) (spf.Result, error) {
 	if ip == nil {
 		return spf.None, fmt.Errorf("failed to parse IP: %s", ipStr)
 	}
+
 	return spf.CheckHostWithSender(ip, host, from)
 }
 

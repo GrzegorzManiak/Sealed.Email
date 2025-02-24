@@ -9,14 +9,11 @@ import (
 	"io"
 )
 
-// IVLength
-//
-//	Has to be the same as on client side framework, also
-//	dependent on the key size and algorithm used
-//
-// /web/src/api/lib/symmetric.ts
-const IVLength = 12
-const DefaultKeyLength = 32
+// /web/src/api/lib/symmetric.ts.
+const (
+	IVLength         = 12
+	DefaultKeyLength = 32
+)
 
 func SymEncrypt(text, key []byte) ([]byte, []byte, error) {
 	if len(key) != 32 {
@@ -39,6 +36,7 @@ func SymEncrypt(text, key []byte) ([]byte, []byte, error) {
 	}
 
 	ciphertext := gcm.Seal(nil, iv, text, nil)
+
 	return iv, ciphertext, nil
 }
 
@@ -67,6 +65,7 @@ func SymDecrypt(iv, data, key []byte) ([]byte, error) {
 
 func Compress(iv, data []byte) []byte {
 	ivLen := byte(len(iv))
+
 	return append([]byte{ivLen}, append(iv, data...)...)
 }
 
@@ -82,14 +81,17 @@ func Decompress(compressedData []byte) ([]byte, []byte, error) {
 
 	iv := compressedData[1 : 1+ivLen]
 	data := compressedData[1+ivLen:]
+
 	return iv, data, nil
 }
 
 func NewKey(length int) ([]byte, error) {
 	key := make([]byte, length)
+
 	_, err := rand.Read(key)
 	if err != nil {
 		return nil, err
 	}
+
 	return key, nil
 }

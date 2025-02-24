@@ -2,8 +2,9 @@ package helpers
 
 import (
 	"encoding/base64"
-	"go.uber.org/zap"
 	"math/big"
+
+	"go.uber.org/zap"
 )
 
 // -- The only reason that this function exists is due to backwards compatibility with the old base64 encoding
@@ -13,8 +14,10 @@ func DecodeUrlSafeBase64ToBytes(encoded string) []byte {
 	decoded, err := base64.RawURLEncoding.DecodeString(encoded)
 	if err != nil {
 		zap.L().Warn("Error decoding base64", zap.Error(err))
+
 		return nil
 	}
+
 	return decoded
 }
 
@@ -23,5 +26,6 @@ func DecodeUrlSafeBase64ToBigInt(encoded string) *big.Int {
 	if decoded == nil {
 		return nil
 	}
+
 	return new(big.Int).SetBytes(decoded)
 }

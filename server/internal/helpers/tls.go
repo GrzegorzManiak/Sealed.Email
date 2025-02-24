@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"crypto/tls"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 	"go.uber.org/zap"

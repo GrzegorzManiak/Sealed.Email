@@ -1,11 +1,12 @@
 package worker
 
 import (
+	"slices"
+	"strings"
+
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"go.uber.org/zap"
-	"slices"
-	"strings"
 )
 
 func groupRecipients(email *models.OutboundEmail, sentSuccessfully []string) (map[string][]string, error) {
@@ -14,9 +15,11 @@ func groupRecipients(email *models.OutboundEmail, sentSuccessfully []string) (ma
 
 	for _, recipient := range email.To {
 		recipient = strings.ToLower(recipient)
+
 		domain, err := validation.ExtractDomainFromEmail(recipient)
 		if err != nil {
 			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
+
 			return nil, err
 		}
 
@@ -44,5 +47,6 @@ func createBccMap(email *models.OutboundEmail) map[string]struct{} {
 	for _, key := range email.OutboundEmailKeys {
 		emailKeys[strings.ToLower(key.EmailHash)] = struct{}{}
 	}
+
 	return emailKeys
 }

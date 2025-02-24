@@ -2,17 +2,18 @@ package email
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
-	"strings"
 )
 
 type Inbox struct {
 	DisplayName string `json:"displayName" validate:"lte=100"`
-	Email       string `json:"email" validate:"required,email"`
+	Email       string `json:"email"       validate:"required,email"`
 }
 
-// EscapeDisplayName / RFC 5322 p45
+// EscapeDisplayName / RFC 5322 p45.
 func (i Inbox) EscapeDisplayName() string {
 	escapeChars := []string{"(", ")", "<", ">", "[", "]", ":", ";", "@", ",", ".", "\""}
 	escapedDisplayName := i.DisplayName
@@ -44,10 +45,12 @@ func (h Headers) Cc(cc []Inbox) {
 	if len(cc) == 0 {
 		return
 	}
+
 	ccStrings := make([]string, len(cc))
 	for i, c := range cc {
 		ccStrings[i] = c.String()
 	}
+
 	h.Add(CC.Cased, strings.Join(ccStrings, ", "))
 }
 
@@ -62,6 +65,7 @@ func (h Headers) Subject(subject string) {
 func (h Headers) MessageId(domain string) string {
 	messageId := "<" + helpers.GeneratePublicId(64) + "@" + validation.RemoveTrailingDot(domain) + ">"
 	h.Add(MessageID.Cased, messageId)
+
 	return messageId
 }
 
@@ -73,10 +77,13 @@ func (h Headers) InReplyTo(inReplyTo string) error {
 	if inReplyTo == "" {
 		return nil
 	}
+
 	if err := ValidateMessageId(inReplyTo); err != nil {
 		return err
 	}
+
 	h.Add(InReplyTo.Cased, inReplyTo)
+
 	return nil
 }
 
@@ -84,12 +91,15 @@ func (h Headers) References(references []string) error {
 	if len(references) == 0 {
 		return nil
 	}
+
 	for _, r := range references {
 		if err := ValidateMessageId(r); err != nil {
 			return err
 		}
 	}
+
 	h.Add(References.Cased, strings.Join(references, " "))
+
 	return nil
 }
 
@@ -106,6 +116,7 @@ func (h Headers) InboxKeys(inboxKeys []EncryptedInbox) {
 	if len(inboxKeys) == 0 {
 		return
 	}
+
 	stringifiedInboxKeys := StringifyInboxKeys(inboxKeys)
 	h.Add(NoiseInboxKeys.Cased, stringifiedInboxKeys)
 }

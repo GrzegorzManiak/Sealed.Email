@@ -2,14 +2,16 @@ package cryptography
 
 import (
 	"crypto/elliptic"
-	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"log"
 	"testing"
+
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 )
 
 func TestAsym(t *testing.T) {
 	t.Run("Test AsymEncrypt", func(t *testing.T) {
 		config.CURVE = elliptic.P256()
+
 		t.Parallel()
 
 		privateKey, err := AsymPrivateKey()
@@ -33,6 +35,7 @@ func TestAsym(t *testing.T) {
 
 	t.Run("Test AsymDecrypt", func(t *testing.T) {
 		config.CURVE = elliptic.P256()
+
 		t.Parallel()
 
 		privateKey, err := AsymPrivateKey()
@@ -65,6 +68,7 @@ func TestAsym(t *testing.T) {
 
 	t.Run("Test Wrong AsymDecrypt", func(t *testing.T) {
 		config.CURVE = elliptic.P256()
+
 		t.Parallel()
 
 		privateKey, err := AsymPrivateKey()

@@ -1,12 +1,15 @@
 package server
 
 import (
-	"blitiri.com.ar/go/spf"
 	"testing"
+
+	"blitiri.com.ar/go/spf"
 )
 
-const TEST_SPF_HOST = "testing.noise.email"
-const VALID_SPF_IP = "188.245.211.253"
+const (
+	TEST_SPF_HOST = "testing.noise.email"
+	VALID_SPF_IP  = "188.245.211.253"
+)
 
 func TestValidateMailFromSpf(t *testing.T) {
 	t.Run("TestValidateMailFromSpf pass", func(t *testing.T) {

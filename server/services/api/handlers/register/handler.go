@@ -2,6 +2,7 @@ package register
 
 import (
 	"fmt"
+
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
@@ -12,8 +13,8 @@ import (
 )
 
 func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
-
 	proof := helpers.DecodeUrlSafeBase64ToBytes(input.Proof)
+
 	publicKey, err := cryptography.ByteArrToECDSAPublicKey(helpers.DecodeUrlSafeBase64ToBytes(input.PublicKey))
 	if err != nil {
 		return nil, errors.User(fmt.Sprintf("Error converting public key: %v", err), "Oops! Something went wrong")
@@ -28,7 +29,6 @@ func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 		T:  helpers.DecodeUrlSafeBase64ToBytes(input.T),
 		PI: helpers.DecodeUrlSafeBase64ToBigInt(input.PI),
 	})
-
 	if err != nil {
 		return nil, errors.User(fmt.Sprintf("Error initializing server: %v", err), "Oops! Something went wrong")
 	}
@@ -38,10 +38,12 @@ func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 	}
 
 	registeredUser := owlServer.RegisterUser()
+
 	_, dbErr := registerUser(input, registeredUser, data.DatabaseConnection)
 	if dbErr != nil {
 		return nil, dbErr
 	}
+
 	session.ClearCTXSession(data.Context)
 
 	return &Output{

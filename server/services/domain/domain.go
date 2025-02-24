@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	DomainDatabase "github.com/GrzegorzManiak/NoiseBackend/database/domain"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
@@ -40,7 +41,8 @@ func Start() {
 	domain.RegisterDomainServiceServer(grpcServer, &grpc.Server{
 		QueueDatabaseConnection: queueDatabaseConnection,
 		MainDatabaseConnection:  primaryDatabaseConnection,
-		Queue:                   domainQueue})
+		Queue:                   domainQueue,
+	})
 	reflection.Register(grpcServer)
 
 	serviceAnnouncement := ServiceProvider.Announcement{
@@ -51,12 +53,14 @@ func Start() {
 	}
 
 	etcdContext := context.Background()
+
 	_, err := ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
 	if err != nil {
 		zap.L().Panic("failed to create etcd service", zap.Error(err))
 	}
 
 	zap.L().Info("Domain service started", zap.String("service_id", ServiceID))
+
 	if err := grpcServer.Serve(listener); err != nil {
 		zap.L().Panic("failed to serve gRPC server", zap.Error(err))
 	}

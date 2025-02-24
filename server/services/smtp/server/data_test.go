@@ -1,9 +1,10 @@
 package server
 
 import (
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestData(t *testing.T) {
@@ -21,16 +22,16 @@ func TestData(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.True(t, s.Headers.Finished)
-		assert.Equal(t, len(s.Headers.Data), 5)
-		assert.Equal(t, s.Headers.Data["from"].Value, "a")
-		assert.Equal(t, s.Headers.Data["to"].Value, "b")
-		assert.Equal(t, s.Headers.Data["subject"].Value, "c")
-		assert.Equal(t, s.Headers.Data["date"].Value, "d")
-		assert.Equal(t, s.Headers.Data["message-id"].Value, "e")
+		assert.Len(t, s.Headers.Data, 5)
+		assert.Equal(t, "a", s.Headers.Data["from"].Value)
+		assert.Equal(t, "b", s.Headers.Data["to"].Value)
+		assert.Equal(t, "c", s.Headers.Data["subject"].Value)
+		assert.Equal(t, "d", s.Headers.Data["date"].Value)
+		assert.Equal(t, "e", s.Headers.Data["message-id"].Value)
 
 		// -- Only this should end in \n as in the test data, the headers dont
 		// -- end in \n because they get trimmed
-		assert.Equal(t, string(s.RawData), "this is email body\n")
+		assert.Equal(t, "this is email body\n", string(s.RawData))
 	})
 
 	t.Run("TestData Headers folded", func(t *testing.T) {
@@ -47,13 +48,13 @@ func TestData(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.True(t, s.Headers.Finished)
-		assert.Equal(t, len(s.Headers.Data), 5)
-		assert.Equal(t, s.Headers.Data["from"].Value, "a b c")
-		assert.Equal(t, s.Headers.Data["to"].Value, "b")
-		assert.Equal(t, s.Headers.Data["subject"].Value, "c")
-		assert.Equal(t, s.Headers.Data["date"].Value, "d")
-		assert.Equal(t, s.Headers.Data["message-id"].Value, "e")
-		assert.Equal(t, string(s.RawData), "this is email body\n")
+		assert.Len(t, s.Headers.Data, 5)
+		assert.Equal(t, "a b c", s.Headers.Data["from"].Value)
+		assert.Equal(t, "b", s.Headers.Data["to"].Value)
+		assert.Equal(t, "c", s.Headers.Data["subject"].Value)
+		assert.Equal(t, "d", s.Headers.Data["date"].Value)
+		assert.Equal(t, "e", s.Headers.Data["message-id"].Value)
+		assert.Equal(t, "this is email body\n", string(s.RawData))
 	})
 
 	t.Run("TestData Headers missing required", func(t *testing.T) {
@@ -67,7 +68,7 @@ func TestData(t *testing.T) {
 		}
 
 		err := s.Data(reader)
-		assert.Equal(t, err.Error(), "missing required headers")
+		assert.Equal(t, "missing required headers", err.Error())
 		assert.True(t, s.Headers.Finished)
 	})
 
@@ -85,12 +86,12 @@ func TestData(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.False(t, s.Headers.Finished) // -- << You need a \n to finish the headers
-		assert.Equal(t, len(s.Headers.Data), 5)
-		assert.Equal(t, s.Headers.Data["from"].Value, "a")
-		assert.Equal(t, s.Headers.Data["to"].Value, "b")
-		assert.Equal(t, s.Headers.Data["subject"].Value, "c")
-		assert.Equal(t, s.Headers.Data["date"].Value, "d")
-		assert.Equal(t, s.Headers.Data["message-id"].Value, "e")
-		assert.Equal(t, string(s.RawData), "")
+		assert.Len(t, s.Headers.Data, 5)
+		assert.Equal(t, "a", s.Headers.Data["from"].Value)
+		assert.Equal(t, "b", s.Headers.Data["to"].Value)
+		assert.Equal(t, "c", s.Headers.Data["subject"].Value)
+		assert.Equal(t, "d", s.Headers.Data["date"].Value)
+		assert.Equal(t, "e", s.Headers.Data["message-id"].Value)
+		assert.Equal(t, "", string(s.RawData))
 	})
 }

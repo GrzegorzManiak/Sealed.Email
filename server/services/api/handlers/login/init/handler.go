@@ -12,6 +12,7 @@ import (
 
 func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 	fetchedUser := models.User{}
+
 	dbErr := data.DatabaseConnection.Where("uid = ?", input.User).First(&fetchedUser)
 	if dbErr.Error != nil {
 		return nil, errors.User("Sorry! We couldn't find your account. Please try again.", "User not found")
@@ -47,5 +48,6 @@ func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 	}
 
 	session.ClearCTXSession(data.Context)
+
 	return encodeOutput(PID, serverAuthInit), nil
 }

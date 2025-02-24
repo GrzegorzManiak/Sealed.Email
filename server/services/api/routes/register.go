@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/register"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/gin-gonic/gin"

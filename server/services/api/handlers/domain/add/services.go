@@ -2,6 +2,8 @@ package domainAdd
 
 import (
 	"encoding/base64"
+	"time"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
@@ -9,7 +11,6 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"time"
 )
 
 func insertDomain(
@@ -22,6 +23,7 @@ func insertDomain(
 	if err != nil {
 		return &models.UserDomain{}, err
 	}
+
 	PID := helpers.GeneratePublicId(64)
 
 	domainModel := models.UserDomain{
@@ -55,9 +57,9 @@ func insertDomain(
 
 func generateDKIMKeyPair() (*cryptography.RSAKeyPair, errors.AppError) {
 	kp, err := cryptography.GenerateRSAKeyPair(config.Domain.DKIMKeySize)
-
 	if err != nil {
 		zap.L().Error("Error generating RSA key pair", zap.Error(err))
+
 		return &cryptography.RSAKeyPair{}, errors.User(
 			"There was an error generating the DKIM key pair. Please contact support if this issue persists.",
 			"Failed to generate DKIM key pair!",
@@ -76,6 +78,7 @@ func domainAlreadyAdded(domain string, userID uint, databaseConnection *gorm.DB)
 
 	if err.Error != nil {
 		zap.L().Error("Error checking if domain already added", zap.Error(err.Error))
+
 		return true
 	}
 

@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 )
 
@@ -22,6 +23,7 @@ func (s Announcement) String() string {
 func (s Announcement) Marshal() (string, error) {
 	s.Service.Password = ""
 	data, err := json.Marshal(s)
+
 	return string(data), err
 }
 
@@ -32,5 +34,6 @@ func (s Announcement) BuildID() string {
 func UnmarshalServiceAnnouncement(data []byte) (Announcement, error) {
 	var serviceAnnouncement Announcement
 	err := json.Unmarshal(data, &serviceAnnouncement)
+
 	return serviceAnnouncement, err
 }

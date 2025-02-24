@@ -4,13 +4,13 @@ import "gorm.io/gorm"
 
 type Session struct {
 	gorm.Model
-	User   User `json:"user" gorm:"foreignKey:UserID"`
-	UserID uint `json:"uid" gorm:"column:uid"`
+	User   User `gorm:"foreignKey:UserID" json:"user"`
+	UserID uint `gorm:"column:uid"        json:"uid"`
 
-	SessionID string `json:"sid" orm:"column:sid;uniqueIndex"`
-	ExpiresAt int64  `json:"exp" gorm:"column:exp"`
-	CreatedAt int64  `json:"iat" gorm:"column:iat"`
-	RefreshAt int64  `json:"rat" gorm:"column:rat"`
-	Group     string `json:"grp" gorm:"column:grp"`
-	Revoked   bool   `json:"revoked" gorm:"column:revoked"`
+	SessionID string `json:"sid"            orm:"column:sid;uniqueIndex"`
+	ExpiresAt int64  `gorm:"column:exp"     json:"exp"`
+	CreatedAt int64  `gorm:"column:iat"     json:"iat"`
+	RefreshAt int64  `gorm:"column:rat"     json:"rat"`
+	Group     string `gorm:"column:grp"     json:"grp"`
+	Revoked   bool   `gorm:"column:revoked" json:"revoked"`
 }

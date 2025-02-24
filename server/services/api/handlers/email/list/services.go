@@ -3,6 +3,8 @@ package list
 import (
 	"encoding/base64"
 	"fmt"
+	"strings"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
@@ -10,7 +12,6 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"strings"
 )
 
 func buildFilters(
@@ -79,9 +80,10 @@ func fetchEmails(
 	if err := dbQuery.
 		Limit(pagination.PerPage).
 		Offset(pagination.PerPage * pagination.Page).
-		Order(fmt.Sprintf("received_at %s", helpers.FormatOrderString(pagination.Order))).
+		Order("received_at " + helpers.FormatOrderString(pagination.Order)).
 		Find(&emails).Error; err != nil {
 		zap.L().Debug("Failed to fetch emails", zap.Error(err))
+
 		return nil, errors.User("The requested emails could not be found.", "Emails not found!")
 	}
 
@@ -91,10 +93,12 @@ func fetchEmails(
 func CreateAccessKey(bucketPath string) (string, int64, error) {
 	exp := helpers.GetUnixTimestamp() + 60*5 // 5 minutes
 	bucketPath = fmt.Sprintf("%s:%d", bucketPath, exp)
+
 	bytes, err := cryptography.SignMessage(&config.Session.EmailAccessPrivateKey, bucketPath)
 	if err != nil {
 		return "", 0, err
 	}
+
 	return base64.RawURLEncoding.EncodeToString(bytes), exp, nil
 }
 
@@ -104,6 +108,7 @@ func ParseEmail(
 	account, exp, err := CreateAccessKey(email.BucketPath)
 	if err != nil {
 		zap.L().Debug("Failed to create access key", zap.Error(err))
+
 		return nil
 	}
 
@@ -135,6 +140,7 @@ func parseEmailList(
 		if emailData == nil {
 			continue
 		}
+
 		emailList = append(emailList, *emailData)
 		count++
 	}

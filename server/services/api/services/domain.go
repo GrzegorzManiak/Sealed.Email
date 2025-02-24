@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
@@ -14,12 +15,14 @@ func AddDomainToVerificationQueue(ctx context.Context, connPool *service.Pools, 
 	pool, err := connPool.GetPool(config.Etcd.Domain.Prefix)
 	if err != nil {
 		zap.L().Debug("Failed to get domain pool", zap.Error(err))
+
 		return errors.User("Sorry! We are unable to process your request at the moment. Please try again later.", "Failed to get domain pool!")
 	}
 
 	conn, err := pool.GetConnection()
 	if err != nil {
 		zap.L().Debug("Failed to get domain client", zap.Error(err))
+
 		return errors.User("Sorry! We are unable to process your request at the moment. Please try again later.", "Failed to get domain client!")
 	}
 
@@ -32,16 +35,19 @@ func AddDomainToVerificationQueue(ctx context.Context, connPool *service.Pools, 
 		TxtVerificationCode: domainModel.TxtChallenge,
 		DomainID:            uint64(domainModel.ID),
 	})
-
 	if err != nil {
 		zap.L().Debug("Failed to queue DNS verification", zap.Error(err))
+
 		conn.Working = false
+
 		return errors.User(err.Error(), "Failed to queue DNS verification!")
 	}
 
-	if !sent.Acknowledged {
+	if !sent.GetAcknowledged() {
 		zap.L().Debug("Failed to queue DNS verification", zap.Error(err))
+
 		conn.Working = false
+
 		return errors.User("Sorry! We are unable to process your request at the moment. Please try again later.", "Failed to queue DNS verification!")
 	}
 

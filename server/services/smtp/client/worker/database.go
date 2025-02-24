@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+
 	primaryModels "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
@@ -21,10 +22,10 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Out
 		Preload("OutboundEmailKeys").
 		Where("email_id = ?", emailId).
 		First(email).Error
-
 	if err != nil {
 		return nil, err
 	}
+
 	return email, nil
 }
 
@@ -35,8 +36,10 @@ func insertIntoBucket(minioClient *minio.Client, email *[]byte, refID string) er
 		UserTags:    map[string]string{"type": "outbound"},
 	}); err != nil {
 		zap.L().Debug("Failed to insert email into bucket", zap.Error(err))
+
 		return err
 	}
+
 	return nil
 }
 
@@ -50,6 +53,7 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Outbou
 
 	if !email.Encrypted {
 		var err error
+
 		to, err = emailHelper.HashInboxEmail(to)
 		if err != nil {
 			return fmt.Errorf("failed to hash inbox email: %w", err)
@@ -76,10 +80,12 @@ func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.Outbou
 
 	if err := primaryDatabaseConnection.Create(&insert).Error; err != nil {
 		zap.L().Warn("Failed to insert emails", zap.Error(err))
+
 		return err
 	}
 
 	zap.L().Debug("Inserted emails", zap.Any("emails", insert))
+
 	return nil
 }
 
@@ -116,6 +122,7 @@ func insertEncrypted(minioClient *minio.Client, email *models.OutboundEmail) err
 func ensureEncryptedBucketInsertion(minioClient *minio.Client, email *models.OutboundEmail) error {
 	if email.InBucket {
 		zap.L().Debug("Email already in bucket")
+
 		return nil
 	}
 
@@ -131,6 +138,8 @@ func ensureEncryptedBucketInsertion(minioClient *minio.Client, email *models.Out
 	}
 
 	zap.L().Debug("Inserted email into bucket")
+
 	email.InBucket = true
+
 	return nil
 }

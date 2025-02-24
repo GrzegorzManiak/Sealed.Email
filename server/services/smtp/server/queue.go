@@ -1,7 +1,9 @@
 package server
 
 import (
+	"errors"
 	"fmt"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
@@ -15,17 +17,19 @@ func (s *Session) createQueueEntry() (*queue.Entry, error) {
 		models.QueueEmailId{EmailId: s.Id})
 
 	entry.RefID = fmt.Sprintf("%s:%s:%s", s.Id, s.Mode, s.From)
+
 	return entry, err
 }
 
 func (s *Session) insertInboundEmail() error {
 	if s.Processed == nil {
-		return fmt.Errorf("no inbound email to insert")
+		return errors.New("no inbound email to insert")
 	}
 
 	err := s.DatabaseConnection.Create(s.Processed).Error
 	if err != nil {
 		zap.L().Error("failed to insert inbound email", zap.Error(err))
+
 		return err
 	}
 
@@ -33,10 +37,10 @@ func (s *Session) insertInboundEmail() error {
 }
 
 func (s *Session) prepareInboundEmail() error {
-
 	entry, err := s.createQueueEntry()
 	if err != nil {
 		zap.L().Error("failed to initiate inbound email queue", zap.Error(err))
+
 		return err
 	}
 
@@ -69,12 +73,13 @@ func (s *Session) prepareInboundEmail() error {
 
 	s.Processed = &inboundEmail
 	s.QueueEntry = entry
+
 	return nil
 }
 
 func (s *Session) finalizeInboundEmail() error {
 	if s.Processed == nil {
-		return fmt.Errorf("no inbound email to process")
+		return errors.New("no inbound email to process")
 	}
 
 	err := s.insertInboundEmail()
@@ -83,5 +88,6 @@ func (s *Session) finalizeInboundEmail() error {
 	}
 
 	s.InboundQueue.AddEntry(s.QueueEntry)
+
 	return nil
 }

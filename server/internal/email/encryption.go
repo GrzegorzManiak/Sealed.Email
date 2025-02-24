@@ -3,17 +3,18 @@ package email
 import (
 	"encoding/base64"
 	"fmt"
+	"strings"
+
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	smtpService "github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
-	"strings"
 )
 
 type EncryptedInbox struct {
-	DisplayName       string `json:"displayName" validate:"lte=200"`
-	EmailHash         string `json:"emailHash" validate:"required,email"`
-	PublicKey         string `json:"publicKey" validate:"EncodedP256Key"`
+	DisplayName       string `json:"displayName"       validate:"lte=200"`
+	EmailHash         string `json:"emailHash"         validate:"required,email"`
+	PublicKey         string `json:"publicKey"         validate:"EncodedP256Key"`
 	EncryptedEmailKey string `json:"encryptedEmailKey" validate:"EncodedEncryptedKey"`
 }
 
@@ -38,11 +39,13 @@ func ReMapEncryptedInboxes(inboxes []EncryptedInbox) []Inbox {
 	for _, inbox := range inboxes {
 		result = append(result, inbox.BasicInbox())
 	}
+
 	return result
 }
 
 func ConvertToInboxKeys(inboxes ...[]EncryptedInbox) []*smtpService.InboxKeys {
 	var result []*smtpService.InboxKeys
+
 	for _, inbox := range inboxes {
 		for _, encryptedInbox := range inbox {
 			result = append(result, &smtpService.InboxKeys{
@@ -53,15 +56,18 @@ func ConvertToInboxKeys(inboxes ...[]EncryptedInbox) []*smtpService.InboxKeys {
 			})
 		}
 	}
+
 	return result
 }
 
 func StringifyInboxKeys(inboxes []EncryptedInbox) string {
 	var result []string
+
 	for _, inbox := range inboxes {
 		stringified := fmt.Sprintf("<%s:%s>", inbox.PublicKey, inbox.EncryptedEmailKey)
 		result = append(result, stringified)
 	}
+
 	return strings.Join(result, ",")
 }
 
@@ -93,6 +99,7 @@ func EncryptEmailKey(emailKey []byte, publicKey string) (*EncryptionKey, error) 
 
 func HashInboxEmail(email string) (string, error) {
 	email = validation.NormalizeEmail(email)
+
 	domain, err := validation.ExtractDomainFromEmail(email)
 	if err != nil {
 		return "", err

@@ -3,11 +3,11 @@ package domainAdd
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
-	Domain              string `json:"domain" validate:"required,fqdn,min=6"`
-	SymmetricRootKey    string `json:"symmetricRootKey" validate:"EncodedEncryptedKey"`
-	PublicKey           string `json:"publicKey" validate:"EncodedP256Key"`
+	Domain              string `json:"domain"              validate:"required,fqdn,min=6"`
+	SymmetricRootKey    string `json:"symmetricRootKey"    validate:"EncodedEncryptedKey"`
+	PublicKey           string `json:"publicKey"           validate:"EncodedP256Key"`
 	EncryptedPrivateKey string `json:"encryptedPrivateKey" validate:"EncodedEncryptedKey"`
-	ProofOfPossession   string `json:"proofOfPossession" validate:"required,base64rawurl,gte=40,lte=200"`
+	ProofOfPossession   string `json:"proofOfPossession"   validate:"required,base64rawurl,gte=40,lte=200"`
 }
 
 type DNSRecords struct {

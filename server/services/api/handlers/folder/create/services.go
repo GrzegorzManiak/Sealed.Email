@@ -10,10 +10,12 @@ import (
 
 func CheckDomainOwnership(databaseConnection *gorm.DB, domainId string, userId uint) (bool, uint) {
 	var domain models.UserDomain
+
 	response := databaseConnection.Where("p_id = ? AND user_id = ?", domainId, userId).First(&domain)
 	if response.Error != nil {
 		return false, 0
 	}
+
 	return true, domain.ID
 }
 

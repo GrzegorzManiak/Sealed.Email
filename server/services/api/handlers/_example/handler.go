@@ -2,7 +2,6 @@ package add
 
 import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
-	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 )
 

@@ -1,11 +1,12 @@
 package main
 
 import (
+	"os"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	DomainService "github.com/GrzegorzManiak/NoiseBackend/services/domain"
 	"go.uber.org/zap"
-	"os"
 )
 
 func main() {
@@ -15,11 +16,14 @@ func main() {
 	}
 
 	zap.ReplaceGlobals(helpers.CustomFormatter())
+
 	err := config.LoadConfig(configPath)
 	if err != nil {
 		zap.L().Panic("failed to load config", zap.Error(err))
 	}
+
 	config.Server.Port = "50151"
+
 	go DomainService.Start()
 	select {}
 }

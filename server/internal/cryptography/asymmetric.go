@@ -13,6 +13,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"errors"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 )
 
@@ -21,6 +22,7 @@ func AsymEncrypt(pub *ecdsa.PublicKey, data []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	ephemeralPub := ephemeralPriv.PublicKey
 	ephemeralPubBytes := elliptic.Marshal(pub.Curve, ephemeralPub.X, ephemeralPub.Y)
 
@@ -33,6 +35,7 @@ func AsymEncrypt(pub *ecdsa.PublicKey, data []byte) ([]byte, error) {
 	}
 
 	encrypted := append(ephemeralPubBytes, Compress(iv, ciphertext)...)
+
 	return encrypted, nil
 }
 
@@ -67,5 +70,6 @@ func AsymPrivateKey() (*ecdsa.PrivateKey, error) {
 	if config.CURVE == nil {
 		return nil, errors.New("curve not set")
 	}
+
 	return ecdsa.GenerateKey(config.CURVE, rand.Reader)
 }

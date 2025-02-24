@@ -2,13 +2,14 @@ package worker
 
 import (
 	"fmt"
+	"maps"
+	"slices"
+
 	primaryModels "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"maps"
-	"slices"
 )
 
 func buildProcessedRecipientsMap(email *models.InboundEmail) map[string]struct{} {
@@ -16,6 +17,7 @@ func buildProcessedRecipientsMap(email *models.InboundEmail) map[string]struct{}
 	for _, domain := range email.ProcessedSuccessfully {
 		processedMap[domain] = struct{}{}
 	}
+
 	return processedMap
 }
 
@@ -40,8 +42,9 @@ func fetchRecipients(primaryDatabaseConnection *gorm.DB, recipientDomains []stri
 	if err := primaryDatabaseConnection.
 		Where("domain IN ? AND verified = 1", recipientDomains).
 		Find(&fetchedDomains).Error; err != nil {
-		return nil, fmt.Errorf("failed to fetch recipients: %v", err)
+		return nil, fmt.Errorf("failed to fetch recipients: %w", err)
 	}
+
 	return &fetchedDomains, nil
 }
 
@@ -52,8 +55,10 @@ func batchRecipientsByDomain(tos []string, processedSuccessfully []string) map[s
 		domain, err := validation.ExtractDomainFromEmail(to)
 		if err != nil || slices.Contains(processedSuccessfully, domain) {
 			zap.L().Debug("Failed to extract domain from email", zap.Error(err))
+
 			continue
 		}
+
 		batchedRecipients[domain] = append(batchedRecipients[domain], to)
 	}
 

@@ -3,6 +3,8 @@ package api
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
@@ -16,7 +18,6 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"go.uber.org/zap"
-	"time"
 )
 
 func Start() {
@@ -30,6 +31,7 @@ func Start() {
 	pprof.Register(router, "debug/")
 
 	databaseConnection := PrimaryDatabase.InitiateConnection()
+
 	minioClient, err := minio.New(config.Bucket.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(config.Bucket.AccessKey, config.Bucket.SecretKey, ""),
 		Secure: config.Bucket.UseSSL,
@@ -37,6 +39,7 @@ func Start() {
 	if err != nil {
 		zap.L().Panic("failed to create minio client", zap.Error(err))
 	}
+
 	zap.L().Info("Minio client created", zap.Any("client", minioClient))
 
 	serviceUUID, err := uuid.NewUUID()
@@ -52,6 +55,7 @@ func Start() {
 	}
 
 	etcdContext := context.Background()
+
 	etcdService, err := ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
 	if err != nil {
 		zap.L().Panic("failed to create etcd service", zap.Error(err))

@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func URLCleanerMiddleware() gin.HandlerFunc {
@@ -11,14 +12,16 @@ func URLCleanerMiddleware() gin.HandlerFunc {
 
 		if len(originalPath) > 1000 {
 			c.AbortWithStatus(http.StatusBadRequest)
+
 			return
 		}
 
 		cleanedPath := ""
-		for i := 0; i < len(originalPath); i++ {
+		for i := range len(originalPath) {
 			if i > 0 && originalPath[i] == '/' && cleanedPath[len(cleanedPath)-1] == '/' {
 				continue
 			}
+
 			cleanedPath += string(originalPath[i])
 		}
 
@@ -29,6 +32,7 @@ func URLCleanerMiddleware() gin.HandlerFunc {
 		if cleanedPath != originalPath {
 			c.Redirect(http.StatusMovedPermanently, cleanedPath)
 			c.Abort()
+
 			return
 		}
 

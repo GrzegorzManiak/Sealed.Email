@@ -1,7 +1,8 @@
 package services
 
 import (
-	"fmt"
+	"errors"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
 	"github.com/miekg/dns"
@@ -22,9 +23,9 @@ func FetchDnsRecords(domain string) ([]dns.RR, error) {
 }
 
 func MatchTxtRecords(challenge string, dnsRecords []dns.RR) bool {
-
 	if config.Domain.Service.VerifyAll {
 		zap.L().Warn("!!!!!!!!!!!!!!!! VerifyAll is enabled, skipping DNS verification !!!!!!!!!!!!!!!!")
+
 		return true
 	}
 
@@ -39,6 +40,7 @@ func MatchTxtRecords(challenge string, dnsRecords []dns.RR) bool {
 				zap.L().Debug("Matched DNS record",
 					zap.String("challenge", challenge),
 					zap.String("txt", txt))
+
 				return true
 			}
 		}
@@ -63,7 +65,7 @@ func VerifyDns(domain string, challenge string) error {
 	}
 
 	if !MatchTxtRecords(challenge, dnsRecords) {
-		return fmt.Errorf("failed to match DNS records")
+		return errors.New("failed to match DNS records")
 	}
 
 	return nil

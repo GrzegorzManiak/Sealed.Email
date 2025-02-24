@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
@@ -17,19 +18,19 @@ func createQueueEntry(email *smtp.Email) (*queue.Entry, string, error) {
 		config.Smtp.OutboundQueue.Name,
 		models.QueueEmailId{EmailId: id})
 
-	entry.RefID = fmt.Sprintf("%s:%s:%s", id, email.To, email.MessageId)
+	entry.RefID = fmt.Sprintf("%s:%s:%s", id, email.GetTo(), email.GetMessageId())
+
 	return entry, id, err
 }
 
 func insertOutboundEmail(email *smtp.Email, id string, entry *queue.Entry, db *gorm.DB) (*models.OutboundEmail, error) {
-
 	outboundEmailKeys := make([]models.OutboundEmailKeys, 0)
-	for _, key := range email.InboxKeys {
+	for _, key := range email.GetInboxKeys() {
 		outboundEmailKeys = append(outboundEmailKeys, models.OutboundEmailKeys{
-			DisplayName:       key.DisplayName,
-			EmailHash:         key.EmailHash,
-			PublicKey:         key.PublicKey,
-			EncryptedEmailKey: key.EncryptedEmailKey,
+			DisplayName:       key.GetDisplayName(),
+			EmailHash:         key.GetEmailHash(),
+			PublicKey:         key.GetPublicKey(),
+			EncryptedEmailKey: key.GetEncryptedEmailKey(),
 			EmailId:           id,
 		})
 	}
@@ -37,20 +38,20 @@ func insertOutboundEmail(email *smtp.Email, id string, entry *queue.Entry, db *g
 	outboundEmail := models.OutboundEmail{
 		EmailId:   id,
 		RefID:     entry.RefID,
-		MessageId: email.MessageId,
-		From:      email.From,
-		To:        email.To,
+		MessageId: email.GetMessageId(),
+		From:      email.GetFrom(),
+		To:        email.GetTo(),
 
-		Body:              email.Body,
-		Encrypted:         email.Encrypted,
-		Challenge:         email.Challenge,
+		Body:              email.GetBody(),
+		Encrypted:         email.GetEncrypted(),
+		Challenge:         email.GetChallenge(),
 		OutboundEmailKeys: outboundEmailKeys,
 
-		FromUserId:    uint(email.FromUserId),
-		FromDomainPID: email.FromDomainPID,
-		FromDomainId:  uint(email.FromDomainId),
+		FromUserId:    uint(email.GetFromUserId()),
+		FromDomainPID: email.GetFromDomainPID(),
+		FromDomainId:  uint(email.GetFromDomainId()),
 
-		PublicKey: email.PublicKey,
+		PublicKey: email.GetPublicKey(),
 
 		Version: 1,
 	}

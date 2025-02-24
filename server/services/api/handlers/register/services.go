@@ -2,6 +2,7 @@ package register
 
 import (
 	"encoding/base64"
+
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
@@ -10,7 +11,9 @@ import (
 
 func usernameExists(username string, databaseConnection *gorm.DB) bool {
 	var count int64
+
 	databaseConnection.Model(&models.User{}).Where("uid = ?", username).Count(&count)
+
 	return count > 0
 }
 

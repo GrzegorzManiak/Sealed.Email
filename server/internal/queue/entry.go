@@ -2,10 +2,11 @@ package queue
 
 import (
 	"fmt"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type WorkerResponse int
@@ -36,11 +37,7 @@ const (
 	Expired  WorkerResponse = iota
 )
 
-// BeforeSave
-// 0 - Pending,
-// 1 - Verified,
-// 2 - Failed,
-// 3 - Expired
+// 3 - Expired.
 func (entry *Entry) BeforeSave(tx *gorm.DB) (err error) {
 	if entry.Status > 3 || entry.Status < 0 {
 		entry.Status = 2
@@ -51,10 +48,12 @@ func (entry *Entry) BeforeSave(tx *gorm.DB) (err error) {
 		if err != nil {
 			return err
 		}
+
 		entry.Uuid = entryUuid.String()
 	}
 
 	entry.Queue = strings.ToLower(entry.Queue)
+
 	return
 }
 
@@ -85,6 +84,7 @@ func (entry *Entry) String() string {
 
 func Initiate(maxAttempts int64, retryInterval int64, queue string, data EntryData) (*Entry, error) {
 	entry := Entry{}
+
 	dataString, err := data.Marshal()
 	if err != nil {
 		return nil, err

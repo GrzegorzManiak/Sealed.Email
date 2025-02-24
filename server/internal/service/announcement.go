@@ -1,7 +1,9 @@
 package service
 
 import (
+	"errors"
 	"fmt"
+
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
@@ -12,17 +14,20 @@ func (e *EtcdService) registerLease() (clientv3.LeaseID, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to get etcd client: %w", err)
 	}
+
 	lease, err := client.Grant(e.ctx, e.ans.Service.TTL)
 	if err != nil {
 		return 0, fmt.Errorf("failed to register lease: %w", err)
 	}
+
 	e.lease = lease.ID
+
 	return e.lease, nil
 }
 
 func (e *EtcdService) registerKeyValue(key string, value string) error {
 	if e.lease == 0 {
-		return fmt.Errorf("lease not registered")
+		return errors.New("lease not registered")
 	}
 
 	client, err := e.GetClient()
@@ -40,6 +45,7 @@ func (e *EtcdService) registerKeyValue(key string, value string) error {
 
 func (e *EtcdService) registerService() error {
 	zap.L().Info("Lease not registered, attempting to register lease for service", zap.String("service", e.ans.Service.Prefix))
+
 	_, err := e.registerLease()
 	if err != nil {
 		return fmt.Errorf("failed to register lease for service: %w", err)
@@ -57,17 +63,18 @@ func (e *EtcdService) registerService() error {
 	}
 
 	zap.L().Info("Key registered", zap.String("key", key), zap.String("value", marshaledService))
+
 	return nil
 }
 
 func (e *EtcdService) keepAlive() error {
 	go func() {
 		for {
-
 			// -- Check if the context is done
 			select {
 			case <-e.ctx.Done():
 				zap.L().Info("Context done, stopping KeepAlive for service", zap.String("service", e.ans.Service.Prefix))
+
 				return
 
 			default:
@@ -77,6 +84,7 @@ func (e *EtcdService) keepAlive() error {
 				if err := e.EnsureConnection(); err != nil {
 					zap.L().Warn("failed to ensure etcd connection", zap.Error(err))
 					helpers.Sleep(e.ans.Service.TimeOut)
+
 					continue
 				}
 
@@ -84,6 +92,7 @@ func (e *EtcdService) keepAlive() error {
 				if err != nil {
 					zap.L().Warn("failed to get etcd client", zap.Error(err))
 					helpers.Sleep(e.ans.Service.TimeOut)
+
 					continue
 				}
 
@@ -92,6 +101,7 @@ func (e *EtcdService) keepAlive() error {
 				if err != nil {
 					zap.L().Warn("failed to register service", zap.String("service", e.ans.Service.Prefix), zap.Error(err))
 					helpers.Sleep(e.ans.Service.TimeOut)
+
 					continue
 				}
 
@@ -100,6 +110,7 @@ func (e *EtcdService) keepAlive() error {
 				if err != nil {
 					zap.L().Warn("failed to send keep alive signal for service", zap.String("service", e.ans.Service.Prefix), zap.Error(err))
 					helpers.Sleep(e.ans.Service.TimeOut)
+
 					continue
 				}
 
@@ -107,6 +118,7 @@ func (e *EtcdService) keepAlive() error {
 					_, ok := <-aliveChanel
 					if !ok {
 						zap.L().Warn("KeepAlive channel closed, Attempting to reconnect KeepAlive for service", zap.String("service", e.ans.Service.Prefix))
+
 						break
 					}
 				}

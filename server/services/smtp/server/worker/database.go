@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+
 	primaryModels "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
@@ -21,26 +22,31 @@ func getEmailById(emailId string, queueDatabaseConnection *gorm.DB) (*models.Inb
 	if err := queueDatabaseConnection.Where("ref_id = ?", emailId).First(email).Error; err != nil {
 		return nil, err
 	}
+
 	return email, nil
 }
 
 func prepareInserts(email *models.InboundEmail, domain primaryModels.UserDomain, inbox []string) []primaryModels.UserEmail {
 	inserts := make([]primaryModels.UserEmail, 0, len(inbox))
+
 	for _, recipient := range inbox {
 		to := recipient
 		from := email.From
 
 		if !email.Encrypted {
 			var err error
+
 			to, err = emailHelper.HashInboxEmail(to)
 			if err != nil {
 				zap.L().Warn("Failed to hash inbox email", zap.Error(err))
+
 				continue
 			}
 
 			from, err = emailHelper.HashInboxEmail(from)
 			if err != nil {
 				zap.L().Warn("Failed to hash inbox email", zap.Error(err))
+
 				continue
 			}
 		}
@@ -57,24 +63,30 @@ func prepareInserts(email *models.InboundEmail, domain primaryModels.UserDomain,
 			DomainPID:           domain.PID,
 		})
 	}
+
 	return inserts
 }
 
 func insertIntoDatabase(primaryDatabaseConnection *gorm.DB, email *models.InboundEmail, domains *[]primaryModels.UserDomain, inboxes map[string][]string) ([]string, queue.WorkerResponse) {
 	successfulInserts := make([]string, 0, len(inboxes))
+
 	for _, domain := range *domains {
 		if inbox, ok := inboxes[domain.Domain]; ok {
 			inserts := prepareInserts(email, domain, inbox)
 			if err := primaryDatabaseConnection.Create(&inserts).Error; err != nil {
 				zap.L().Warn("Failed to insert emails", zap.Error(err))
+
 				return successfulInserts, queue.Failed
 			}
+
 			zap.L().Debug("Inserted emails", zap.Any("emails", inserts))
+
 			successfulInserts = append(successfulInserts, domain.Domain)
 		} else {
 			zap.L().Warn("No inbox found for domain", zap.String("domain", domain.Domain))
 		}
 	}
+
 	return successfulInserts, queue.Verified
 }
 
@@ -85,8 +97,10 @@ func insertIntoBucket(minioClient *minio.Client, email *[]byte, refID string) er
 		UserTags:    map[string]string{"type": "inbound"},
 	}); err != nil {
 		zap.L().Debug("Failed to insert email into bucket", zap.Error(err))
+
 		return err
 	}
+
 	return nil
 }
 
@@ -97,6 +111,7 @@ func insertEncrypted(minioClient *minio.Client, email *models.InboundEmail, reci
 	}
 
 	keys := make([]*emailHelper.EncryptionKey, 0, len(*recipients))
+
 	for _, recipient := range *recipients {
 		encryptedKey, err := emailHelper.EncryptEmailKey(key, recipient.PublicKey)
 		if err != nil {
@@ -126,6 +141,7 @@ func insertEncrypted(minioClient *minio.Client, email *models.InboundEmail, reci
 func ensureEncryptedBucketInsertion(minioClient *minio.Client, email *models.InboundEmail, recipients *[]primaryModels.UserDomain) error {
 	if email.InBucket {
 		zap.L().Debug("Email already in bucket")
+
 		return nil
 	}
 
@@ -141,6 +157,8 @@ func ensureEncryptedBucketInsertion(minioClient *minio.Client, email *models.Inb
 	}
 
 	zap.L().Debug("Inserted email into bucket")
+
 	email.InBucket = true
+
 	return nil
 }

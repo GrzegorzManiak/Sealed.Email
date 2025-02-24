@@ -1,11 +1,12 @@
 package modify
 
 import (
+	"strings"
+
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"gorm.io/gorm"
-	"strings"
 )
 
 func createUpdateQuery(
@@ -46,7 +47,6 @@ func updateEmail(
 	input *Input,
 	data *services.Handler,
 ) errors.AppError {
-
 	query := data.DatabaseConnection.Model(&models.UserEmail{}).
 		Where("user_id = ? AND p_id in (?)", data.User.ID, input.EmailIds)
 

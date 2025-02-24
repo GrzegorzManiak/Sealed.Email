@@ -4,21 +4,21 @@ import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
 	DomainID string `form:"domainID" validate:"required,PublicID"`
-	Page     int    `form:"page" validate:"gte=0"`
-	PerPage  int    `form:"perPage" validate:"required,gte=1,lte=30"`
+	Page     int    `form:"page"     validate:"gte=0"`
+	PerPage  int    `form:"perPage"  validate:"required,gte=1,lte=30"`
 
-	Order     string   `form:"order" validate:"omitempty,oneof=asc desc"`
-	Read      string   `form:"read" validate:"omitempty,oneof=only unread all"`
-	Folders   []string `form:"folders" validate:"omitempty,dive,gte=0,lte=100"`
-	Sent      string   `form:"sent" validate:"omitempty,oneof=in out all"`
-	Spam      string   `form:"spam" validate:"omitempty,oneof=only none all"`
+	Order     string   `form:"order"     validate:"omitempty,oneof=asc desc"`
+	Read      string   `form:"read"      validate:"omitempty,oneof=only unread all"`
+	Folders   []string `form:"folders"   validate:"omitempty,dive,gte=0,lte=100"`
+	Sent      string   `form:"sent"      validate:"omitempty,oneof=in out all"`
+	Spam      string   `form:"spam"      validate:"omitempty,oneof=only none all"`
 	Encrypted string   `form:"encrypted" validate:"omitempty,oneof=all original post"`
-	Pinned    string   `form:"pinned" validate:"omitempty,oneof=only none all"`
+	Pinned    string   `form:"pinned"    validate:"omitempty,oneof=only none all"`
 }
 
 type Output struct {
 	Emails []Email `json:"emails" validate:"dive"`
-	Total  int     `json:"total" validate:"gte=0"`
+	Total  int     `json:"total"  validate:"gte=0"`
 }
 
 type Email struct {

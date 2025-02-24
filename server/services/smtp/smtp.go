@@ -2,20 +2,20 @@ package smtp
 
 import (
 	"context"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	PrimaryDatabase "github.com/GrzegorzManiak/NoiseBackend/database/primary"
 	SmtpDatabase "github.com/GrzegorzManiak/NoiseBackend/database/smtp"
-	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/client/worker"
-	queue2 "github.com/GrzegorzManiak/NoiseBackend/services/smtp/server/worker"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
-
-	// "github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
+	// "github.com/GrzegorzManiak/NoiseBackend/internal/helpers".
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	ServiceProvider "github.com/GrzegorzManiak/NoiseBackend/internal/service"
 	"github.com/GrzegorzManiak/NoiseBackend/proto/smtp"
+	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/client/worker"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/grpc"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/server"
+	queue2 "github.com/GrzegorzManiak/NoiseBackend/services/smtp/server/worker"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"go.uber.org/zap"
 )
 
@@ -33,6 +33,7 @@ func Start() {
 	if err != nil {
 		zap.L().Panic("failed to create minio client", zap.Error(err))
 	}
+
 	zap.L().Info("Minio client created", zap.Any("client", minioClient))
 
 	zap.L().Debug("Creating inbound queue", zap.Any("config", config.Smtp.InboundQueue))
@@ -85,12 +86,14 @@ func Start() {
 	}
 
 	etcdContext := context.Background()
+
 	_, err = ServiceProvider.NewEtcdService(etcdContext, &config.Etcd.API, &serviceAnnouncement)
 	if err != nil {
 		zap.L().Panic("failed to create etcd service", zap.Error(err))
 	}
 
 	zap.L().Info("Smtp service started", zap.String("service_id", ServiceID))
+
 	if err := grpcServer.Serve(listener); err != nil {
 		zap.L().Panic("failed to serve gRPC server", zap.Error(err))
 	}

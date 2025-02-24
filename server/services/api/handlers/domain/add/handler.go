@@ -30,8 +30,10 @@ func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 	// -- USER CAN RE-VERIFY, NO NEED TO RETURN ERROR
 	err = services.AddDomainToVerificationQueue(data.Context, data.ConnectionPool, domainModel)
 	sentVerification := true
+
 	if err != nil {
 		zap.L().Warn("failed to send verification request", zap.Error(err))
+
 		sentVerification = false
 	}
 

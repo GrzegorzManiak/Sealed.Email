@@ -1,7 +1,7 @@
 package email
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 )
 
@@ -10,9 +10,11 @@ type HeaderKey struct {
 	Cased string
 }
 
-type HeaderStatus int
-type WellKnownHeader HeaderKey
-type NoiseExtensionHeader HeaderKey
+type (
+	HeaderStatus         int
+	WellKnownHeader      HeaderKey
+	NoiseExtensionHeader HeaderKey
+)
 
 type Header struct {
 	Key    string
@@ -92,6 +94,7 @@ func (h Headers) AddHeader(header Header) {
 func (h Headers) Get(key string) (Header, bool) {
 	key = strings.ToLower(key)
 	v, ok := h[key]
+
 	return v, ok
 }
 
@@ -101,6 +104,7 @@ func (h Headers) Has(key []WellKnownHeader) bool {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -108,15 +112,18 @@ func (h Headers) IsEncrypted() bool {
 	_, nv := h[NoiseVersion.Lower]
 	_, nek := h[NoiseInboxKeys.Lower]
 	_, ns := h[NoiseSignature.Lower]
+
 	return nv && nek && ns
 }
 
 func (h Headers) Stringify() string {
 	var str strings.Builder
+
 	for _, v := range h {
 		formatted := FormatSmtpHeader(&v)
 		str.WriteString(formatted)
 	}
+
 	return str.String()
 }
 
@@ -183,6 +190,7 @@ func FormatSmtpHeader(header *Header) string {
 	if len(baseHeader)+len(normalizedValue) > maxLineLength {
 		// -- Fold header
 		var sb strings.Builder
+
 		sb.WriteString(baseHeader)
 
 		for i := 0; i < len(normalizedValue); i += (maxLineLength - len(baseHeader)) {
@@ -194,8 +202,10 @@ func FormatSmtpHeader(header *Header) string {
 			if i > 0 {
 				sb.WriteString(CRLF + " ")
 			}
+
 			sb.WriteString(normalizedValue[i:end])
 		}
+
 		foldedHeader = sb.String()
 	} else {
 		// -- Dont fold header
@@ -206,26 +216,26 @@ func FormatSmtpHeader(header *Header) string {
 }
 
 func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {
-
 	// -- Folded header
 	if rawHeader[0] == ' ' || rawHeader[0] == '\t' {
 		if lastHeader.Key == "" {
-			return "", "", fmt.Errorf("invalid folded header format")
+			return "", "", errors.New("invalid folded header format")
 		}
 
 		lastHeader.Value += rawHeader
+
 		return lastHeader.Key, lastHeader.Value, nil
 	}
 
 	// -- Empty line (2 chars is the minimum for a valid header)
 	if rawHeader == CRLF || rawHeader == "\n" || len(rawHeader) <= 2 {
-		return "", "", fmt.Errorf("empty line")
+		return "", "", errors.New("empty line")
 	}
 
 	// -- Normal header
 	headerParts := strings.SplitN(rawHeader, ":", 2)
 	if len(headerParts) != 2 {
-		return "", "", fmt.Errorf("invalid header format")
+		return "", "", errors.New("invalid header format")
 	}
 
 	header := strings.Trim(headerParts[0], " ")
@@ -236,11 +246,14 @@ func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {
 
 func FuseHeadersToBody(headers Headers, body string) string {
 	var str strings.Builder
+
 	for _, v := range headers {
 		formatted := FormatSmtpHeader(&v)
 		str.WriteString(formatted)
 	}
+
 	str.WriteString(CRLF)
 	str.WriteString(body)
+
 	return str.String()
 }

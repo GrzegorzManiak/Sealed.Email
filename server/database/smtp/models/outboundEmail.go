@@ -37,5 +37,5 @@ type OutboundEmail struct {
 	InDatabase bool
 
 	OutboundEmailKeys []OutboundEmailKeys `gorm:"foreignKey:EmailId;references:EmailId"`
-	SentSuccessfully  pq.StringArray      `gorm:"type:text[]" gorm:"default:[]"`
+	SentSuccessfully  pq.StringArray      `gorm:"type:text[]"                           gorm:"default:[]"`
 }

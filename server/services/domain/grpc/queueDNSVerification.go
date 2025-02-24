@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	database "github.com/GrzegorzManiak/NoiseBackend/database/domain/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
@@ -13,7 +14,7 @@ import (
 )
 
 func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSVerificationRequest) (*domain.QueueDNSVerificationResponse, error) {
-	cleanDomain, domainErr := validation.TrimDomain(req.DomainName)
+	cleanDomain, domainErr := validation.TrimDomain(req.GetDomainName())
 	if domainErr != nil {
 		return &domain.QueueDNSVerificationResponse{
 			Message:      "Invalid domain name",
@@ -23,18 +24,19 @@ func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSV
 
 	entry, err := queue.Initiate(config.Domain.Service.MaxRetry, config.Domain.Service.RetryInterval, services.QueueName, database.VerificationQueue{
 		DomainName:      cleanDomain,
-		DkimPublicKey:   req.DkimPublicKey,
-		TxtVerification: req.TxtVerificationCode,
-		TenantID:        req.TenantId,
-		TenantType:      req.TenantType,
-		DomainID:        req.DomainID,
+		DkimPublicKey:   req.GetDkimPublicKey(),
+		TxtVerification: req.GetTxtVerificationCode(),
+		TenantID:        req.GetTenantId(),
+		TenantType:      req.GetTenantType(),
+		DomainID:        req.GetDomainID(),
 	})
 
-	entry.RefID = fmt.Sprintf("%d:%s:%s", req.TenantId, req.TenantType, cleanDomain)
+	entry.RefID = fmt.Sprintf("%d:%s:%s", req.GetTenantId(), req.GetTenantType(), cleanDomain)
 	zap.L().Debug("Initiating DNS verification request", zap.Any("entry", entry))
 
 	if err != nil {
 		zap.L().Error("failed to initiate DNS verification request", zap.Error(err))
+
 		return &domain.QueueDNSVerificationResponse{
 			Message:      "Failed to initiate DNS verification request",
 			Acknowledged: false,
@@ -45,6 +47,7 @@ func (s *Server) QueueDNSVerification(ctx context.Context, req *domain.QueueDNSV
 	s.Queue.AddEntry(entry)
 
 	zap.L().Debug("DNS verification request queued", zap.Any("entry", entry))
+
 	return &domain.QueueDNSVerificationResponse{
 		Message:      "DNS verification queued",
 		Acknowledged: true,

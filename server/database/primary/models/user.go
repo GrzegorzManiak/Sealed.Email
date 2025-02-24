@@ -43,10 +43,10 @@ type User struct {
 
 	// Admin Fields
 	// Holds []UserHold `gorm:"foreignKey:UserID"`
-	//Quota UserQuota  `gorm:"foreignKey:UserID"`
-	//Flags []string
+	// Quota UserQuota  `gorm:"foreignKey:UserID"`
+	// Flags []string
 	//
 	//// Email Fields
-	//Inboxes []UserInbox  `gorm:"foreignKey:UserID"`
+	// Inboxes []UserInbox  `gorm:"foreignKey:UserID"`
 	//Domains []UserDomain `gorm:"foreignKey:UserID"`
 }

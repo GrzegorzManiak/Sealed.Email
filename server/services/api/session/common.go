@@ -1,15 +1,14 @@
 package session
 
 import (
+	"time"
+
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"gorm.io/gorm"
-	"time"
 )
 
-var (
-	CurVer uint8 = 1
-)
+var CurVer uint8 = 1
 
 type TokenGroup struct {
 	Group      string
@@ -70,10 +69,12 @@ type APIConfiguration struct {
 
 func FindSession(sessionID string, databaseConnection *gorm.DB) (models.Session, error) {
 	session := models.Session{}
+
 	err := databaseConnection.Where("session_id = ?", sessionID).First(&session)
 	if err.Error != nil {
 		return models.Session{}, err.Error
 	}
+
 	return session, nil
 }
 
@@ -92,6 +93,7 @@ func (claims *Claims) Filter(filter *APIConfiguration) bool {
 				return true
 			}
 		}
+
 		return false
 	}
 
@@ -101,6 +103,7 @@ func (claims *Claims) Filter(filter *APIConfiguration) bool {
 				return false
 			}
 		}
+
 		return true
 	}
 

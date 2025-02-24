@@ -38,6 +38,7 @@ func ExecuteRoute[InputType any, OutputType any](
 	if sessionErr != nil {
 		zap.L().Debug("Error SessionManagerMiddleware", zap.Error(sessionErr))
 		helpers.ErrorResponse(ctx, sessionErr)
+
 		return
 	}
 
@@ -46,11 +47,13 @@ func ExecuteRoute[InputType any, OutputType any](
 	if err != nil {
 		zap.L().Debug("Error ValidateInputData", zap.Error(err), zap.Any("input", input))
 		helpers.ErrorResponse(ctx, err)
+
 		return
 	}
 
 	// -- Fetch user (if required)
 	userFetched := false
+
 	var user models.User
 
 	if sessionFilter.SessionRequired {
@@ -58,8 +61,10 @@ func ExecuteRoute[InputType any, OutputType any](
 		if err != nil {
 			zap.L().Debug("Error FetchUser", zap.Error(err))
 			helpers.ErrorResponse(ctx, err)
+
 			return
 		}
+
 		userFetched = true
 	}
 
@@ -76,11 +81,13 @@ func ExecuteRoute[InputType any, OutputType any](
 	if handlerErr != nil {
 		zap.L().Debug("Error handler", zap.Error(err), zap.Any("input", input), zap.Any("user", user))
 		helpers.ErrorResponse(ctx, handlerErr)
+
 		return
 	}
 
 	if sessionFilter.SelfResponse {
 		zap.L().Debug("SelfResponse", zap.Any("output", output))
+
 		return
 	}
 
@@ -88,6 +95,7 @@ func ExecuteRoute[InputType any, OutputType any](
 	if outErr := ValidateOutputData(output); outErr != nil {
 		zap.L().Debug("Error ValidateOutputData", zap.Error(outErr), zap.Any("output", output))
 		helpers.ErrorResponse(ctx, outErr)
+
 		return
 	}
 

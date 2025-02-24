@@ -12,12 +12,13 @@ func ByteArrToECDSAPrivateKey(curve elliptic.Curve, privateKey []byte) (*ecdsa.P
 	privKey.PublicKey.Curve = curve
 	privKey.D = new(big.Int).SetBytes(privateKey)
 	privKey.PublicKey.X, privKey.PublicKey.Y = curve.ScalarBaseMult(privateKey)
+
 	return privKey, nil
 }
 
 type RawSessionConfig struct {
-	PrivateKey     string `yaml:"privateKey" validate:"required,base64rawurl,gte=42,lte=46"`
-	EmailAccessKey string `yaml:"emailAccessKey" validate:"required,base64rawurl,gte=42,lte=46"`
+	PrivateKey     string `validate:"required,base64rawurl,gte=42,lte=46" yaml:"privateKey"`
+	EmailAccessKey string `validate:"required,base64rawurl,gte=42,lte=46" yaml:"emailAccessKey"`
 
 	CookiePath   string `yaml:"cookiePath"`
 	CookieDomain string `yaml:"cookieDomain"`

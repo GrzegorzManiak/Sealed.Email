@@ -14,14 +14,17 @@ func deleteDomain(
 ) errors.AppError {
 	domain := &models.UserDomain{}
 	dbQuery := databaseConnection.Where("user_id = ? AND p_id = ?", userID, domainID).First(domain)
+
 	if dbQuery.Error != nil {
 		zap.L().Debug("Error querying domain", zap.Error(dbQuery.Error), zap.Any("domain", domain))
+
 		return errors.User("The requested domain could not be found.", "Domain not found!")
 	}
 
 	dbDelete := databaseConnection.Delete(domain)
 	if dbDelete.Error != nil {
 		zap.L().Debug("Error deleting domain", zap.Error(dbDelete.Error), zap.Any("domain", domain))
+
 		return errors.User("The requested domain could not be deleted.", "Failed to delete domain!")
 	}
 

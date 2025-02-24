@@ -7,7 +7,6 @@ import (
 )
 
 func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
-
 	domainModel, err := fetchDomainByID(data.User.ID, input.DomainID, data.DatabaseConnection)
 	if err != nil {
 		return nil, err
@@ -15,8 +14,10 @@ func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 
 	err = services.AddDomainToVerificationQueue(data.Context, data.ConnectionPool, domainModel)
 	sentVerification := true
+
 	if err != nil {
 		zap.L().Warn("failed to send verification request", zap.Error(err))
+
 		sentVerification = false
 	}
 

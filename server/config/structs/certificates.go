@@ -24,6 +24,7 @@ func (c CertificatesConfig) ReadCaCert() ([]byte, error) {
 	if c.RequireMTLS {
 		return os.ReadFile(c.CaCert)
 	}
+
 	return nil, nil
 }
 

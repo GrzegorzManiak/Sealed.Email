@@ -2,8 +2,7 @@ package devSession
 
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
-type Input struct {
-}
+type Input struct{}
 
 type Output struct {
 	Token     string `json:"token"`

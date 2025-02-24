@@ -10,7 +10,6 @@ func deleteEmails(
 	input *Input,
 	data *services.Handler,
 ) errors.AppError {
-
 	query := data.DatabaseConnection.
 		Where("user_id = ? AND p_id in (?)", data.User.ID, input.EmailIds).
 		Delete(&models.UserEmail{})

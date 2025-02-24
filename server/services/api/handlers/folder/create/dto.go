@@ -3,7 +3,7 @@ package create
 import "github.com/GrzegorzManiak/NoiseBackend/services/api/session"
 
 type Input struct {
-	DomainID            string `json:"domainID" validate:"required,PublicID"`
+	DomainID            string `json:"domainID"            validate:"required,PublicID"`
 	EncryptedFolderName string `json:"encryptedFolderName"`
 }
 

@@ -9,8 +9,7 @@ type Input struct {
 	EmailIds []string `form:"emailIds" validate:"required,dive,PublicID,min=1,max=100"`
 }
 
-type Output struct {
-}
+type Output struct{}
 
 var SessionFilter = &session.APIConfiguration{
 	Allow:           []string{"default"},

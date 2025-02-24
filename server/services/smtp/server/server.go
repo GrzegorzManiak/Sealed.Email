@@ -3,13 +3,14 @@ package server
 import (
 	"crypto/tls"
 	"fmt"
+	"time"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/queue"
 	"github.com/grzegorzmaniak/go-smtp"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Mode string
@@ -48,6 +49,7 @@ func CreateServer(mode Mode, inboundQueue *queue.Queue, databaseConnection *gorm
 	}
 
 	zap.L().Info(fmt.Sprintf("%s server created", mode), zap.String("address", server.Addr))
+
 	return backend, server
 }
 

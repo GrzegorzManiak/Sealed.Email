@@ -5,8 +5,9 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
-	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"math/big"
+
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 )
 
 func NormalizeP256Key(publicKey []byte) ([]byte, error) {
@@ -23,6 +24,7 @@ func NormalizeP256Key(publicKey []byte) ([]byte, error) {
 		// -- Convert to uncompressed format (0x04 || X || Y)
 		// 	  0x04 is the prefix for uncompressed keys
 		uncompressedKey := append([]byte{0x04}, append(x.Bytes(), y.Bytes()...)...)
+
 		return uncompressedKey, nil
 	}
 
@@ -34,7 +36,9 @@ func ByteArrToECDSAPublicKey(publicKey []byte) (*ecdsa.PublicKey, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	x, y := new(big.Int).SetBytes(normalizedKey[1:33]), new(big.Int).SetBytes(normalizedKey[33:])
+
 	return &ecdsa.PublicKey{Curve: config.CURVE, X: x, Y: y}, nil
 }
 
@@ -60,5 +64,6 @@ func SignMessage(privateKey *ecdsa.PrivateKey, message string) ([]byte, error) {
 	}
 
 	signature := append(r.Bytes(), s.Bytes()...)
+
 	return signature, nil
 }

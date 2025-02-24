@@ -1,9 +1,10 @@
 package email
 
 import (
+	"strings"
+
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/validation"
-	"strings"
 )
 
 func ValidateMessageId(messageId string) error {

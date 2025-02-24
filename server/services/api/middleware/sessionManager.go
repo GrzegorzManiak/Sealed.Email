@@ -12,6 +12,7 @@ import (
 func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration, databaseConnection *gorm.DB) (*session.Claims, errors.AppError) {
 	if filter.Bypass {
 		filter.SessionRequired = false
+
 		return nil, nil
 	}
 
@@ -30,17 +31,20 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration
 		}
 
 		zap.L().Debug("SessionManagerMiddleware A", zap.Error(err), zap.String("cookie", cookie), zap.Any("filter", filter))
+
 		return nil, errors.Access("")
 	}
 
 	sessionClaims, err := session.ParseSessionToken(cookie)
 	if err != nil {
 		zap.L().Debug("SessionManagerMiddleware B", zap.Error(err), zap.String("cookie", cookie), zap.Any("filter", filter))
+
 		return nil, errors.Access("")
 	}
 
 	if !sessionClaims.Filter(filter) {
 		zap.L().Debug("SessionManagerMiddleware C", zap.Any("sessionClaims", sessionClaims), zap.Any("filter", filter))
+
 		return nil, errors.Access("")
 	}
 
@@ -50,6 +54,7 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration
 		}
 
 		zap.L().Debug("SessionManagerMiddleware D", zap.Any("sessionClaims", sessionClaims), zap.Any("filter", filter))
+
 		return nil, errors.Access("")
 	}
 
@@ -57,10 +62,12 @@ func SessionManagerMiddleware(ctx *gin.Context, filter *session.APIConfiguration
 		newSessionClaims, err := session.RefreshSessionToken(sessionClaims, databaseConnection)
 		if err != nil {
 			zap.L().Debug("SessionManagerMiddleware E", zap.Error(err), zap.Any("sessionClaims", sessionClaims), zap.Any("filter", filter))
+
 			return nil, errors.Access("")
 		}
 
 		session.SetSessionCookie(ctx, newSessionClaims)
+
 		return &newSessionClaims, nil
 	}
 

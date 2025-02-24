@@ -6,8 +6,7 @@ type Input struct {
 	DomainID string `json:"domainID" validate:"required,PublicID"`
 }
 
-type Output struct {
-}
+type Output struct{}
 
 var SessionFilter = &session.APIConfiguration{
 	Allow:           []string{"default"},

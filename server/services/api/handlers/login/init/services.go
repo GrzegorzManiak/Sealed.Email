@@ -2,6 +2,7 @@ package loginInit
 
 import (
 	"encoding/base64"
+
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"

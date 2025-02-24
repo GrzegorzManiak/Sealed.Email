@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	models2 "github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
@@ -12,11 +14,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"time"
 )
 
 func (claims *Claims) Sign(key *ecdsa.PrivateKey) error {
-
 	marshaledHeader, err := json.Marshal(claims.Header)
 	if err != nil {
 		return err
@@ -38,6 +38,7 @@ func (claims *Claims) Sign(key *ecdsa.PrivateKey) error {
 
 	claims.Signature = signature
 	claims.Token = fmt.Sprintf("%s.%s.%s", header, content, base64.RawURLEncoding.EncodeToString(signature))
+
 	return nil
 }
 
@@ -79,6 +80,7 @@ func CreateSessionToken(group TokenGroup, content Content, session models2.Sessi
 	}
 
 	zap.L().Debug("CreateSessionToken", zap.Any("claims", claims))
+
 	err := claims.Sign(&config.Session.PrivateKey)
 	if err != nil {
 		return Claims{}, err
@@ -125,6 +127,7 @@ func IssueAndSetSessionToken(ctx *gin.Context, user models2.User, databaseConnec
 	}
 
 	SetSessionCookie(ctx, claims)
+
 	return claims, nil
 }
 

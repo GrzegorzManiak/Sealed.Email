@@ -2,6 +2,8 @@ package loginVerify
 
 import (
 	"encoding/base64"
+	"time"
+
 	"github.com/GrzegorzManiak/GOWL/pkg/owl"
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
@@ -9,11 +11,11 @@ import (
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/services"
 	"github.com/GrzegorzManiak/NoiseBackend/services/api/session"
-	"time"
 )
 
 func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 	userVerify := models.UserVerify{}
+
 	dbErr := data.DatabaseConnection.Where("p_id = ?", input.PID).First(&userVerify)
 	if dbErr.Error != nil {
 		return nil, errors.User("Sorry! We couldn't find your account. Please try again.", "User not found")
@@ -24,6 +26,7 @@ func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 	}
 
 	user := models.User{}
+
 	dbErr = data.DatabaseConnection.Where("id = ?", userVerify.UserID).First(&user)
 	if dbErr.Error != nil {
 		return nil, errors.User("Sorry! We couldn't find your account. Please try again.", "User not found")

@@ -10,5 +10,6 @@ func deleteFolder(databaseConnection *gorm.DB, domainId, userId uint, folderPid 
 	if response.Error != nil {
 		return response.Error
 	}
+
 	return nil
 }

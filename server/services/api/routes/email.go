@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+
 	emailData "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/email/data"
 	emailGet "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/email/get"
 	emailsList "github.com/GrzegorzManiak/NoiseBackend/services/api/handlers/email/list"

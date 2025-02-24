@@ -1,20 +1,22 @@
 package validation
 
 import (
+	"errors"
 	"fmt"
-	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"net"
 	"strings"
+
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 )
 
 func TrimDomain(domain string) (string, error) {
 	domain = strings.Trim(domain, " ")
 	if domain == "" {
-		return "", fmt.Errorf("domain name is empty")
+		return "", errors.New("domain name is empty")
 	}
 
 	if !strings.Contains(domain, ".") {
-		return "", fmt.Errorf("invalid domain name")
+		return "", errors.New("invalid domain name")
 	}
 
 	if domain[len(domain)-1] != '.' {
@@ -64,11 +66,11 @@ func NormalizeDomain(domain string) string {
 	domain = strings.Trim(domain, " ")
 	domain = strings.TrimSuffix(domain, ".")
 	domain = domain + "."
+
 	return domain
 }
 
 func IsValidFQDN(domain string) bool {
-
 	// -- FQDN's must end with a dot
 	if !strings.HasSuffix(domain, ".") {
 		domain = domain + "."
@@ -88,6 +90,7 @@ func IsValidPublicIPV4(domain string) bool {
 	}
 
 	ip := net.ParseIP(domain)
+
 	return ip != nil &&
 		!ip.IsLoopback() &&
 		!ip.IsLinkLocalUnicast() &&
@@ -101,6 +104,7 @@ func IsValidPublicIPV6(domain string) bool {
 	}
 
 	ip := net.ParseIP(domain)
+
 	return ip != nil &&
 		!ip.IsLoopback() &&
 		!ip.IsLinkLocalUnicast() &&
@@ -111,5 +115,6 @@ func IsValidPublicIPV6(domain string) bool {
 func CompareDomains(domain1 string, domain2 string) bool {
 	domain1 = NormalizeDomain(domain1)
 	domain2 = NormalizeDomain(domain2)
+
 	return domain1 == domain2
 }

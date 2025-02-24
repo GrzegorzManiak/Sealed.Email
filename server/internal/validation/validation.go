@@ -25,7 +25,6 @@ func RegisterCustomValidators() {
 		err := CustomValidator.RegisterValidation(tag, func(fl validator.FieldLevel) bool {
 			return validateField(fl, rule)
 		})
-
 		if err != nil {
 			zap.L().Panic("failed to register custom validator", zap.String("validator", tag), zap.Error(err))
 		}

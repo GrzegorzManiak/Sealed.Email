@@ -2,10 +2,11 @@ package email
 
 import (
 	"bytes"
+	"strings"
+
 	"github.com/GrzegorzManiak/NoiseBackend/internal/cryptography"
 	"github.com/emersion/go-msgauth/dkim"
 	"go.uber.org/zap"
-	"strings"
 )
 
 var WellKnownHeaderOrder = []WellKnownHeader{
@@ -28,8 +29,10 @@ var NoiseExtensionHeaderOrder = []NoiseExtensionHeader{
 	NoiseNonce,
 }
 
-var DkimHeaderSet = map[string]bool{}
-var DkimHeaderInitiated = false
+var (
+	DkimHeaderSet       = map[string]bool{}
+	DkimHeaderInitiated = false
+)
 
 func InitDkimHeaders() {
 	if DkimHeaderInitiated {
@@ -91,10 +94,12 @@ func SignEmailWithDkim(headers *Headers, body string, domain string, dkimKey str
 	var b bytes.Buffer
 	if err := dkim.Sign(&b, reader, options); err != nil {
 		zap.L().Warn("Error signing email with DKIM", zap.Error(err))
+
 		return "", err
 	}
 
 	fullBody := otherHeaders.Stringify()
 	fullBody += b.String()
+
 	return fullBody, nil
 }

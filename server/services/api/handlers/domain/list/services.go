@@ -1,7 +1,6 @@
 package domainList
 
 import (
-	"fmt"
 	"github.com/GrzegorzManiak/NoiseBackend/database/primary/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
@@ -14,8 +13,8 @@ func fetchDomainsByUserID(
 	pagination Input,
 	databaseConnection *gorm.DB,
 ) ([]*models.UserDomain, int64, errors.AppError) {
-
 	var count int64
+
 	domains := make([]*models.UserDomain, 0)
 	dbQuery := databaseConnection.
 		Select([]string{
@@ -31,7 +30,7 @@ func fetchDomainsByUserID(
 		}).
 		Where("user_id = ?", user.ID).
 		Limit(pagination.PerPage).
-		Order(fmt.Sprintf("created_at %s", helpers.FormatOrderString(pagination.Order))).
+		Order("created_at " + helpers.FormatOrderString(pagination.Order)).
 		Offset(pagination.PerPage * pagination.Page).
 		Find(&domains).
 		Count(&count)
@@ -68,5 +67,6 @@ func parseDomainList(
 			SymmetricRootKey:    domain.SymmetricRootKey,
 		})
 	}
+
 	return &domainList
 }

@@ -3,10 +3,11 @@ package config
 import (
 	"crypto/elliptic"
 	"fmt"
+	"os"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 var CURVE = elliptic.P256()
@@ -23,26 +24,30 @@ type BaseConfig struct {
 	Bucket       structs.BucketConfig       `yaml:"bucket"`
 }
 
-var Session structs.ParsedSessionConfig
-var Server structs.ServerConfig
-var Auth structs.ParsedAuthConfig
-var Domain structs.DomainConfig
-var Certificates structs.CertificatesConfig
-var Etcd structs.EtcdConfig
-var Smtp structs.SmtpConfig
-var Debug structs.DebugConfig
-var Bucket structs.BucketConfig
+var (
+	Session      structs.ParsedSessionConfig
+	Server       structs.ServerConfig
+	Auth         structs.ParsedAuthConfig
+	Domain       structs.DomainConfig
+	Certificates structs.CertificatesConfig
+	Etcd         structs.EtcdConfig
+	Smtp         structs.SmtpConfig
+	Debug        structs.DebugConfig
+	Bucket       structs.BucketConfig
+)
 
 func ParseConfig(baseConfig BaseConfig) error {
 	sessionConfig, err := baseConfig.Session.Parse()
 	if err != nil {
 		zap.L().Error("failed to parse session config", zap.Error(err), zap.Any("config", baseConfig.Session))
+
 		return fmt.Errorf("failed to parse session config: %w", err)
 	}
 
 	authConfig, err := baseConfig.Auth.Parse()
 	if err != nil {
 		zap.L().Error("failed to parse auth config", zap.Error(err), zap.Any("config", baseConfig.Auth))
+
 		return fmt.Errorf("failed to parse auth config: %w", err)
 	}
 
@@ -67,6 +72,7 @@ func LoadConfig(path string) error {
 	defer f.Close()
 
 	rawConfig := BaseConfig{}
+
 	err = yaml.NewDecoder(f).Decode(&rawConfig)
 	if err != nil {
 		zap.L().Panic("failed to decode config file", zap.Error(err), zap.String("path", path))

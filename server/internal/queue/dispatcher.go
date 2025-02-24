@@ -2,9 +2,10 @@ package queue
 
 import (
 	"context"
+	"time"
+
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"time"
 )
 
 func Dispatcher(
@@ -49,6 +50,7 @@ func refreshPool(
 			if err != nil {
 				zap.L().Warn("failed to get batch", zap.Error(err))
 				time.Sleep(time.Duration(timeout) * time.Second)
+
 				continue
 			}
 
@@ -57,6 +59,7 @@ func refreshPool(
 			if err != nil {
 				zap.L().Warn("failed to flush queue", zap.Error(err))
 				time.Sleep(time.Duration(timeout) * time.Second)
+
 				continue
 			}
 
@@ -65,6 +68,7 @@ func refreshPool(
 			if err != nil {
 				zap.L().Warn("failed to batch update", zap.Error(err))
 				time.Sleep(time.Duration(timeout) * time.Second)
+
 				continue
 			}
 
@@ -87,6 +91,7 @@ func runWorkers(
 			job := queue.RequestWork()
 			if job == nil {
 				time.Sleep(time.Millisecond * 100)
+
 				continue
 			}
 

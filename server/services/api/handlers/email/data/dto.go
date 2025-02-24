@@ -6,13 +6,12 @@ import (
 
 type Input struct {
 	BucketPath string `form:"bucketPath" validate:"required,gte=64,lte=250"`
-	DomainID   string `form:"domainID" validate:"required,PublicID"`
+	DomainID   string `form:"domainID"   validate:"required,PublicID"`
 	Expiration int64  `form:"expiration" validate:"required,gte=0"`
-	AccessKey  string `form:"accessKey" validate:"required,gte=64,lte=200"`
+	AccessKey  string `form:"accessKey"  validate:"required,gte=64,lte=200"`
 }
 
-type Output struct {
-}
+type Output struct{}
 
 var SessionFilter = &session.APIConfiguration{
 	Bypass:       true,

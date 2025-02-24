@@ -3,19 +3,22 @@ package server
 import (
 	"bufio"
 	"bytes"
-	"fmt"
+	"errors"
+	"io"
+	"strings"
+
 	"github.com/GrzegorzManiak/NoiseBackend/internal/email"
 	"github.com/GrzegorzManiak/NoiseBackend/services/smtp/services"
 	"go.uber.org/zap"
-	"io"
-	"strings"
 )
 
 func (s *Session) Data(r io.Reader) error {
 	var buffer, dkimBuffer bytes.Buffer
+
 	multiWriter := io.MultiWriter(&buffer, &dkimBuffer)
 	if _, err := io.Copy(multiWriter, r); err != nil {
 		zap.L().Debug("Failed to copy data", zap.Error(err))
+
 		return err
 	}
 
@@ -24,7 +27,6 @@ func (s *Session) Data(r io.Reader) error {
 	s.DkimResult, _ = services.VerifyDkimSignature(dkimReader)
 
 	for {
-
 		//
 		// Builds the line buffer so that we are able to read the data
 		// line by line.
@@ -35,8 +37,10 @@ func (s *Session) Data(r io.Reader) error {
 				if buffer.Len() > 0 {
 					s.RawData = append(s.RawData, buffer.Bytes()...)
 				}
+
 				break
 			}
+
 			return err
 		}
 
@@ -53,6 +57,7 @@ func (s *Session) Data(r io.Reader) error {
 			if err := processHeaders(line, s); err != nil {
 				return err
 			}
+
 			continue
 		}
 	}
@@ -64,12 +69,14 @@ func processHeaders(line []byte, s *Session) error {
 	if len(strings.TrimSpace(string(line))) == 0 {
 		s.Headers.Finished = true
 		if !s.Headers.Data.Has(email.RequiredHeaders) {
-			return fmt.Errorf("missing required headers")
+			return errors.New("missing required headers")
 		}
+
 		return nil
 	}
 
 	lastHeader, _ := s.Headers.Data.Get(s.Headers.LastHeader)
+
 	header, value, err := email.ParseHeader(string(line), lastHeader)
 	if err != nil {
 		return nil

@@ -3,7 +3,8 @@ package service
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
+	"net"
+
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/config/structs"
 	"github.com/google/uuid"
@@ -11,12 +12,12 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"net"
 )
 
 func CreateGRPCServer(certPaths structs.ServiceCertificates) *grpc.Server {
 	if !config.Certificates.RequireMTLS {
 		zap.L().Info("!!!! WARNING: mTLS is disabled !!!!")
+
 		return grpc.NewServer()
 	}
 
@@ -32,6 +33,7 @@ func CreateGRPCServer(certPaths structs.ServiceCertificates) *grpc.Server {
 
 	certPool := x509.NewCertPool()
 	certPool.AppendCertsFromPEM(caCert)
+
 	if !certPool.AppendCertsFromPEM(caCert) {
 		zap.L().Panic("failed to append CA certificate to cert pool")
 	}
@@ -46,7 +48,7 @@ func CreateGRPCServer(certPaths structs.ServiceCertificates) *grpc.Server {
 }
 
 func CreateListener() net.Listener {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.Server.Port))
+	lis, err := net.Listen("tcp", ":"+config.Server.Port)
 	if err != nil {
 		zap.L().Panic("failed to create listener", zap.Error(err))
 	}
@@ -62,6 +64,7 @@ func CreateGRPCService(certPaths structs.ServiceCertificates) (net.Listener, *gr
 
 	grpcServer := CreateGRPCServer(certPaths)
 	listener := CreateListener()
+
 	return listener, grpcServer, serviceUUID.String()
 }
 

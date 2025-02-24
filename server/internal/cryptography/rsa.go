@@ -33,12 +33,14 @@ func GenerateRSAKeyPair(length int) (*RSAKeyPair, error) {
 
 	privateBytes := x509.MarshalPKCS1PrivateKey(private)
 	privateKey := base64.StdEncoding.EncodeToString(privateBytes)
+
 	pubBytes, err := x509.MarshalPKIXPublicKey(&private.PublicKey)
 	if err != nil {
 		return &RSAKeyPair{}, err
 	}
 
 	publicKey := base64.StdEncoding.EncodeToString(pubBytes)
+
 	return &RSAKeyPair{
 		PrivateKey: []byte(privateKey),
 		PublicKey:  []byte(publicKey),

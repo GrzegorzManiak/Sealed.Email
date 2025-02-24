@@ -1,11 +1,12 @@
 package helpers
 
 import (
+	"os"
+	"time"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gorm.io/gorm/logger"
-	"os"
-	"time"
 )
 
 func CustomFormatter() *zap.Logger {
@@ -26,11 +27,13 @@ func CustomFormatter() *zap.Logger {
 
 	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
 	core := zapcore.NewCore(consoleEncoder, zapcore.Lock(zapcore.AddSync(os.Stdout)), zap.DebugLevel)
+
 	return zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
 }
 
 func customLevelEncoder(level zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 	color := logger.Green
+
 	switch level {
 	case zapcore.DebugLevel:
 		color = logger.Blue
@@ -47,6 +50,7 @@ func customLevelEncoder(level zapcore.Level, enc zapcore.PrimitiveArrayEncoder) 
 	default:
 		color = logger.Cyan
 	}
+
 	enc.AppendString(color + "[" + level.CapitalString() + "]" + logger.Reset)
 }
 
