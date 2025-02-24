@@ -184,7 +184,13 @@ func FormatSmtpHeader(header *Header) string {
 	normalizedValue = strings.ReplaceAll(normalizedValue, "\"", "\\\"")
 
 	baseHeader := header.Key + ": "
-	maxLineLength := 78
+	// -- Honestly, I dont write comments very often, but this needs explaining.
+	// The max line length in a SMTP body is 2000 characters including the CRLF.
+	// hence the 1998 max line length, there is a soft recommendation to keep it at 78 characters
+	// but no one really follows that, but, no one really goes over 2000 characters either.
+	// I've tested it and you can send 5k characters in a single line and google dosent care
+	// folding is also not done, as it messes with the headers, so we are just not doing it.
+	maxLineLength := 1998
 	foldedHeader := baseHeader
 
 	if len(baseHeader)+len(normalizedValue) > maxLineLength {
@@ -193,7 +199,7 @@ func FormatSmtpHeader(header *Header) string {
 
 		sb.WriteString(baseHeader)
 
-		for i := 0; i < len(normalizedValue); i += (maxLineLength - len(baseHeader)) {
+		for i := 0; i < len(normalizedValue); i += maxLineLength - len(baseHeader) {
 			end := i + (maxLineLength - len(baseHeader))
 			if end > len(normalizedValue) {
 				end = len(normalizedValue)

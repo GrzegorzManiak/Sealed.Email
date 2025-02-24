@@ -29,7 +29,7 @@ domain:
   challengeTemplate: '%s 300 IN TXT "%s"'
   challengePrefix: '_nes-challenge'
   identityTemplate: '_identity.%s 300 IN CNAME _identity.sealed.email'
-  spfRecordTemplate: '_spf.%s 300 IN TXT "v=spf1 include:_spf.sealed.email -all"'
+  spfRecordTemplate: '%s 300 IN TXT "v=spf1 include:_spf.sealed.email -all"'
   mxRecords:
     - 'doom.mx.sealed.email'
     - 'madlib.mx.sealed.email'
