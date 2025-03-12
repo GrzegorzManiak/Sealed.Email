@@ -14,3 +14,6 @@ export { default as GenericError } from "./errors";
 export { default as DomainService } from "./services/domain";
 export { default as EncryptedInbox } from "./services/encryptedInbox";
 export { default as EncryptedEmail } from "./services/encryptedEmail";
+export { default as EmailStorage } from "./services/emailStorage";
+export { default as EmailProvider } from "./services/emailProvider";
+export * as StorageServices from "./services/storageServices";

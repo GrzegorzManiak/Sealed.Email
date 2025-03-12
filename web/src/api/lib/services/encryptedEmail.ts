@@ -4,6 +4,7 @@ import * as Sym from "../symetric";
 import {Hash} from "gowl-client-lib";
 import {PostEncryptedEmail, SendEncryptedEmail} from "../api/email";
 import {UrlSafeBase64Encode} from "../common";
+import "buffer";
 
 type EncryptedEmailContent = {
 	domain: Domain;
@@ -48,14 +49,14 @@ class EncryptedEmail {
 	}
 
 	public async EncryptBody(): Promise<string> {
-		const b64Body = Buffer.from(this._body).toString('base64');
+		const b64Body = btoa(this._body);
 		const encryptedBody = await Sym.Encrypt(b64Body, this._key);
 		const compressedBody = Sym.Compress(encryptedBody);
 		return UrlSafeBase64Encode(compressedBody);
 	}
 
 	public async EncryptSubject(): Promise<string> {
-		const b64Subject = Buffer.from(this._subject).toString('base64');
+		const b64Subject = btoa(this._body);
 		const encryptedSubject = await Sym.Encrypt(b64Subject, this._key);
 		const compressedSubject = Sym.Compress(encryptedSubject);
 		return UrlSafeBase64Encode(compressedSubject);

@@ -59,20 +59,20 @@ class Domain {
         return new Domain(domain, rootKey, privateKey);
     }
 
-    public async EncryptData(key: Uint8Array | string): Promise<string> {
+    public async EncryptData(key: Uint8Array | string, privateKey: Uint8Array = this._decryptedRootKey): Promise<string> {
         if (typeof key !== 'string') key = UrlSafeBase64Encode(key);
-        const encryptedKey = Compress(await Encrypt(key, this._decryptedRootKey));
+        const encryptedKey = Compress(await Encrypt(key, privateKey));
         return UrlSafeBase64Encode(encryptedKey);
     }
 
-    public async DecryptData(key: Uint8Array | string): Promise<string> {
+    public async DecryptData(key: Uint8Array | string, privateKey: Uint8Array = this._decryptedRootKey): Promise<string> {
         if (typeof key !== 'string') key = UrlSafeBase64Encode(key);
         const decompressedKey = Decompress(UrlSafeBase64Decode(key));
-        return await Decrypt(decompressedKey, this._decryptedRootKey);
+        return await Decrypt(decompressedKey, privateKey);
     }
 
-    public async SignData(data: string): Promise<string> {
-        return await SignData(data, this._decryptedRootKey);
+    public async SignData(data: string, privateKey: Uint8Array = this._decryptedRootKey): Promise<string> {
+        return await SignData(data, privateKey);
     }
 
     public FormatEmail(user: string): string {
@@ -90,8 +90,20 @@ class Domain {
         );
     }
 
+    public HasPublicKey(publicKey: string): boolean {
+        // TODO: This will have a versioning support later
+        return this._publicKey === publicKey;
+    }
+
+    public GetPrivateKey(publicKey: string): Uint8Array | null {
+        // TODO: This will have a versioning support later
+        if (this._publicKey !== publicKey) return null;
+        return this._privateKey;
+    }
+
     public get DomainID(): DomainRefID { return this._domainID; }
     public get Domain(): string { return this._domain; }
+    public get PublicKey(): string { return this._publicKey; }
 }
 
 export default Domain;

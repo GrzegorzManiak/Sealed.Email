@@ -184,58 +184,40 @@ func FormatSmtpHeader(header *Header) string {
 	normalizedValue = strings.ReplaceAll(normalizedValue, "\"", "\\\"")
 
 	baseHeader := header.Key + ": "
-	// -- Honestly, I dont write comments very often, but this needs explaining.
-	// The max line length in a SMTP body is 2000 characters including the CRLF.
-	// hence the 1998 max line length, there is a soft recommendation to keep it at 78 characters
-	// but no one really follows that, but, no one really goes over 2000 characters either.
-	// I've tested it and you can send 5k characters in a single line and google dosent care
-	// folding is also not done, as it messes with the headers, so we are just not doing it.
-	maxLineLength := 1998
-	foldedHeader := baseHeader
+	maxLineLength := 78
 
-	if len(baseHeader)+len(normalizedValue) > maxLineLength {
-		// -- Fold header
-		var sb strings.Builder
+	var sb strings.Builder
+	sb.WriteString(baseHeader)
 
-		sb.WriteString(baseHeader)
-
-		for i := 0; i < len(normalizedValue); i += maxLineLength - len(baseHeader) {
-			end := i + (maxLineLength - len(baseHeader))
-			if end > len(normalizedValue) {
-				end = len(normalizedValue)
-			}
-
-			if i > 0 {
-				sb.WriteString(CRLF + " ")
-			}
-
-			sb.WriteString(normalizedValue[i:end])
-		}
-
-		foldedHeader = sb.String()
-	} else {
-		// -- Dont fold header
-		foldedHeader += normalizedValue
+	remainingLength := maxLineLength - len(baseHeader)
+	for len(normalizedValue) > remainingLength {
+		sb.WriteString(normalizedValue[:remainingLength])
+		sb.WriteString(CRLF + " ")
+		normalizedValue = normalizedValue[remainingLength:]
+		remainingLength = maxLineLength - 1 // -- Account for the space added after CRLF
 	}
 
-	return foldedHeader + CRLF
+	sb.WriteString(normalizedValue)
+	sb.WriteString(CRLF)
+
+	return sb.String()
 }
 
 func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {
-	// -- Folded header
-	if rawHeader[0] == ' ' || rawHeader[0] == '\t' {
+	// Check for empty line first to avoid index out of range
+	if rawHeader == CRLF || rawHeader == "\n" || len(rawHeader) == 0 {
+		return "", "", errors.New("empty line")
+	}
+
+	// -- Folded header (continuation of previous header)
+	if len(rawHeader) > 0 && (rawHeader[0] == ' ' || rawHeader[0] == '\t') {
 		if lastHeader.Key == "" {
 			return "", "", errors.New("invalid folded header format")
 		}
 
-		lastHeader.Value += rawHeader
-
-		return lastHeader.Key, lastHeader.Value, nil
-	}
-
-	// -- Empty line (2 chars is the minimum for a valid header)
-	if rawHeader == CRLF || rawHeader == "\n" || len(rawHeader) <= 2 {
-		return "", "", errors.New("empty line")
+		// Trim leading whitespace but preserve internal spacing
+		trimmedValue := strings.TrimLeft(rawHeader, " \t")
+		return lastHeader.Key, lastHeader.Value + " " + trimmedValue, nil
 	}
 
 	// -- Normal header
@@ -244,8 +226,8 @@ func ParseHeader(rawHeader string, lastHeader Header) (string, string, error) {
 		return "", "", errors.New("invalid header format")
 	}
 
-	header := strings.Trim(headerParts[0], " ")
-	value := strings.Trim(headerParts[1], " ")
+	header := strings.TrimSpace(headerParts[0])
+	value := strings.TrimSpace(headerParts[1])
 
 	return header, value, nil
 }

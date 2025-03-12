@@ -7,7 +7,12 @@ function UrlSafeBase64Encode(data: Uint8Array | bigint): string {
 }
 
 function UrlSafeBase64Decode(data: string): Uint8Array {
-    return new Uint8Array(Buffer.from(data.replace(/-/g, '+').replace(/_/g, '/'), 'base64'));
+    const base64 = data.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '='); // -- Padding is needed for JS Built-in atob
+    const binaryString = atob(padded);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+    return bytes;
 }
 
 async function Argon2Hash(username: string, password: string) {

@@ -32,24 +32,26 @@ if (addDomain) {
 
 
 	const domains = await API.Domain.GetDomainList(session, 0, 10);
-	console.log('Domains:', domains);
+	// console.log('Domains:', domains);
 	const domainId = domains.domains[0].domainID;
 	const domain = await API.Domain.GetDomain(session, domainId);
 	const domainService = await API.DomainService.Decrypt(session, domain);
+	// console.log('Domain:', domain);
+	// if (domainService.Domain !== domain_) {
+	// 	console.error('Domain mismatch');
+	// 	return;
+	// }
 
-	if (domainService.Domain !== domain_) {
-		console.error('Domain mismatch');
-		return;
-	}
-
-
-
+	//
+	// const emails2 = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc', });
+	// console.log('Emails:', emails2);
+	// return
 
 	if (send) {
 		const emailKey = API.Sym.NewKey();
 		const recipientAKeys = API.Asym.GenerateKeyPair();
 		const recipientAInbox = await API.EncryptedInbox.Create(
-			'test@test.com',
+			'test@sealed.email',
 			'Test',
 			recipientAKeys.pub,
 			emailKey
@@ -63,8 +65,8 @@ if (addDomain) {
 			key: emailKey,
 			from: sender,
 			to: recipientAInbox,
-			subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF',
-			body: 'Hello world SDFG SDFGS DFG '
+			subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF Hello world SDFGSDFG SDFG SDFG SDFG SDF',
+			body: 'Hello world SDFG SDFGS DFG Hello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDF'
 		});
 
 		console.log(await email.Send(session))
@@ -83,16 +85,17 @@ if (addDomain) {
 		signature: UrlSafeBase64Encode(API.Sym.NewKey()),
 	})
 
-	await sleep(5000);
-
-	console.log('Plain DOmain', domainService.Domain);
-	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc', });
-	if (emails.emails.length > 0) {
-		const email = await API.Email.GetEmail(session, domainService.DomainID, emails.emails[0].bucketPath);
-		const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
-		console.log('Email:', emails.emails[0]);
-		console.log('Email:', emailData);
-	}
+	// await sleep(5000);
+	//
+	// console.log('Plain DOmain', domainService.Domain);
+	// const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc', });
+	// if (emails.emails.length > 0) {
+	// 	console.log('Emails:', emails.emails[0].bucketPath);
+	// 	const email = await API.Email.GetEmail(session, domainService.DomainID, emails.emails[0].bucketPath);
+	// 	const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
+	// 	console.log('Email:', emails.emails[0]);
+	// 	console.log('Email:', emailData);
+	// }
 
 })();
 

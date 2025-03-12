@@ -80,7 +80,7 @@ func EncryptEmailKey(emailKey []byte, publicKey string) (*EncryptionKey, error) 
 	if err != nil {
 		return nil, err
 	}
-
+	
 	ecdsaPublicKey, err := cryptography.ByteArrToECDSAPublicKey(decodedKey)
 	if err != nil {
 		return nil, err

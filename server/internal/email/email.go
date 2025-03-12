@@ -2,6 +2,7 @@ package email
 
 import (
 	"context"
+	"strings"
 
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/errors"
@@ -46,4 +47,54 @@ func Send(ctx context.Context, connPool *service.Pools, email *smtpService.Email
 	}
 
 	return nil
+}
+
+func FoldEmailBody(body string) string {
+	const maxLineLength = 76 // -- Standard for email body content, wont change.
+	const crlf = "\r\n"
+
+	var result strings.Builder
+
+	// -- split the body into lines first (by existing line breaks)
+	lines := strings.Split(body, crlf)
+	if len(lines) == 1 {
+		// -- if there were no CRLF line breaks, try with just \n
+		lines = strings.Split(body, "\n")
+	}
+
+	for _, line := range lines {
+		// -- skip empty lines
+		if line == "" {
+			result.WriteString(crlf)
+			continue
+		}
+
+		// -- while the line is longer than maxLineLength
+		for len(line) > maxLineLength {
+
+			// -- find the last space before maxLineLength
+			lastSpaceIndex := strings.LastIndex(line[:maxLineLength], " ")
+
+			if lastSpaceIndex > 0 {
+				// -- write until the space and start a new line
+				result.WriteString(line[:lastSpaceIndex])
+				result.WriteString(crlf)
+				line = line[lastSpaceIndex+1:] // +1 to skip the space
+
+			} else {
+				// -- if no space found, just cut at maxLineLength
+				result.WriteString(line[:maxLineLength])
+				result.WriteString(crlf)
+				line = line[maxLineLength:]
+			}
+		}
+
+		// -- write the remainder of the line
+		if len(line) > 0 {
+			result.WriteString(line)
+			result.WriteString(crlf)
+		}
+	}
+
+	return result.String()
 }

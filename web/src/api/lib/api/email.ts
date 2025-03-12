@@ -75,6 +75,7 @@ type Email = {
     read: boolean;
     folder: string;
     to: string;
+    from: string;
     spam: boolean;
     sent: boolean;
     accessKey: string;
