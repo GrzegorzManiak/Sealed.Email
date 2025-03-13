@@ -34,9 +34,9 @@ func buildFilters(
 	// -- Sent
 	pagination.Sent = strings.ToLower(pagination.Sent)
 	if pagination.Sent == "in" {
-		dbQuery = dbQuery.Where("sent = 1")
-	} else if pagination.Sent == "out" {
 		dbQuery = dbQuery.Where("sent = 0")
+	} else if pagination.Sent == "out" {
+		dbQuery = dbQuery.Where("sent = 1")
 	}
 
 	// -- Encrypted

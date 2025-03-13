@@ -106,14 +106,14 @@ func insertEncrypted(minioClient *minio.Client, email *models.OutboundEmail) err
 	headers.EncryptionKeys([]*emailHelper.EncryptionKey{encryptedKey})
 	headers.ContentType("application/json")
 
-	cipherText, iv, err := cryptography.SymEncrypt(email.Body, key)
+	iv, cipherText, err := cryptography.SymEncrypt(email.Body, key)
 	if err != nil {
 		return fmt.Errorf("failed to encrypt email body: %w", err)
 	}
 
 	compressedCipher := cryptography.Compress(iv, cipherText)
-	encodedCipher := base64.RawStdEncoding.EncodeToString(compressedCipher)
-	emailBody := emailHelper.FuseHeadersToBody(*headers, encodedCipher)
+	encodedCipher := base64.RawURLEncoding.EncodeToString(compressedCipher)
+	emailBody := emailHelper.FuseHeadersToBody(*headers, emailHelper.FoldEmailBody(encodedCipher))
 	emailBytes := []byte(emailBody)
 
 	return insertIntoBucket(minioClient, &emailBytes, email.RefID)

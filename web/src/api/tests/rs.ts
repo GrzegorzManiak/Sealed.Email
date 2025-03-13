@@ -43,35 +43,35 @@ if (addDomain) {
 	const randomString = Math.random().toString(36).substring(7);
 	console.log(`${randomString}`);
 
-	await API.Email.SendPlainEmail(session, {
-		domainID: domainService.DomainID,
-		inReplyTo: '',
-		from: { displayName: 'Greg', email: `test@${domain_}` },
-		to: { displayName: '', email: randomString + '@beta.grzegorz.ie' },
-		bcc: [],
-		cc: [],
-		subject: randomString + ' - Test 1234',
-		body: 'When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example:',
-		nonce: UrlSafeBase64Encode(API.Sym.NewKey()),
-		signature: UrlSafeBase64Encode(API.Sym.NewKey()),
-	})
+	// await API.Email.SendPlainEmail(session, {
+	// 	domainID: domainService.DomainID,
+	// 	inReplyTo: '',
+	// 	from: { displayName: 'Greg', email: `test@${domain_}` },
+	// 	to: { displayName: '', email: randomString + '@beta.grzegorz.ie' },
+	// 	bcc: [],
+	// 	cc: [],
+	// 	subject: randomString + ' - Test 1234',
+	// 	body: 'When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example: When updating a single column with Update, it needs to have any conditions or it will raise error ErrMissingWhereClause, checkout Block Global Updates for details. When using the Model method and its value has a primary value, the primary key will be used to build the condition, for example:',
+	// 	nonce: UrlSafeBase64Encode(API.Sym.NewKey()),
+	// 	signature: UrlSafeBase64Encode(API.Sym.NewKey()),
+	// })
 
-	await sleep(5000);
+	const dummyStorageService = new API.StorageServices.DummyStorageService();
+	const emailService = new API.EmailStorage(dummyStorageService, session);
+	await emailService.init();
+	const emailProvider = new API.EmailProvider(emailService, session);
+	console.log(await emailProvider.getEmails(domainService, {domainID: domainService.DomainID, order: 'desc', perPage: 10, sent: 'out'}));
 
-	const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc' });
-	if (emails.emails.length > 0) {
-		console.log('Emails:', emails.emails[0].bucketPath);
-		const email = await API.Email.GetEmail(session, domainService.DomainID, emails.emails[0].bucketPath);
-		console.log('Email:', email.to);
-		//
-		// const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
-		// console.log('Email:', emails.emails[0]);
-		// console.log('Email:', emailData);
-
-		const dummyStorageService = new API.StorageServices.DummyStorageService();
-		const emailService = new API.EmailStorage(dummyStorageService, session);
-		await emailService.init();
-		const emailProvider = new API.EmailProvider(emailService, session);
-		console.log(await emailProvider.getEmails(domainService, {domainID: domainService.DomainID, order: 'desc', perPage: 1}));
-	}
+	// await sleep(5000);
+	//
+	// const emails = await API.Email.GetEmailList(session, { domainID: domainService.DomainID, order: 'desc' });
+	// if (emails.emails.length > 0) {
+	// 	console.log('Emails:', emails.emails[0].bucketPath);
+	// 	const email = await API.Email.GetEmail(session, domainService.DomainID, emails.emails[0].bucketPath);
+	// 	console.log('Email:', email);
+	// 	//
+	// 	// const emailData = await API.Email.GetEmailData(session, domainService.DomainID, email);
+	// 	// console.log('Email:', emails.emails[0]);
+	// 	// console.log('Email:', emailData);
+	// }
 })();
