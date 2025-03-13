@@ -40,7 +40,9 @@ class EncryptedInbox {
 		const encryptedDisplayName = Sym.Compress(await Sym.Encrypt(displayName, emailKey));
 		const encodedDisplayName = UrlSafeBase64Encode(encryptedDisplayName);
 		const encodedUserHash = await HashInboxEmail(email);
-		const encryptedEmailKey = await Asym.Encrypt(emailKey, publicKey);
+
+		const encodedKey = UrlSafeBase64Encode(emailKey);
+		const encryptedEmailKey = await Asym.Encrypt(encodedKey, publicKey);
 
 		return new EncryptedInbox(
 			email,

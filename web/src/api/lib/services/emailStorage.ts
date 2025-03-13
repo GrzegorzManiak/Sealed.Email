@@ -4,6 +4,11 @@ import Session from "../session/session";
 import {UrlSafeBase64Decode, UrlSafeBase64Encode} from "../common";
 import {Compress, Decompress, Decrypt, Encrypt, NewKey} from "../symetric";
 
+type Address = {
+	address?: string;
+	name: string;
+}
+
 type EmailMetadata = {
 	emailID: string;
 	receivedAt: number;
@@ -12,8 +17,10 @@ type EmailMetadata = {
 	spam: boolean;
 	sent: boolean;
 	folder: string;
-	to: string;
-	from: string;
+	to: Array<Address>;
+	cc: Array<Address>;
+	from: Address;
+	replyTo: Array<Address>;
 	subject: string;
 	storage: {
 		encrypted: boolean;
@@ -78,12 +85,12 @@ class EmailStorage {
 		}
 	}
 
-	public async saveEmail(metaData: Email, content: string, subject: string): Promise<void> {
+	public async saveEmail(metaData: EmailMetadata, content: string): Promise<void> {
 		if (!this.ready || !this.decryptionKey) throw new Error('EmailService not ready');
 		const encryptedContent = await Encrypt(content, this.decryptionKey);
 		const compressedContent = Compress(encryptedContent);
 
-		const encryptedSubject = await Encrypt(subject, this.decryptionKey);
+		const encryptedSubject = await Encrypt(metaData.subject, this.decryptionKey);
 		const compressedSubject = Compress(encryptedSubject);
 
 		await this.storageService.save('emailData', metaData.emailID, UrlSafeBase64Encode(compressedContent));
@@ -94,13 +101,15 @@ class EmailStorage {
 		}));
 	}
 
-	public async updateMetaData(emailID: string, metaData: Email): Promise<void> {
+	public async updateMetaData(emailID: string, metaData: Partial<EmailMetadata>): Promise<void> {
 		if (!this.ready || !this.decryptionKey) throw new Error('EmailService not ready');
 		const existingMetaData = await this.getEmailMetadata(emailID);
-		if (!existingMetaData) throw new Error('Email not found');
+		if (!existingMetaData) throw new Error('Email not found')
 		await this.storageService.save('emailMeta', emailID, JSON.stringify({
 			...existingMetaData,
-			...metaData
+			spam: metaData.spam ?? existingMetaData.spam,
+			read: metaData.read ?? existingMetaData.read,
+			folder: metaData.folder ?? existingMetaData.folder,
 		}));
 	}
 

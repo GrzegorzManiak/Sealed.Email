@@ -17,12 +17,12 @@ const emailService = new API.EmailStorage(dummyStorageService, session);
 await emailService.init();
 const emailProvider = new API.EmailProvider(emailService, session);
 
-
 const domains = await API.Domain.GetDomainList(session, 0, 1);
 const domainId = domains.domains[0].domainID;
 const domain = await API.Domain.GetDomain(session, domainId);
 const domainService = await API.DomainService.Decrypt(session, domain);
 
+console.log(domain.publicKey)
 //Email: {
 //   domainID: "hZBt3ARb0YDuVDeuwSRJoUat46brUnCXVOkEp8b4Be2QV2tYz695MA3F9YN0d18V",
 //   subject: "DHiShl0tUA05NXhQEKbg57ejVnxDv7MtTSwUiQAgF2q0G2AzRrIX5cTpaww2BPbcDyXuQfKokriO3S0t4IgC3YGyXfB5UMwSdBqvTk-lPJ5e",
@@ -47,4 +47,4 @@ const domainService = await API.DomainService.Decrypt(session, domain);
 
 // /cpg8l2HZjxXciUCIOVLt/7zXVRC96VgVpdTxSh/G9M=
 // BHUf7l7Mptux3AYJWUiPeDLYiJyAyAfdcj6g7FKzp2bbiF6FOI/gs0H++mVo9G5j2c3A+jWNABoKj8TujBjYUmUMRMbiZETct/e7Xad0iMZxLrW4xYi53ZvsjotG1k/1plnPyU+ibJ3r3mmy4EMFGGDZNClFzcEJkWjKQxu1
-console.log(await emailProvider.getEmails(domainService, {domainID: domainService.DomainID, order: 'desc', perPage: 1}));
+// console.log(await emailProvider.getEmails(domainService, {domainID: domainService.DomainID, order: 'desc', perPage: 1}));

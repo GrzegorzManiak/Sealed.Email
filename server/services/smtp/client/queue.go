@@ -1,8 +1,6 @@
 package client
 
 import (
-	"fmt"
-
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
 	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
@@ -18,8 +16,7 @@ func createQueueEntry(email *smtp.Email) (*queue.Entry, string, error) {
 		config.Smtp.OutboundQueue.Name,
 		models.QueueEmailId{EmailId: id})
 
-	entry.RefID = fmt.Sprintf("%s:%s:%s", id, email.GetTo(), email.GetMessageId())
-
+	entry.RefID = helpers.GeneratePublicId(64)
 	return entry, id, err
 }
 

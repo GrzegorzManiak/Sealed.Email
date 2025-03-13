@@ -3,7 +3,9 @@ import Session from "../lib/session/session";
 import {HandleRequest} from "$api/lib/api/common";
 import {ClientError} from "$api/lib/errors";
 import {sleep} from "bun";
-import {UrlSafeBase64Encode} from "$api/lib/common";
+import {UrlSafeBase64Encode, UrlSafeBase64Decode} from "$api/lib/common";
+import type {PostEncryptedEmail} from "$api/lib/api/email";
+import { Hash, BigIntToByteArray } from "gowl-client-lib";
 
 
 const details = ['test2', 'test2'];
@@ -43,6 +45,48 @@ if (addDomain) {
 	const randomString = Math.random().toString(36).substring(7);
 	console.log(`${randomString}`);
 
+	const emailKey = BigIntToByteArray(await Hash(API.Sym.NewKey()));
+
+	const recipientPublicKey = 'AlhgO5lRh7IX57uBm0Y6oM-M5EGpghovAs1yuI6x7Y9c';
+	const recipientInbox = await API.EncryptedInbox.Create(
+		randomString + '@beta.grzegorz.ie',
+		randomString,
+		UrlSafeBase64Decode(recipientPublicKey),
+		emailKey
+	);
+
+
+	async function DummyInbox(emailKey: Uint8Array) {
+		const keyPair = API.Asym.GenerateKeyPair();
+		return API.EncryptedInbox.Create(
+			`${randomString}@${domain_}`,
+			randomString,
+			keyPair.pub,
+			emailKey
+		);
+	}
+
+
+	const sender = await domainService.GetSender(emailKey, 'Greg', 'Grzegorz Maniak');
+	const email = new API.EncryptedEmail({
+		domain: domainService,
+		from: sender,
+		to: recipientInbox,
+
+		bcc: [await DummyInbox(emailKey), await DummyInbox(emailKey), await DummyInbox(emailKey)],
+		cc: [await DummyInbox(emailKey), await DummyInbox(emailKey), await DummyInbox(emailKey)],
+
+		subject: randomString + ' - Test 1234 ENCRYPTED!!!!!!!!!!!!',
+		body: 'Hello boss! ENCRYPTED!!!!!!!!!!!!!!1',
+		key: emailKey,
+	})
+
+	const encryptedEmail = await email.Encrypt();
+	const emailSignature = await email.Sign();
+
+	console.log(encryptedEmail);
+	await API.Email.SendEncryptedEmail(session, encryptedEmail, emailSignature);
+
 	// await API.Email.SendPlainEmail(session, {
 	// 	domainID: domainService.DomainID,
 	// 	inReplyTo: '',
@@ -56,11 +100,11 @@ if (addDomain) {
 	// 	signature: UrlSafeBase64Encode(API.Sym.NewKey()),
 	// })
 
-	const dummyStorageService = new API.StorageServices.DummyStorageService();
-	const emailService = new API.EmailStorage(dummyStorageService, session);
-	await emailService.init();
-	const emailProvider = new API.EmailProvider(emailService, session);
-	console.log(await emailProvider.getEmails(domainService, {domainID: domainService.DomainID, order: 'desc', perPage: 10, sent: 'out'}));
+	// const dummyStorageService = new API.StorageServices.DummyStorageService();
+	// const emailService = new API.EmailStorage(dummyStorageService, session);
+	// await emailService.init();
+	// const emailProvider = new API.EmailProvider(emailService, session);
+	// console.log(await emailProvider.getEmails(domainService, {domainID: domainService.DomainID, order: 'desc', perPage: 10, sent: 'out'}));
 
 	// await sleep(5000);
 	//

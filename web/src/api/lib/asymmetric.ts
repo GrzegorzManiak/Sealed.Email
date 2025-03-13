@@ -16,14 +16,30 @@ async function SignData(data: string | Uint8Array, priv: Uint8Array, curve= GetC
 	return UrlSafeBase64Encode(signature.toCompactRawBytes());
 }
 
+async function CalculateSharedKey(
+	ephemeralPub: Uint8Array,
+	privateKey: Uint8Array,
+	curve = GetCurve(CurrentCurve)
+): Promise<Uint8Array> {
+	const pubPoint = curve.ProjectivePoint.fromHex(ephemeralPub);
+	const sharedSecretPoint = pubPoint.multiply(BytesToBigInt(privateKey));
+	const sharedX = sharedSecretPoint.toRawBytes(true).slice(1);
+	return BigIntToByteArray(await Hash(BytesToBigInt(sharedX)));
+}
+
 async function Encrypt(
-	data: Uint8Array,
-	sharedKey: Uint8Array
+	data: string,
+	publicKey: Uint8Array,
+	curve = GetCurve(CurrentCurve)
 ): Promise<string> {
-	const stringData = UrlSafeBase64Encode(data);
-	const encrypted = await Sym.Encrypt(stringData, sharedKey);
-	const bytes = Sym.Compress(encrypted);
-	return UrlSafeBase64Encode(bytes);
+	const ephemeralKeyPair = GenerateKeyPair(curve);
+	const sharedKey = await CalculateSharedKey(publicKey, ephemeralKeyPair.priv, curve);
+	const ciphertext = await Sym.Encrypt(data, sharedKey);
+	const compressedCiphertext = Sym.Compress(ciphertext);
+	const ephemeralPub = curve.getPublicKey(ephemeralKeyPair.priv);
+	const keyLength = ephemeralPub.length;
+	const compressedData = new Uint8Array([keyLength >> 8, keyLength & 0xFF, ...ephemeralPub, ...compressedCiphertext]);
+	return UrlSafeBase64Encode(compressedData);
 }
 
 async function Decrypt(
@@ -32,10 +48,7 @@ async function Decrypt(
 	ciphertext: Uint8Array,
 	curve = GetCurve(CurrentCurve)
 ): Promise<string> {
-	const pubPoint = curve.ProjectivePoint.fromHex(publicKey);
-	const sharedSecretPoint = pubPoint.multiply(BytesToBigInt(privateKey));
-	const sharedX = sharedSecretPoint.toRawBytes(true).slice(1);
-	const sharedKey = BigIntToByteArray(await Hash(BytesToBigInt(sharedX)));
+	const sharedKey = await CalculateSharedKey(publicKey, privateKey, curve);
 	return await Sym.Decrypt(Sym.Decompress(ciphertext), sharedKey);
 }
 

@@ -184,7 +184,7 @@ func FormatSmtpHeader(header *Header) string {
 	normalizedValue = strings.ReplaceAll(normalizedValue, "\"", "\\\"")
 
 	baseHeader := header.Key + ": "
-	maxLineLength := 78
+	maxLineLength := 900 // -- RFC 5322 recommends 78 but we can go up to 998, so 900 to be safe
 
 	var sb strings.Builder
 	sb.WriteString(baseHeader)

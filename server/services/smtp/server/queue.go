@@ -2,7 +2,7 @@ package server
 
 import (
 	"errors"
-	"fmt"
+	"github.com/GrzegorzManiak/NoiseBackend/internal/helpers"
 
 	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"github.com/GrzegorzManiak/NoiseBackend/database/smtp/models"
@@ -16,8 +16,7 @@ func (s *Session) createQueueEntry() (*queue.Entry, error) {
 		config.Smtp.InboundQueue.Name,
 		models.QueueEmailId{EmailId: s.Id})
 
-	entry.RefID = fmt.Sprintf("%s:%s:%s", s.Id, s.Mode, s.From)
-
+	entry.RefID = helpers.GeneratePublicId(64)
 	return entry, err
 }
 

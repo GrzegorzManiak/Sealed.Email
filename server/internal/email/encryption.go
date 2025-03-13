@@ -16,7 +16,7 @@ type EncryptedInbox struct {
 	DisplayName       string `json:"displayName"       validate:"lte=200"`
 	EmailHash         string `json:"emailHash"         validate:"required,email"`
 	PublicKey         string `json:"publicKey"         validate:"EncodedP256Key"`
-	EncryptedEmailKey string `json:"encryptedEmailKey" validate:"EncodedEncryptedKey"`
+	EncryptedEmailKey string `json:"encryptedEmailKey" validate:"EncodedEncryptedData,lte=200"`
 }
 
 type EncryptionKey struct {
