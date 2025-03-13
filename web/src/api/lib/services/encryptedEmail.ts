@@ -4,7 +4,6 @@ import * as Sym from "../symetric";
 import {Hash} from "gowl-client-lib";
 import {PostEncryptedEmail, SendEncryptedEmail} from "../api/email";
 import {UrlSafeBase64Encode} from "../common";
-import "buffer";
 
 type EncryptedEmailContent = {
 	domain: Domain;

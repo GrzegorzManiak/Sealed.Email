@@ -1,9 +1,18 @@
-import {BigIntToByteArray, EncodeToBase64, Hash} from "gowl-client-lib";
+import {BigIntToByteArray, Hash} from "gowl-client-lib";
 import {ServerName} from "./constants";
 
 function UrlSafeBase64Encode(data: Uint8Array | bigint): string {
     if (typeof data === 'bigint') data = BigIntToByteArray(data);
-    return EncodeToBase64(data).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+
+    // Convert Uint8Array to base64 using browser's btoa
+    const binary = Array.from(data)
+        .map(byte => String.fromCharCode(byte))
+        .join('');
+
+    const base64 = btoa(binary);
+
+    // Make URL safe
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
 function UrlSafeBase64Decode(data: string): Uint8Array {

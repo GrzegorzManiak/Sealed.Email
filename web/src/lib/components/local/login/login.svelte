@@ -83,6 +83,7 @@
         }
 
         catch (error) {
+			console.log(error);
 			const parsedError =  API.GenericError.fromUnknown(error);
 			setErrorBox(parsedError.title, parsedError.message);
             return await finish();
