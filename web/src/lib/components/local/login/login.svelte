@@ -74,7 +74,9 @@
             const result = await API.Login.Login(username, password);
             const session = new API.Session(result);
             await session.DecryptKeys();
-            user.set({ isLoggedIn: true, session, username });
+
+			console.log(session.Serialize())
+            user.set({ isLoggedIn: true, session: session.Serialize(), username });
             return await redirect('/inbox', {
                 delay: 1500,
                 title: 'You have been logged in successfully!',

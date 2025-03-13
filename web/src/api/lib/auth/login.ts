@@ -72,7 +72,7 @@ async function Login(username: string, password: string): Promise<{ client: Clie
         usernameHash: usernameHash,
         verify
     };
-};
+}
 
 export {
     ProcessDetails,

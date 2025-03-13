@@ -84,7 +84,7 @@ if (addDomain) {
 	const encryptedEmail = await email.Encrypt();
 	const emailSignature = await email.Sign();
 
-	console.log(encryptedEmail);
+	// console.log(encryptedEmail);
 	await API.Email.SendEncryptedEmail(session, encryptedEmail, emailSignature);
 
 	// await API.Email.SendPlainEmail(session, {

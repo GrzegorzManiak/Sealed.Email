@@ -42,6 +42,8 @@
     const stateManager = writable<string>();
 	const collapsed = writable(false);
 	const headerHeight: Writable<number> = writable(191);
+
+
 </script>
 
 <div class="flex flex-row">

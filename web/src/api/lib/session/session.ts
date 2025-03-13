@@ -8,11 +8,51 @@ import {StandardIntegrityHash} from "../auth/register";
 import {BigIntToByteArray} from "gowl-client-lib";
 import {COOKIE_NAME} from "../constants";
 
+interface SerializedSession {
+    encryptedSymetricRootKey: string;
+    encryptedAsymetricPrivateKey: string;
+    encryptedSymetricContactsKey: string;
+    integrityHash: string;
+    sessionEstablished: boolean;
+    sessionToken: string;
+    statistics: Statistics;
+
+    passwordHash: string;
+    rootKey: string;
+    privateKey: string;
+    contactsKey: string;
+    sessionKey: string;
+}
+
 class Session {
-    private readonly _encryptedSymetricRootKey: string;
-    private readonly _encryptedAsymetricPrivateKey: string;
-    private readonly _encryptedSymetricContactsKey: string;
-    private readonly _integrityHash: string;
+    public static Deserialize(data: string): Session | Error {
+        try {
+            const parsedData = JSON.parse(data) as SerializedSession;
+            const session = new Session(null as any);
+            session._encryptedSymetricRootKey = parsedData.encryptedSymetricRootKey;
+            session._encryptedAsymetricPrivateKey = parsedData.encryptedAsymetricPrivateKey;
+            session._encryptedSymetricContactsKey = parsedData.encryptedSymetricContactsKey;
+            session._integrityHash = parsedData.integrityHash;
+            session._sessionEstablished = parsedData.sessionEstablished;
+            session._sessionToken = parsedData.sessionToken;
+            session._statistics = parsedData.statistics;
+
+            session._passwordHash = UrlSafeBase64Decode(parsedData.passwordHash);
+            session._rootKey = UrlSafeBase64Decode(parsedData.rootKey);
+            session._privateKey = UrlSafeBase64Decode(parsedData.privateKey);
+            session._contactsKey = UrlSafeBase64Decode(parsedData.contactsKey);
+            session._sessionKey = UrlSafeBase64Decode(parsedData.sessionKey);
+
+            return session;
+        } catch (error) {
+            return new Error(`Failed to deserialize session: ${error}`);
+        }
+    }
+
+    private _encryptedSymetricRootKey: string;
+    private _encryptedAsymetricPrivateKey: string;
+    private _encryptedSymetricContactsKey: string;
+    private _integrityHash: string;
 
     private _sessionEstablished: boolean = false;
     private _sessionToken: string = '';
@@ -22,11 +62,30 @@ class Session {
     private _rootKey: Uint8Array;
     private _privateKey: Uint8Array;
     private _contactsKey: Uint8Array;
-    private readonly _sessionKey: Uint8Array;
+    private _sessionKey: Uint8Array;
 
     private _statistics: Statistics;
 
     public constructor(awaitedLogin: Awaited<ReturnType<typeof Login>>, captureCookie: boolean = false) {
+        if (awaitedLogin === null) {
+            this._encryptedSymetricRootKey = '';
+            this._encryptedAsymetricPrivateKey = '';
+            this._encryptedSymetricContactsKey = '';
+            this._integrityHash = '';
+            this._passwordHash = new Uint8Array();
+            this._rootKey = new Uint8Array();
+            this._privateKey = new Uint8Array();
+            this._contactsKey = new Uint8Array();
+            this._sessionKey = new Uint8Array();
+            this._statistics = {
+                totalInboundEmails: 0,
+                totalInboundBytes: 0,
+                totalOutboundEmails: 0,
+                totalOutboundBytes: 0
+            };
+            return;
+        }
+
         const { verify, passwordHash, client } = awaitedLogin;
         this._passwordHash = passwordHash;
 
@@ -50,6 +109,25 @@ class Session {
             totalOutboundEmails: verify.totalOutboundEmails,
             totalOutboundBytes: verify.totalOutboundBytes
         };
+    }
+
+    public Serialize(): string {
+        const serializedData: SerializedSession = {
+            encryptedSymetricRootKey: this._encryptedSymetricRootKey,
+            encryptedAsymetricPrivateKey: this._encryptedAsymetricPrivateKey,
+            encryptedSymetricContactsKey: this._encryptedSymetricContactsKey,
+            integrityHash: this._integrityHash,
+            sessionEstablished: this._sessionEstablished,
+            sessionToken: this._sessionToken,
+            statistics: this._statistics,
+            passwordHash: UrlSafeBase64Encode(this._passwordHash),
+            rootKey: UrlSafeBase64Encode(this._rootKey),
+            privateKey: UrlSafeBase64Encode(this._privateKey),
+            contactsKey: UrlSafeBase64Encode(this._contactsKey),
+            sessionKey: UrlSafeBase64Encode(this._sessionKey)
+        };
+
+        return JSON.stringify(serializedData);
     }
 
     private _FindSessionToken(headers: Headers): string {
@@ -129,3 +207,7 @@ class Session {
 }
 
 export default Session;
+
+export {
+    type SerializedSession
+}
