@@ -4,7 +4,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"io"
 )
@@ -42,7 +41,7 @@ func SymEncrypt(text, key []byte) ([]byte, []byte, error) {
 
 func SymDecrypt(iv, data, key []byte) ([]byte, error) {
 	if len(key) != 32 {
-		return nil, fmt.Errorf("key must be %d bytes", DefaultKeyLength)
+		return nil, fmt.Errorf("key must be %d bytes, got %d", DefaultKeyLength, len(key))
 	}
 
 	block, err := aes.NewCipher(key)
@@ -67,22 +66,6 @@ func Compress(iv, data []byte) []byte {
 	ivLen := byte(len(iv))
 
 	return append([]byte{ivLen}, append(iv, data...)...)
-}
-
-func Decompress(compressedData []byte) ([]byte, []byte, error) {
-	if len(compressedData) < 2 {
-		return nil, nil, errors.New("invalid compressed data: too short")
-	}
-
-	ivLen := int(compressedData[0])
-	if len(compressedData) < 1+ivLen {
-		return nil, nil, errors.New("invalid compressed data: truncated IV")
-	}
-
-	iv := compressedData[1 : 1+ivLen]
-	data := compressedData[1+ivLen:]
-
-	return iv, data, nil
 }
 
 func NewKey(length int) ([]byte, error) {

@@ -6,8 +6,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"math/big"
-
-	"github.com/GrzegorzManiak/NoiseBackend/config"
 )
 
 func NormalizeP256Key(publicKey []byte) ([]byte, error) {
@@ -31,15 +29,13 @@ func NormalizeP256Key(publicKey []byte) ([]byte, error) {
 	return nil, errors.New("invalid public key format")
 }
 
-func ByteArrToECDSAPublicKey(publicKey []byte) (*ecdsa.PublicKey, error) {
+func ByteArrToECDSAPublicKey(publicKey []byte, curve elliptic.Curve) (*ecdsa.PublicKey, error) {
 	normalizedKey, err := NormalizeP256Key(publicKey)
 	if err != nil {
 		return nil, err
 	}
-
 	x, y := new(big.Int).SetBytes(normalizedKey[1:33]), new(big.Int).SetBytes(normalizedKey[33:])
-
-	return &ecdsa.PublicKey{Curve: config.CURVE, X: x, Y: y}, nil
+	return &ecdsa.PublicKey{Curve: curve, X: x, Y: y}, nil
 }
 
 func VerifyMessageBytes(publicKey *ecdsa.PublicKey, message []byte, signature []byte) bool {

@@ -4,10 +4,10 @@ import {HandleRequest} from "$api/lib/api/common";
 import {ClientError} from "$api/lib/errors";
 
 
-const details = ['test2', 'test2'];
+const details = ['test', 'test'];
 const createAccount = false;
 const addDomain = false;
-const domain_ = 'sealed.email.';
+const domain_ = 'beta.grzegorz.ie.';
 
 const session = new API.Session(await API.Login.Login(details[0], details[1]), true);
 await session.DecryptKeys();
@@ -19,11 +19,9 @@ const emailProvider = new API.EmailProvider(emailService, session);
 
 
 const domains = await API.Domain.GetDomainList(session, 0, 1);
-console.log('Domains:', domains);
 const domainId = domains.domains[0].domainID;
 const domain = await API.Domain.GetDomain(session, domainId);
 const domainService = await API.DomainService.Decrypt(session, domain);
-console.log('Domain:', domainService.Domain, domain);
 
 //Email: {
 //   domainID: "hZBt3ARb0YDuVDeuwSRJoUat46brUnCXVOkEp8b4Be2QV2tYz695MA3F9YN0d18V",
@@ -47,4 +45,6 @@ console.log('Domain:', domainService.Domain, domain);
 //   references: [],
 // }
 
-console.log(await emailProvider.getEmails(domainService, {domainID: domainService.DomainID, order: 'asc', perPage: 1}));
+// /cpg8l2HZjxXciUCIOVLt/7zXVRC96VgVpdTxSh/G9M=
+// BHUf7l7Mptux3AYJWUiPeDLYiJyAyAfdcj6g7FKzp2bbiF6FOI/gs0H++mVo9G5j2c3A+jWNABoKj8TujBjYUmUMRMbiZETct/e7Xad0iMZxLrW4xYi53ZvsjotG1k/1plnPyU+ibJ3r3mmy4EMFGGDZNClFzcEJkWjKQxu1
+console.log(await emailProvider.getEmails(domainService, {domainID: domainService.DomainID, order: 'desc', perPage: 1}));

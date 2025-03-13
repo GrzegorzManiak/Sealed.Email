@@ -15,7 +15,7 @@ import (
 func Handler(input *Input, data *services.Handler) (*Output, errors.AppError) {
 	proof := helpers.DecodeUrlSafeBase64ToBytes(input.Proof)
 
-	publicKey, err := cryptography.ByteArrToECDSAPublicKey(helpers.DecodeUrlSafeBase64ToBytes(input.PublicKey))
+	publicKey, err := cryptography.ByteArrToECDSAPublicKey(helpers.DecodeUrlSafeBase64ToBytes(input.PublicKey), config.CURVE)
 	if err != nil {
 		return nil, errors.User(fmt.Sprintf("Error converting public key: %v", err), "Oops! Something went wrong")
 	}

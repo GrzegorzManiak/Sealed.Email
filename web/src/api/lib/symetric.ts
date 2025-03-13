@@ -32,18 +32,14 @@ function Compress(uncompressed: { iv: Uint8Array,  data: Uint8Array}): Uint8Arra
     return new Uint8Array([...ivLen, ...uncompressed.iv, ...uncompressed.data]);
 }
 
-function Decompress(compressedData: Uint8Array): { iv: Uint8Array; data: Uint8Array } {
-    if (compressedData.length < 2) {
-        throw new Error("Invalid compressed data: too short");
-    }
-
+function Decompress(compressedData: Uint8Array): { iv: Uint8Array, data: Uint8Array } {
+    if (compressedData.length < 2) throw new Error("invalid compressed data: too short");
     const ivLen = compressedData[0];
-    if (compressedData.length < 1 + ivLen) {
-        throw new Error("Invalid compressed data: truncated IV");
-    }
+    if (compressedData.length < 1 + ivLen) throw new Error("invalid compressed data: truncated IV");
 
     const iv = compressedData.slice(1, 1 + ivLen);
     const data = compressedData.slice(1 + ivLen);
+
     return { iv, data };
 }
 

@@ -3,6 +3,7 @@ package email
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/GrzegorzManiak/NoiseBackend/config"
 	"strings"
 
 	"github.com/GrzegorzManiak/GOWL/pkg/crypto"
@@ -80,13 +81,14 @@ func EncryptEmailKey(emailKey []byte, publicKey string) (*EncryptionKey, error) 
 	if err != nil {
 		return nil, err
 	}
-	
-	ecdsaPublicKey, err := cryptography.ByteArrToECDSAPublicKey(decodedKey)
+
+	ecdsaPublicKey, err := cryptography.ByteArrToECDSAPublicKey(decodedKey, config.CURVE)
 	if err != nil {
 		return nil, err
 	}
 
-	cipherText, err := cryptography.AsymEncrypt(ecdsaPublicKey, emailKey)
+	emailKeyEncoded := base64.RawURLEncoding.EncodeToString(emailKey)
+	cipherText, err := cryptography.AsymEncrypt(ecdsaPublicKey, []byte(emailKeyEncoded))
 	if err != nil {
 		return nil, err
 	}

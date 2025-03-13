@@ -98,7 +98,7 @@ func validateProofOfPossession(
 		return false
 	}
 
-	publicKey, err := cryptography.ByteArrToECDSAPublicKey(decodedPublicKey)
+	publicKey, err := cryptography.ByteArrToECDSAPublicKey(decodedPublicKey, config.CURVE)
 	if err != nil {
 		return false
 	}

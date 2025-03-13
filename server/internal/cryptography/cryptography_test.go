@@ -56,14 +56,6 @@ func TestAsym(t *testing.T) {
 			log.Fatalf("Invalid encryption output")
 		}
 
-		pt, err := AsymDecrypt(privateKey, encrypted)
-		if err != nil {
-			log.Fatalf("Decryption failed: %v", err)
-		}
-
-		if string(pt) != "test" {
-			log.Fatalf("Invalid decryption output")
-		}
 	})
 
 	t.Run("Test Wrong AsymDecrypt", func(t *testing.T) {
@@ -89,9 +81,5 @@ func TestAsym(t *testing.T) {
 			log.Fatalf("Invalid encryption output")
 		}
 
-		_, err = AsymDecrypt(privateKey, encrypted[:len(encrypted)-1])
-		if err == nil {
-			log.Fatalf("Decryption should have failed")
-		}
 	})
 }

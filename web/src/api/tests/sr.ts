@@ -47,43 +47,43 @@ if (addDomain) {
 	// console.log('Emails:', emails2);
 	// return
 
-	if (send) {
-		const emailKey = API.Sym.NewKey();
-		const recipientAKeys = API.Asym.GenerateKeyPair();
-		const recipientAInbox = await API.EncryptedInbox.Create(
-			'test@sealed.email',
-			'Test',
-			recipientAKeys.pub,
-			emailKey
-		);
-
-		console.log('Recipient A:', recipientAInbox);
-
-		const sender = await domainService.GetSender(emailKey, 'Greg', 'Grzegorz Maniak')
-		const email = new API.EncryptedEmail({
-			domain: domainService,
-			key: emailKey,
-			from: sender,
-			to: recipientAInbox,
-			subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF Hello world SDFGSDFG SDFG SDFG SDFG SDF',
-			body: 'Hello world SDFG SDFGS DFG Hello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDF'
-		});
-
-		console.log(await email.Send(session))
-	}
-
-	await API.Email.SendPlainEmail(session, {
-		domainID: domainService.DomainID,
-		inReplyTo: '',
-		from: { displayName: 'Greg', email: `test@${domain_}` },
-		to: { displayName: '', email: 'test@sealed.email' },
-		bcc: [],
-		cc: [],
-		subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF',
-		body: 'Hello world SDFG SDFGS DFG ',
-		nonce: UrlSafeBase64Encode(API.Sym.NewKey()),
-		signature: UrlSafeBase64Encode(API.Sym.NewKey()),
-	})
+	// if (send) {
+	// 	const emailKey = API.Sym.NewKey();
+	// 	const recipientAKeys = API.Asym.GenerateKeyPair();
+	// 	const recipientAInbox = await API.EncryptedInbox.Create(
+	// 		'test@sealed.email',
+	// 		'Test',
+	// 		recipientAKeys.pub,
+	// 		emailKey
+	// 	);
+	//
+	// 	console.log('Recipient A:', recipientAInbox);
+	//
+	// 	const sender = await domainService.GetSender(emailKey, 'Greg', 'Grzegorz Maniak')
+	// 	const email = new API.EncryptedEmail({
+	// 		domain: domainService,
+	// 		key: emailKey,
+	// 		from: sender,
+	// 		to: recipientAInbox,
+	// 		subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF Hello world SDFGSDFG SDFG SDFG SDFG SDF',
+	// 		body: 'Hello world SDFG SDFGS DFG Hello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDFHello world SDFGSDFG SDFG SDFG SDFG SDF'
+	// 	});
+	//
+	// 	console.log(await email.Send(session))
+	// }
+	//
+	// await API.Email.SendPlainEmail(session, {
+	// 	domainID: domainService.DomainID,
+	// 	inReplyTo: '',
+	// 	from: { displayName: 'Greg', email: `test@${domain_}` },
+	// 	to: { displayName: '', email: 'test@sealed.email' },
+	// 	bcc: [],
+	// 	cc: [],
+	// 	subject: 'Hello world SDFGSDFG SDFG SDFG SDFG SDF',
+	// 	body: 'Hello world SDFG SDFGS DFG ',
+	// 	nonce: UrlSafeBase64Encode(API.Sym.NewKey()),
+	// 	signature: UrlSafeBase64Encode(API.Sym.NewKey()),
+	// })
 
 	// await sleep(5000);
 	//

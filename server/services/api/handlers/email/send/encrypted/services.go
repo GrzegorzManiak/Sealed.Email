@@ -75,7 +75,7 @@ func sendEmail(
 
 	zap.L().Debug("Email headers", zap.Any("headers", headers))
 
-	signedEmail, err := email.SignEmailWithDkim(headers, input.Body, fromDomain.Domain, fromDomain.DKIMPrivateKey)
+	signedEmail, err := email.SignEmailWithDkim(headers, email.FoldEmailBody(input.Body), fromDomain.Domain, fromDomain.DKIMPrivateKey)
 	if err != nil {
 		return "", errors.User("Failed to sign email. Please try again later.", "Failed to sign email")
 	}
