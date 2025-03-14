@@ -43,7 +43,6 @@ class EmailProvider {
 		emailStorage: EmailStorage,
 		session: Session
 	) {
-		if (!emailStorage.isReady) throw new Error('EmailStorage not ready');
 		this._emailStorage = emailStorage;
 		this._session = session;
 	}
@@ -211,11 +210,12 @@ class EmailProvider {
 	}
 
 	public async getEmails(domain: Domain, filter: EmailListFilters): Promise<Array<EmailMetadata>> {
+		if (!this._emailStorage.isReady) await this._emailStorage.init();
+
 		const emails = await GetEmailList(this._session, filter);
 		const emailList: Array<Promise<EmailMetadata> | EmailMetadata> = [];
-		console.log(emails);
-		for (const email of emails.emails) {
 
+		for (const email of emails.emails) {
 			try {
 				await this._emailStorage.updateMetaData(email.emailID, {
 					spam: email.spam,

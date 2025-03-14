@@ -189,8 +189,8 @@ class Session {
     }
 
     public async DecryptKey(key: Uint8Array | string): Promise<string> {
-        if (typeof key !== 'string') key = UrlSafeBase64Encode(key);
-        const decompressedKey = Decompress(UrlSafeBase64Decode(key));
+        if (typeof key === 'string') key = UrlSafeBase64Decode(key);
+        const decompressedKey = Decompress(key);
         return await Decrypt(decompressedKey, this._rootKey);
     }
 

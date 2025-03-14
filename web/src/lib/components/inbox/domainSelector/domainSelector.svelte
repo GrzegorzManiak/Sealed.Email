@@ -12,38 +12,50 @@
 	import {setAllDomains} from "../../../stores";
 	import * as API from "$api/lib";
 	import type {DomainBrief} from "../../../../api/lib/api/domain";
-	import {get} from "svelte/store";
-
-	// const domains: Array<DomainBrief> = [];
+	import {get, writable} from "svelte/store";
 
 	interface DomainOption {
 		label: string;
 		value: string;
 	}
 
+	let open = false;
+	let value = "";
+	let searchQuery = "";
+	let filteredDomains: DomainOption[] = [];
+
 	$: domains = [] as Array<DomainOption>;
+	$: storedSelected = get(Stores.selectedDomain)?.domainName ?? "No domain selected";
+	$: selectedValue = domains.find((f) => f.value === value)?.label ?? storedSelected;
+	$: allDomains = [] as Array<DomainOption>;
+	$: filteredDomains = searchDomains(searchQuery, allDomains);
+
+	function searchDomains(query: string, allDomains: DomainOption[]): DomainOption[] {
+		if (!query) return allDomains;
+		const searchTerm = query.toLowerCase();
+		return allDomains.filter(domain => {
+			const segments = domain.label.toLowerCase().split('.');
+			for (let i = 0; i < segments.length; i++)
+				if (segments[i].includes(searchTerm)) return true;
+        });
+	}
+
 	Stores.domains.subscribe((incomingDomains) => {
 		const newDomains: Array<DomainOption> = [];
 		if (!incomingDomains) return;
 
 		const keys = Object.keys(incomingDomains);
 		keys.forEach((key) => {
-            const domain = incomingDomains[key];
+			const domain = incomingDomains[key];
 			if (!domain.brief) return;
-            newDomains.push({
-                label: domain.service.Domain,
-                value: domain.brief.domainID,
-            });
-        });
+			newDomains.push({
+				label: domain.service.Domain,
+				value: domain.brief.domainID,
+			});
+		});
 
-		domains = newDomains;
-    });
-
-	let open = false;
-	let value = "";
-
-	$: storedSelected = get(Stores.selectedDomain)?.domainName ?? "No domain selected";
-	$: selectedValue = domains.find((f) => f.value === value)?.label ?? storedSelected;
+		allDomains = newDomains;
+	});
 
 	function closeAndFocusTrigger(triggerId: string) {
 		open = false;
@@ -62,10 +74,9 @@
 		}
     }
 
-	// onOpen
     onMount(async () => {
         await setAllDomains();
-    })
+    });
 </script>
 
 <Popover.Root bind:open let:ids>
@@ -82,13 +93,12 @@
         </Button>
     </Popover.Trigger>
 
-
     <Popover.Content class="w-[300px] p-0 my-1">
         <Command.Root>
-            <Command.Input placeholder="Search domains..." />
+            <Command.Input placeholder="Search domains..." bind:value={searchQuery}/>
             <Command.Empty>No domains found.</Command.Empty>
             <Command.Group>
-                {#each domains as framework}
+                {#each filteredDomains as framework}
                     <Command.Item
                         value={framework.value}
                         onSelect={(currentValue) => {

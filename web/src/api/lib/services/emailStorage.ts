@@ -3,6 +3,7 @@ import {Email} from "../api/email";
 import Session from "../session/session";
 import {UrlSafeBase64Decode, UrlSafeBase64Encode} from "../common";
 import {Compress, Decompress, Decrypt, Encrypt, NewKey} from "../symetric";
+import {BigIntToByteArray, Hash} from "gowl-client-lib";
 
 type Address = {
 	address?: string;
@@ -42,54 +43,47 @@ class EmailStorage {
 	}
 
 	public async init(): Promise<void> {
-		if (this.ready) {
-			console.log('EmailService already initialized');
-			return;
-		}
+		if (this.ready) return
 
 		const encodedEncryptionKey = await this.storageService.getDecryptionKey();
 		if (!encodedEncryptionKey) await this.createEncryptionKey();
-		else this.decryptionKey = UrlSafeBase64Decode(encodedEncryptionKey);
+		else try {
+			const decryptedKey = await this.session.DecryptKey(encodedEncryptionKey);
+			this.decryptionKey = UrlSafeBase64Decode(decryptedKey);
+		} catch (error) { this.decryptionKey = await this.createEncryptionKey(); }
+
 		await this.testKey();
 		this.ready = true;
-
-		console.log('EmailService initialized');
 	}
 
-	private async createEncryptionKey(): Promise<void> {
-		this.storageService.reset();
-		const key = NewKey();
-		const encodedKey = UrlSafeBase64Encode(key);
-		const encryptedKey = await this.session.EncryptKey(encodedKey);
+	private async createEncryptionKey(): Promise<Uint8Array> {
+		await this.storageService.reset();
+		const key = NewKey(32);
+		const encryptedKey = await this.session.EncryptKey(key);
 		await this.storageService.setDecryptionKey(encryptedKey);
 		this.decryptionKey = key;
 		const sampleData = await Encrypt('sampleData', key);
-		this.storageService.save('info', 'sampleData', UrlSafeBase64Encode(Compress(sampleData)));
+		await this.storageService.save('info', 'sampleData', UrlSafeBase64Encode(Compress(sampleData)));
+		return key;
 	}
 
-	private async testKey(): Promise<void> {
+	private async testKey(): Promise<Uint8Array> {
 		if (!this.decryptionKey) throw new Error('No decryption key');
 		const sampleData = await this.storageService.get('info', 'sampleData');
-
-		if (!sampleData) {
-			console.log('No sample data found, creating new key');
-			return this.createEncryptionKey();
-		}
-
+		if (!sampleData) return await this.createEncryptionKey();
 		const decompressedData = Decompress(UrlSafeBase64Decode(sampleData));
-		const decryptedData = await Decrypt(decompressedData, this.decryptionKey);
-
-		if (decryptedData !== 'sampleData') {
-			console.log('Decryption failed, creating new key');
-			return this.createEncryptionKey();
-		}
+		try {
+			const decryptedData = await Decrypt(decompressedData, this.decryptionKey);
+			if (decryptedData !== 'sampleData') return await this.createEncryptionKey();
+		} catch (error) { return await this.createEncryptionKey(); }
+		return this.decryptionKey;
 	}
 
 	public async saveEmail(metaData: EmailMetadata, content: string): Promise<void> {
 		if (!this.ready || !this.decryptionKey) throw new Error('EmailService not ready');
+
 		const encryptedContent = await Encrypt(content, this.decryptionKey);
 		const compressedContent = Compress(encryptedContent);
-
 		const encryptedSubject = await Encrypt(metaData.subject, this.decryptionKey);
 		const compressedSubject = Compress(encryptedSubject);
 

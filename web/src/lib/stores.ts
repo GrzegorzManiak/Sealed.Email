@@ -1,5 +1,5 @@
 import { persisted } from 'svelte-persisted-store'
-import type {DomainBrief, DomainRefID} from "$api/lib/api/domain";
+import type {DomainBrief, DomainRefID, DomainFull} from "$api/lib/api/domain";
 import * as API from "$api/lib";
 import {get} from "svelte/store";
 import type {SerializedSession} from "../api/lib/session/session";
@@ -37,6 +37,7 @@ const notificationCount = persisted<NotificationCount>('notificationCount', new 
 
 const domains = persisted<Record<DomainRefID, {
     brief: DomainBrief,
+    full: DomainFull,
     service: API.DomainService
 }>>('domains', {});
 
@@ -69,7 +70,7 @@ async function setAllDomains() {
     for (const domain of fetchedDomains.domains) {
         const domainFull = await API.Domain.GetDomain(session, domain.domainID);
         const domainService = await API.DomainService.Decrypt(session, domainFull);
-        domainMap[domain.domainID] = { brief: domain, service: domainService };
+        domainMap[domain.domainID] = { brief: domain, service: domainService, full: domainFull };
     }
 
     if (get(selectedDomain) === null && fetchedDomains.domains.length > 0) selectedDomain.set({

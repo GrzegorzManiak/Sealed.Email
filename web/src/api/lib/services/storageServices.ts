@@ -1,3 +1,5 @@
+import Dexie from 'dexie';
+
 abstract class StorageService {
 	public abstract save(store: string, key: string, value: string): Promise<void>;
 	public abstract get(store: string, key: string): Promise<string | null>;
@@ -31,68 +33,51 @@ class DummyStorageService extends StorageService {
 }
 
 class IndexedDBStorageService extends StorageService {
-	private dbName = "emailClientDB";
-	private version = 1;
+	private db: Dexie;
 
-	private async getDB(storeName: string): Promise<IDBDatabase> {
-		return new Promise((resolve, reject) => {
-			const request = indexedDB.open(this.dbName, this.version);
-
-			request.onupgradeneeded = (event) => {
-				const db = (event.target as IDBOpenDBRequest).result;
-				if (!db.objectStoreNames.contains(storeName)) {
-					db.createObjectStore(storeName, { keyPath: "key" });
-				}
-			};
-
-			request.onsuccess = () => resolve(request.result);
-			request.onerror = () => reject(request.error);
+	public constructor() {
+		super();
+		this.db = new Dexie('MyDatabase');
+		this.db.version(1).stores({
+			key: 'id'
 		});
 	}
 
-	public async save(storeName: string, key: string, value: string): Promise<void> {
-		const db = await this.getDB(storeName);
-		return new Promise((resolve, reject) => {
-			const tx = db.transaction(storeName, "readwrite");
-			const store = tx.objectStore(storeName);
-			const request = store.put({ key, value });
-
-			request.onsuccess = () => resolve();
-			request.onerror = () => reject(request.error);
-		});
+	private async ensureStoreExists(store: string): Promise<void> {
+		if (this.db.tables.some(table => table.name === store)) return;
+		this.db.close();
+		this.db.version(this.db.verno + 1).stores({[store]: 'id'});
+		await this.db.open();
 	}
 
-	public async get(storeName: string, key: string): Promise<string | null> {
-		const db = await this.getDB(storeName);
-		return new Promise((resolve, reject) => {
-			const tx = db.transaction(storeName, "readonly");
-			const store = tx.objectStore(storeName);
-			const request = store.get(key);
+	public async save(store: string, key: string, value: string): Promise<void> {
+		await this.ensureStoreExists(store);
+		await this.db.table(store).put({ id: key, value: value });
+	}
 
-			request.onsuccess = () => resolve(request.result ? request.result.value : null);
-			request.onerror = () => reject(request.error);
-		});
+	public async get(store: string, key: string): Promise<string | null> {
+		await this.ensureStoreExists(store);
+		const result = await this.db.table(store).get(key);
+		return result ? result.value : null;
 	}
 
 	public async getDecryptionKey(): Promise<string | null> {
-		return this.get("info", "decryptionKey") ?? "";
+		return this.get("key", "decryptionKey");
 	}
 
 	public async setDecryptionKey(key: string): Promise<void> {
-		this.save("info", "decryptionKey", key);
+		return this.save("key", "decryptionKey", key);
 	}
 
 	public async reset(): Promise<void> {
-		const stores = ["info", "emailData", "emailMeta"];
-		for (const store of stores) {
-			const db = await this.getDB(store);
-			const tx = db.transaction(store, "readwrite");
-			tx.objectStore(store).clear();
-		}
+		await this.ensureStoreExists("key");
+		await this.db.table("key").clear();
 	}
 }
 
+
 export {
 	StorageService,
-	DummyStorageService
+	DummyStorageService,
+	IndexedDBStorageService
 }
