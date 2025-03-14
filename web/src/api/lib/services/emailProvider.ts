@@ -228,13 +228,11 @@ class EmailProvider {
 				console.warn('Failed to update email metadata:', error);
 			}
 
-			const metadata = await this._emailStorage.getEmailMetadata(email.emailID);
-			if (metadata) {
-				emailList.push(metadata);
-				continue;
-			}
+			let metadata = await this._emailStorage.getEmailMetadata(email.emailID);
+			if (!metadata) await this.pullEmailData(email.emailID, email, domain)
 
-			emailList.push(this.pullEmailData(email.emailID, email, domain));
+			metadata = await this._emailStorage.getEmailMetadata(email.emailID);
+			if (metadata) emailList.push(metadata);
 		}
 
 		return Promise.all(emailList);

@@ -7,6 +7,8 @@
     // -- Third-party library imports
     import VirtualList from 'svelte-tiny-virtual-list';
     import InfiniteLoading from 'svelte-infinite-loading';
+	import VirtualInfiniteList from 'svelte-virtual-infinite-list'
+	import type { InfiniteEvent } from 'svelte-virtual-infinite-list'
 
     // -- UI component imports
     import * as Resizable from '$shadcn/resizable';
@@ -95,53 +97,38 @@
 		console.log(`All domain & email services loaded for ${domainService.Domain}`);
 		reloadInProgress = false;
 
-		const newEmails = await emailProvider.getEmails(domainService, {
+		data = await emailProvider.getEmails(domainService, {
 			domainID: domainService.DomainID,
 			order: 'desc',
 			perPage: 10
 		});
-
-		console.log(newEmails);
     }
 
-	// async function infiniteHandler({ detail: { complete, error } }) {
-	// 	try {
-	// 		console.log('Loading more emails...');
-    //         if (!session || !domainService) {
-    //             console.warn('No session or domain service', session, domainService);
-    //             return error();
-	// 		}
-    //
-	// 		try {
-	// 			const newEmails = await emailProvider.getEmails(domainService, {
-	// 				domainID: domainService.DomainID,
-	// 				order: 'desc',
-	// 				perPage: 10
-	// 			});
-    //
-	// 			if (!newEmails) {
-	// 				console.error('No emails found', newEmails);
-	// 				return error();
-	// 			}
-    //
-	// 			data = data.concat(newEmails);
-	// 			console.log('Emails loaded:', data.length);
-	// 			complete();
-    //         }
-    //
-    //         catch (e) {
-    //             console.error('Error loading emails', e);
-    //             error();
-    //         }
-	// 	}
-    //
-	// 	catch (e) {
-	// 		error();
-	// 	}
-	// }
+	function infiniteHandler({ detail: {
+		complete,
+        error,
+	}}) {
+		try {
+			if (!emailProvider || !domainService) {
+				console.warn('No email provider or domain service');
+                return complete();
+			}
 
-	// Stores.user.subscribe(async (user) => reloadUser(user));
-    // Stores.selectedDomain.subscribe(async () => reloadDomainService());
+            const newData = emailProvider.getEmails(domainService, {
+                domainID: domainService.DomainID,
+                order: 'desc',
+                perPage: 10,
+            });
+
+			data = [...data, ...newData];
+			complete();
+		}
+
+		catch (e) {
+			console.warn(e);
+			error();
+		}
+	}
 
 	onMount(async () => {
         const user = get(Stores.user);
@@ -158,22 +145,45 @@
         collapsible={false}
         onCollapse={() => collapsed.set(true)}
         onExpand={() => collapsed.set(false)}
-        class="flex-shrink-0 h-full">
+        class="flex-shrink-0 h-full overflow-hidden max-h-screen">
 
     <span bind:offsetHeight={$headerHeight}>
         <SelectedInboxHeader {collapsed} {inboxManager}/>
     </span>
 
-    <div class={cn({ 'hidden': $collapsed })}>
-<!--        <VirtualList width="100%" height={600} itemCount={data.length} itemSize={50}>-->
-<!--            <div slot="item" let:index let:style {style}>-->
-<!--                Letter: {data[index]}, Row: #{index}-->
-<!--            </div>-->
+    <div class={cn({ 'hidden': $collapsed }, 'overflow-hidden')}>
+        <VirtualList width="100%" height={1500} itemCount={data.length}>
+            <div slot="item" let:index let:style class="w-full flex items-center">
+                <EmailCard
+                    groupCounter={groupCounter}
+                    selectedStore={selectedStore}
+                    groupSelectStore={groupSelectStore}
+                    data={{
+                        id: data[index].emailID,
+                        date: new Date(data[index].receivedAt).toLocaleString(),
 
-<!--            <div slot="footer">-->
-<!--                <InfiniteLoading on:infinite={infiniteHandler} />-->
-<!--            </div>-->
-<!--        </VirtualList>-->
+                        fromEmail: data[index].from.address || '',
+                        fromName: data[index].from.name,
+
+                        toEmail: data[index].to[0].address || '',
+                        toName: data[index].to[0].name,
+
+                        subject: data[index].subject,
+                        body: 'We have updated our terms of service. Please review them at your earliest convenience.',
+
+                        read: data[index].read,
+                        pinned: true,
+                        starred: false,
+
+                        totalAttachments: 0
+                    }}
+                />
+            </div>
+
+            <div slot="footer" class="text-transparent">
+                <InfiniteLoading on:infinite={infiniteHandler} />
+            </div>
+        </VirtualList>
     </div>
 
 <!--        &lt;!&ndash; Fixed height pane content &ndash;&gt;-->
@@ -269,31 +279,7 @@
 <!--        },-->
 <!--        totalAttachments: 5-->
 <!--    }}/>-->
-<!--        <EmailCard-->
-<!--                groupCounter={groupCounter}-->
-<!--                selectedStore={selectedStore}-->
-<!--                groupSelectStore={groupSelectStore}-->
-<!--                data={-->
-<!--        {-->
-<!--            id: '2f',-->
-<!--            date: 'Sat Sep 28 2024 20:27:32 GMT+0100 (Irish Standard Time)',-->
-
-<!--            fromEmail: 'TOS@Noise.email',-->
-<!--            fromName: 'Noise Email',-->
-
-<!--            toEmail: 'Unknown',-->
-<!--            toName: 'Unknown',-->
-
-<!--            subject: 'Terms of Service Update',-->
-<!--            body: 'We have updated our terms of service. Please review them at your earliest convenience.',-->
-
-<!--            read: true,-->
-<!--            pinned: true,-->
-<!--            starred: false,-->
-
-<!--            totalAttachments: 0-->
-<!--            }-->
-<!--    }/>-->
+<!---->
 
 <!--        <p class="text-muted-foreground text-sm text-center p-4">No more emails to show.</p>-->
 <!--    </div>-->

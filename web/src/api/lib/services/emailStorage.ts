@@ -1,9 +1,7 @@
 import {StorageService} from "./storageServices";
-import {Email} from "../api/email";
 import Session from "../session/session";
 import {UrlSafeBase64Decode, UrlSafeBase64Encode} from "../common";
 import {Compress, Decompress, Decrypt, Encrypt, NewKey} from "../symetric";
-import {BigIntToByteArray, Hash} from "gowl-client-lib";
 
 type Address = {
 	address?: string;
@@ -84,34 +82,44 @@ class EmailStorage {
 
 		const encryptedContent = await Encrypt(content, this.decryptionKey);
 		const compressedContent = Compress(encryptedContent);
+
 		const encryptedSubject = await Encrypt(metaData.subject, this.decryptionKey);
 		const compressedSubject = Compress(encryptedSubject);
+
+		metaData.subject = UrlSafeBase64Encode(compressedSubject);
 
 		await this.storageService.save('emailData', metaData.emailID, UrlSafeBase64Encode(compressedContent));
 		await this.storageService.save('emailMeta', metaData.emailID, JSON.stringify({
 			...metaData,
-			subject: UrlSafeBase64Encode(compressedSubject),
 			storage: { encrypted: true, failed: false, local: true }
 		}));
 	}
 
 	public async updateMetaData(emailID: string, metaData: Partial<EmailMetadata>): Promise<void> {
 		if (!this.ready || !this.decryptionKey) throw new Error('EmailService not ready');
-		const existingMetaData = await this.getEmailMetadata(emailID);
+		const existingMetaData = await this.getEmailMetadata(emailID, false);
 		if (!existingMetaData) throw new Error('Email not found')
-		await this.storageService.save('emailMeta', emailID, JSON.stringify({
+		const updatedMetaData = {
 			...existingMetaData,
 			spam: metaData.spam ?? existingMetaData.spam,
 			read: metaData.read ?? existingMetaData.read,
 			folder: metaData.folder ?? existingMetaData.folder,
-		}));
+		}
+
+		await this.storageService.save('emailMeta', emailID, JSON.stringify(updatedMetaData));
 	}
 
-	public async getEmailMetadata(emailID: string): Promise<EmailMetadata | null> {
+	public async getEmailMetadata(emailID: string, decryptSubject: boolean = true): Promise<EmailMetadata | null> {
 		if (!this.ready || !this.decryptionKey) throw new Error('EmailService not ready');
 		const metaData = await this.storageService.get('emailMeta', emailID);
 		if (!metaData) return null;
-		return JSON.parse(metaData);
+
+		const parsedMetaData = JSON.parse(metaData) as EmailMetadata;
+		if (decryptSubject) {
+			const compressedSubject = UrlSafeBase64Decode(parsedMetaData.subject);
+			parsedMetaData.subject = await Decrypt(Decompress(compressedSubject), this.decryptionKey);
+		}
+		return parsedMetaData;
 	}
 
 	public async getEmailContent(emailID: string): Promise<string | null> {
